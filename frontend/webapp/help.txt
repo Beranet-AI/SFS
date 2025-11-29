@@ -1,0 +1,33 @@
+1.دانلود node.js نسخه lts
+2.cd C:\Users\behzad.ramezan\SmartFarm_Project\SmartFarmSystemEnterprise\frontend\webapp
+3.npx create-next-app@latest . --typescript --eslint
+4.
+
+بعد از چند لحظه، یک‌سری سوال ازت می‌پرسه (اگر نسخه‌ات جدید باشه)، می‌تونی این‌جوری جواب بدی (پیشنهادی):
+
+Would you like to use Tailwind CSS? →
+Yes (به درد داشبورد می‌خوره)
+
+Would you like to use src/ directory? →
+Yes
+
+Use App Router? →
+Yes (نسخه جدید، تمیزتر و آینده‌دارتره)
+
+Would you like to customize the default import alias (@/*)? →
+No
+
+4.npm run dev
+
+
+
+. Node.js را نصب کن و با node -v و npm -v چک کن.
+2. داخل frontend\webapp دستور npx create-next-app@latest . --typescript --eslint را اجرا کن.
+3. npm run dev را بزن و مطمئن شو http://localhost:3000 باز می‌شود.
+
+
+
+
+cd C:\Users\behzad.ramezan\SmartFarm_Project\SmartFarmSystemEnterprise\frontend\webapp
+npm run dev
+http://localhost:3000

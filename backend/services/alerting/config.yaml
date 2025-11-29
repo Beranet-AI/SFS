@@ -1,0 +1,5 @@
+service:
+  name: alerting
+logging:
+  level: INFO
+  file: logs/alerting.log

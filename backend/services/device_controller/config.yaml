@@ -1,0 +1,5 @@
+service:
+  name: device_controller
+logging:
+  level: INFO
+  file: logs/device_controller.log

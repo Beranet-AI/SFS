@@ -1,0 +1,68 @@
+1.docker-compose.yml را مطابق نسخهٔ بالا اصلاح کن و ذخیره کن.
+۲. docker compose config را اجرا کن و مطمئن شو خطای syntax نداری.
+۳. docker info / docker ps را چک کن (اگر 500 داد → مشکل از Docker Desktop، باید ریستارت بشود).
+۴. دوباره docker compose build و بعد docker compose up را اجرا کن.
+
+
+
+# هر وقت خواستید توسعه دهید:
+docker compose up --build
+
+# وقتی کار تمام شد:
+docker compose down
+
+
+# مشاهده لاگ FastAPI
+docker compose logs fastapi
+
+# مشاهده لاگ Django
+docker compose logs django
+
+# مشاهده تمام لاگ‌ها
+docker compose logs
+
+چک کردن وضعیت کانتینرها1- 
+cd C:\Users\behzad.ramezan\SmartFarm_Project\SmartFarmSystemEnterprise
+docker compose ps
+
+۲ – ساخت سوپریوزر و کاربر سرویسی داخل Django (روی Postgres)
+docker compose exec django bash
+--->root@...:/app#
+                    python manage.py createsuperuser
+                        username:admin
+                        email:
+                        password:123
+۳. ساخت کاربر سرویس (مطابق env FastAPI)
+
+    راه ۱ – از طریق Admin وب (راحت‌تر)
+            ۱. از کانتینر خارج شو:    exit
+            2.   در مرورگر برو:    http://127.0.0.1:8000/admin
+            3.با admin و پسوردش وارد شو.
+            4.در قسمت Users:
+
+            5.یک کاربر جدید با:
+
+                Username: service_user
+
+                Password: @123456#
+
+                   تیک‌های لازم  :
+
+                       is_staff را بزن (برای راحتی)
+
+                       لازم نیست superuser باشد، ولی می‌تونه باشد برای دمو.
+4.تست دستی گرفتن توکن از Django (روی داکر)
+
+حالا با Postman از بیرون تست کنیم:
+POST http://127.0.0.1:8000/api/v1/auth/token/
+Content-Type: application/json
+{
+  "username": "service_user",
+  "password": "service_password"
+}
+5.اطمینان از درست بودن env سرویس FastAPI داخل Docker
+backend/services/decision_engine_fastapi/.env.docker
+DJANGO_API_BASE_URL=http://django:8000/api/v1
+DJANGO_TOKEN_URL=http://django:8000/api/v1/auth/token/
+DJANGO_AUTH_USERNAME=service_user
+DJANGO_AUTH_PASSWORD=service_password

@@ -1,0 +1,5 @@
+service:
+  name: api_gateway
+logging:
+  level: INFO
+  file: logs/api_gateway.log
