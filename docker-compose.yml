@@ -1,4 +1,7 @@
+version: "3.9"
+
 services:
+
   db:
     image: postgres:15
     container_name: smartfarm_db
@@ -11,6 +14,8 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - smartnet
 
   django:
     build:
@@ -19,14 +24,19 @@ services:
     container_name: smartfarm_django
     restart: unless-stopped
     env_file:
-      - ./.env       # 👈 فقط همین، دیگر .env.docker نداریم
+      - ./backend/services/user_management/.env
     depends_on:
       - db
     ports:
       - "8000:8000"
+    networks:
+      - smartnet
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+      sh -c "
+        python manage.py migrate &&
+        python manage.py ensure_service_user &&
+        python manage.py runserver 0.0.0.0:8000
+      "
 
   fastapi:
     build:
@@ -35,13 +45,18 @@ services:
     container_name: smartfarm_fastapi
     restart: unless-stopped
     env_file:
-      - ./.env       # 👈 همین
+      - ./backend/services/decision_engine_fastapi/.env
     depends_on:
       - django
     ports:
       - "9000:9000"
+    networks:
+      - smartnet
     command: >
-      sh -c "uvicorn app.main:app --host ${FASTAPI_HOST:-0.0.0.0} --port ${FASTAPI_PORT:-9000} --reload"
+      uvicorn app.main:app --host 0.0.0.0 --port 9000 --reload
 
 volumes:
   postgres_data:
+
+networks:
+  smartnet:
