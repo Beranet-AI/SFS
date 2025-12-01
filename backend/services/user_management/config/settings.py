@@ -137,3 +137,4 @@ CORS_ALLOW_CREDENTIALS = True
 
 SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
 
+django_service_token = os.getenv("DJANGO_SERVICE_TOKEN")
