@@ -29,6 +29,7 @@ services:
       DJANGO_AUTH_USERNAME: ${DJANGO_AUTH_USERNAME:-fastapi_service}
       DJANGO_AUTH_PASSWORD: ${DJANGO_AUTH_PASSWORD:-fastapi_service_password}
       DJANGO_AUTH_EMAIL: ${DJANGO_AUTH_EMAIL:-fastapi_service@local}
+      SERVICE_AUTH_TOKEN: ${SERVICE_AUTH_TOKEN:-super-secret-token}
     depends_on:
       - db
     ports:
