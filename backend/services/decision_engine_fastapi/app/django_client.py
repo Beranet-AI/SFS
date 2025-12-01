@@ -1,8 +1,11 @@
 import logging
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+import jwt
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from .config import settings
 
@@ -10,10 +13,30 @@ logger = logging.getLogger(__name__)
 
 session = requests.Session()
 
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=(502, 503, 504),
+    allowed_methods=frozenset(["GET", "POST"]),
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session.mount("http://", adapter)
+session.mount("https://", adapter)
+
 _token_cache: Dict[str, Any] = {
     "access": None,
     "expires_at": 0.0,  # timestamp
 }
+
+
+def _extract_expiry(token: str) -> Optional[float]:
+    try:
+        payload = jwt.decode(token, options={"verify_signature": False})
+        exp = payload.get("exp")
+        return float(exp) if exp is not None else None
+    except jwt.PyJWTError as exc:
+        logger.warning("Could not decode JWT expiry: %s", exc)
+        return None
 
 
 def get_access_token() -> str:
@@ -53,9 +76,14 @@ def get_access_token() -> str:
         logger.error("Token response has no 'access' field: %s", data)
         raise RuntimeError("Failed to obtain access token: no 'access' field in response")
 
-    # فعلاً به‌صورت ساده توکن را برای ۵۰ دقیقه معتبر فرض می‌کنیم
+    expires_at = _extract_expiry(access)
+    if expires_at:
+        _token_cache["expires_at"] = expires_at
+    else:
+        # fallback: SimpleJWT پیش‌فرض 30 دقیقه است
+        _token_cache["expires_at"] = now + 25 * 60
+
     _token_cache["access"] = access
-    _token_cache["expires_at"] = now + 50 * 60
 
     logger.info("Access token obtained successfully from Django")
     return access
@@ -72,6 +100,9 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
         "raw_payload": {...}
     }
     """
+    if "sensor_id" not in reading or not reading.get("sensor_id"):
+        raise ValueError("sensor_id is required to post a sensor reading to Django")
+
     token = get_access_token()
 
     url = f"{settings.django_api_base_url.rstrip('/')}/sensor-readings/"
