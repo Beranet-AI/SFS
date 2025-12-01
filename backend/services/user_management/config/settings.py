@@ -39,7 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "api.middleware.ServiceTokenAuthMiddleware",
+    'api.middleware.ServiceTokenMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -135,4 +135,5 @@ CORS_ALLOWED_ORIGINS = _split_env_list(
 )
 CORS_ALLOW_CREDENTIALS = True
 
-SERVICE_AUTH_TOKEN = os.getenv("SERVICE_AUTH_TOKEN", "super-secret-token")
+SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
+
