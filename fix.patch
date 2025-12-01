@@ -116,7 +116,7 @@ index c8063786e4adcd7f57d41f5b8e0e2f89da9a81cd..d667ec5cb507eadf01f66f595790ba28
          else:
              self.stdout.write(f"Updated existing service user: {username}")
 diff --git a/docker-compose.yml b/docker-compose.yml
-index 9c25bdb9cdd3686e91bfca84bfc72446a729bbf4..72e47d8ab50c241e07a4e2ebe81f10c0add3eb14 100644
+index 9c25bdb9cdd3686e91bfca84bfc72446a729bbf4..ae95465c39a897db674cfa5a331804a6b6df87ad 100644
 --- a/docker-compose.yml
 +++ b/docker-compose.yml
 @@ -1,62 +1,82 @@
@@ -161,29 +161,29 @@ index 9c25bdb9cdd3686e91bfca84bfc72446a729bbf4..72e47d8ab50c241e07a4e2ebe81f10c0
        sh -c "
 -        python manage.py migrate &&
 -        python manage.py ensure_service_user &&
-+        python - <<'PY' && \
++        python - <<'PY'
++import os
++import time
++import psycopg2
++
++while True:
++    try:
++        conn = psycopg2.connect(
++            dbname=os.getenv('POSTGRES_DB'),
++            user=os.getenv('POSTGRES_USER'),
++            password=os.getenv('POSTGRES_PASSWORD'),
++            host=os.getenv('POSTGRES_HOST', 'db'),
++            port=os.getenv('POSTGRES_PORT', '5432'),
++        )
++        conn.close()
++        break
++    except Exception as exc:
++        print(f"Waiting for database: {exc}")
++        time.sleep(2)
++PY
 +        python manage.py migrate --noinput && \
 +        python manage.py ensure_service_user && \
          python manage.py runserver 0.0.0.0:8000
-+        import os
-+        import time
-+        import psycopg2
-+
-+        while True:
-+            try:
-+                conn = psycopg2.connect(
-+                    dbname=os.getenv('POSTGRES_DB'),
-+                    user=os.getenv('POSTGRES_USER'),
-+                    password=os.getenv('POSTGRES_PASSWORD'),
-+                    host=os.getenv('POSTGRES_HOST', 'db'),
-+                    port=os.getenv('POSTGRES_PORT', '5432'),
-+                )
-+                conn.close()
-+                break
-+            except Exception as exc:
-+                print(f"Waiting for database: {exc}")
-+                time.sleep(2)
-+        PY
        "
  
    fastapi:
