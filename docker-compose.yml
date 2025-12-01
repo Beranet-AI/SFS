@@ -33,10 +33,7 @@ services:
       - smartnet
     command: >
       sh -c "
-        python - <<'PY' && \
-        python manage.py migrate --noinput && \
-        python manage.py ensure_service_user && \
-        python manage.py runserver 0.0.0.0:8000
+        python - <<'PY'
         import os
         import time
         import psycopg2
@@ -56,6 +53,10 @@ services:
                 print(f"Waiting for database: {exc}")
                 time.sleep(2)
         PY
+
+        python manage.py migrate --noinput && \
+        python manage.py ensure_service_user && \
+        python manage.py runserver 0.0.0.0:8000
       "
 
   fastapi:
