@@ -4,7 +4,7 @@ from django.http import JsonResponse
 class ServiceTokenMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.token = settings.SERVICE_TOKEN
+        self.token = settings.DJANGO_SERVICE_TOKEN
 
     def __call__(self, request):
         auth_header = request.headers.get("Authorization", "")

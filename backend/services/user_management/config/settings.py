@@ -135,6 +135,5 @@ CORS_ALLOWED_ORIGINS = _split_env_list(
 )
 CORS_ALLOW_CREDENTIALS = True
 
-SERVICE_TOKEN = os.getenv("SERVICE_TOKEN")
-
-django_service_token = os.getenv("DJANGO_SERVICE_TOKEN")
+DJANGO_SERVICE_TOKEN = os.getenv("DJANGO_SERVICE_TOKEN")
+SERVICE_AUTH_TOKEN = os.getenv("SERVICE_AUTH_TOKEN", "super-secret-token")

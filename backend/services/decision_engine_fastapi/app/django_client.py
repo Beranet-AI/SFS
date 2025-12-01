@@ -36,11 +36,11 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
     if "sensor_id" not in reading or not reading.get("sensor_id"):
         raise ValueError("sensor_id is required to post a sensor reading to Django")
 
-    url = f"{settings.django_api_base_url.rstrip('/')}/sensor-readings/"
+    url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/sensor-readings/"
     logger.info("Posting reading to Django: %s", url)
 
     headers = {
-        "Authorization": f"Token {settings.django_service_token}",
+        "Authorization": f"Token {settings.DJANGO_SERVICE_TOKEN}",
         "Content-Type": "application/json",
     }
 
