@@ -1,8 +1,9 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 import os
 
 User = get_user_model()
+
 
 class Command(BaseCommand):
     help = "Create or update the inter-service API user (for FastAPI → Django)."
@@ -12,10 +13,9 @@ class Command(BaseCommand):
         password = os.getenv("DJANGO_AUTH_PASSWORD")
 
         if not username or not password:
-            self.stderr.write(
-                "DJANGO_AUTH_USERNAME and DJANGO_AUTH_PASSWORD must be set"
+            raise CommandError(
+                "DJANGO_AUTH_USERNAME and DJANGO_AUTH_PASSWORD must be set to create the service user."
             )
-            return
 
         user, created = User.objects.update_or_create(
             username=username,
