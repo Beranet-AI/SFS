@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
+from devices.models import SensorType
 
 
 class SensorReadingViewSet(viewsets.ModelViewSet):
@@ -26,38 +27,36 @@ class SensorReadingViewSet(viewsets.ModelViewSet):
 
 class LatestReadingsView(APIView):
     """
-    API برمی‌گرداند آخرین ریدینگ دما (sensor_id=1)
-    و آخرین ریدینگ آمونیاک (sensor_id=2).
+    API برمی‌گرداند آخرین ریدینگ هر SensorType موردنیاز.
+
+    اگر پارامتر query با نام ``sensor_types`` داده شود (CSV)، همان کدها بررسی می‌شوند،
+    در غیر این صورت پیش‌فرض temperature و ammonia است.
     """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        result = {}
-
-        # آخرین ریدینگ دما (Sensor 1)
-        temp_reading = (
-            SensorReading.objects
-            .filter(sensor_id=1)
-            .order_by("-ts")
-            .first()
+        requested_types = request.query_params.get(
+            "sensor_types", "temperature,ammonia"
         )
-        if temp_reading:
-            result["temperature"] = SensorReadingSerializer(temp_reading).data
-        else:
-            result["temperature"] = None
+        type_codes = [code.strip() for code in requested_types.split(",") if code.strip()]
 
-        # آخرین ریدینگ آمونیاک (Sensor 2)
-        ammonia_reading = (
-            SensorReading.objects
-            .filter(sensor_id=2)
-            .order_by("-ts")
-            .first()
+        sensor_types = SensorType.objects.filter(code__in=type_codes).values_list(
+            "id", "code"
         )
-        if ammonia_reading:
-            result["ammonia"] = SensorReadingSerializer(ammonia_reading).data
-        else:
-            result["ammonia"] = None
+
+        result = {code: None for code in type_codes}
+
+        for sensor_type_id, code in sensor_types:
+            latest_reading = (
+                SensorReading.objects
+                .select_related("sensor", "sensor__device", "sensor__sensor_type")
+                .filter(sensor__sensor_type_id=sensor_type_id)
+                .order_by("-ts")
+                .first()
+            )
+            if latest_reading:
+                result[code] = SensorReadingSerializer(latest_reading).data
 
         return Response(result)
 

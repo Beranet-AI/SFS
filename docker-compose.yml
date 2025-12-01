@@ -25,6 +25,10 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/services/user_management/.env.docker
+    environment:
+      DJANGO_AUTH_USERNAME: ${DJANGO_AUTH_USERNAME:-fastapi_service}
+      DJANGO_AUTH_PASSWORD: ${DJANGO_AUTH_PASSWORD:-fastapi_service_password}
+      DJANGO_AUTH_EMAIL: ${DJANGO_AUTH_EMAIL:-fastapi_service@local}
     depends_on:
       - db
     ports:
@@ -45,6 +49,11 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/services/decision_engine_fastapi/.env.docker
+    environment:
+      DJANGO_API_BASE_URL: ${DJANGO_API_BASE_URL:-http://smartfarm_django:8000/api/v1}
+      DJANGO_TOKEN_URL: ${DJANGO_TOKEN_URL:-http://smartfarm_django:8000/api/v1/auth/token/}
+      DJANGO_AUTH_USERNAME: ${DJANGO_AUTH_USERNAME:-fastapi_service}
+      DJANGO_AUTH_PASSWORD: ${DJANGO_AUTH_PASSWORD:-fastapi_service_password}
     depends_on:
       - django
     ports:
