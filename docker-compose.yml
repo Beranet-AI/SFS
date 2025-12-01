@@ -7,9 +7,9 @@ services:
     container_name: smartfarm_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-smartfarm}
+      POSTGRES_USER: ${POSTGRES_USER:-smartfarm}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartfarm_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -24,7 +24,7 @@ services:
     container_name: smartfarm_django
     restart: unless-stopped
     env_file:
-      - ./backend/services/user_management/.env
+      - ./backend/services/user_management/.env.docker
     depends_on:
       - db
     ports:
@@ -33,9 +33,29 @@ services:
       - smartnet
     command: >
       sh -c "
-        python manage.py migrate &&
-        python manage.py ensure_service_user &&
+        python - <<'PY' && \
+        python manage.py migrate --noinput && \
+        python manage.py ensure_service_user && \
         python manage.py runserver 0.0.0.0:8000
+        import os
+        import time
+        import psycopg2
+
+        while True:
+            try:
+                conn = psycopg2.connect(
+                    dbname=os.getenv('POSTGRES_DB'),
+                    user=os.getenv('POSTGRES_USER'),
+                    password=os.getenv('POSTGRES_PASSWORD'),
+                    host=os.getenv('POSTGRES_HOST', 'db'),
+                    port=os.getenv('POSTGRES_PORT', '5432'),
+                )
+                conn.close()
+                break
+            except Exception as exc:
+                print(f"Waiting for database: {exc}")
+                time.sleep(2)
+        PY
       "
 
   fastapi:
@@ -45,7 +65,7 @@ services:
     container_name: smartfarm_fastapi
     restart: unless-stopped
     env_file:
-      - ./backend/services/decision_engine_fastapi/.env
+      - ./backend/services/decision_engine_fastapi/.env.docker
     depends_on:
       - django
     ports:
