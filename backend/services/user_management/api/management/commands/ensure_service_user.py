@@ -1,45 +1,31 @@
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
 import os
 
-from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
-
+User = get_user_model()
 
 class Command(BaseCommand):
-    help = "Ensure a service account exists for inter-service authentication"
+    help = "Create or update the inter-service API user (for FastAPI → Django)."
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **kwargs):
         username = os.getenv("DJANGO_AUTH_USERNAME")
         password = os.getenv("DJANGO_AUTH_PASSWORD")
 
         if not username or not password:
-            self.stdout.write(
-                self.style.WARNING(
-                    "DJANGO_AUTH_USERNAME and DJANGO_AUTH_PASSWORD must be set to create the service user."
-                )
+            self.stderr.write(
+                "DJANGO_AUTH_USERNAME and DJANGO_AUTH_PASSWORD must be set"
             )
             return
 
-        User = get_user_model()
-        user, created = User.objects.get_or_create(
+        user, created = User.objects.update_or_create(
             username=username,
-            defaults={"is_staff": True, "is_active": True},
+            defaults={"is_staff": True, "is_superuser": True},
         )
 
-        if created:
-            user.set_password(password)
-            user.save()
-            self.stdout.write(
-                self.style.SUCCESS(f"Created service user '{username}' with provided credentials.")
-            )
-            return
+        user.set_password(password)
+        user.save()
 
-        if not user.check_password(password):
-            user.set_password(password)
-            user.save(update_fields=["password"])
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Updated password for existing service user '{username}'."
-                )
-            )
+        if created:
+            self.stdout.write(f"Created new service user: {username}")
         else:
-            self.stdout.write(self.style.SUCCESS(f"Service user '{username}' already exists."))
+            self.stdout.write(f"Updated existing service user: {username}")
