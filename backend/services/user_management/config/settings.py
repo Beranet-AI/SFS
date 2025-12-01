@@ -8,9 +8,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --- تنظیمات عمومی با ENV (برای dev و docker) ---
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 
-DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
-#---ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
-ALLOWED_HOSTS = ["*"]
+DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
+
+
+def _split_env_list(var_name: str, default: str):
+    return [host.strip() for host in os.getenv(var_name, default).split(",") if host.strip()]
+
+
+ALLOWED_HOSTS = _split_env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1,django,fastapi",
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -21,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "corsheaders",
     "api",
     "farm",
     "devices",
@@ -31,6 +40,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -65,6 +75,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 USE_POSTGRES = os.getenv("USE_POSTGRES", "false").lower() == "true"
 
 if USE_POSTGRES:
+    required_pg_envs = ["POSTGRES_DB", "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_HOST", "POSTGRES_PORT"]
+    missing = [var for var in required_pg_envs if not os.getenv(var)]
+    if missing:
+        raise RuntimeError(
+            f"USE_POSTGRES is true but required database environment variables are missing: {', '.join(missing)}"
+        )
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -111,6 +127,12 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
 }
+
+CORS_ALLOWED_ORIGINS = _split_env_list(
+    "DJANGO_CORS_ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:9000,http://fastapi:9000",
+)
+CORS_ALLOW_CREDENTIALS = True
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
