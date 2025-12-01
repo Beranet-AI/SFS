@@ -11,7 +11,6 @@ class Settings(BaseSettings):
         env_file=".env.docker",
         env_file_encoding="utf-8",
         extra="ignore",
-        case_sensitive=False,
     )
 
     django_api_base_url: str  # مثلا: http://django:8000/api/v1
