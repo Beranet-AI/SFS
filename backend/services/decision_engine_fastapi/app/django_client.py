@@ -37,6 +37,7 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("sensor_id is required to post a sensor reading to Django")
 
     url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/sensor-readings/"
+    
     logger.info("Posting reading to Django: %s", url)
 
     headers = {
