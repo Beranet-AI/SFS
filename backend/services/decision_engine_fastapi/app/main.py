@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from .django_client import post_sensor_reading
+from .django_client import post_sensor_reading, sensor_exists
 
 
 app = FastAPI(title="SmartFarm Decision Engine")
@@ -44,7 +44,14 @@ async def ingest_reading(reading: SensorReadingIn):
     }
 
     try:
+        if not sensor_exists(reading.sensor_id):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Sensor with id={reading.sensor_id} does not exist in Django.",
+            )
         django_response = post_sensor_reading(payload)
+    except HTTPException:
+        raise
     except Exception as exc:
         # هر خطایی در تماس با Django اینجا هندل می‌شود
         raise HTTPException(
