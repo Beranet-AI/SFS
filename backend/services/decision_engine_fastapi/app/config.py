@@ -7,8 +7,8 @@ from pydantic_settings import BaseSettings
 logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
-    django_api_base_url: str
-    django_service_token: str
+    DJANGO_API_BASE_URL: str = "http://smartfarm_django:8000/api/v1"
+    DJANGO_SERVICE_TOKEN: str = "super-secret-token"
 
     class Config:
         env_file = ".env.docker"

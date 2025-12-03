@@ -2,7 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
+from api.permissions import IsAuthenticatedOrService
 from .models import SensorReading
 from .serializers import SensorReadingSerializer
 
@@ -16,7 +17,7 @@ from devices.models import SensorType
 class SensorReadingViewSet(viewsets.ModelViewSet):
     queryset = SensorReading.objects.select_related("sensor", "sensor__device").all()
     serializer_class = SensorReadingSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrService]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -28,12 +29,11 @@ class SensorReadingViewSet(viewsets.ModelViewSet):
 class LatestReadingsView(APIView):
     """
     API برمی‌گرداند آخرین ریدینگ هر SensorType موردنیاز.
-
     اگر پارامتر query با نام ``sensor_types`` داده شود (CSV)، همان کدها بررسی می‌شوند،
     در غیر این صورت پیش‌فرض temperature و ammonia است.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrService]
 
     def get(self, request, format=None):
         requested_types = request.query_params.get(
@@ -59,6 +59,7 @@ class LatestReadingsView(APIView):
                 result[code] = SensorReadingSerializer(latest_reading).data
 
         return Response(result)
+
 
 
 
