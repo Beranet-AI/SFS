@@ -17,7 +17,7 @@ def _split_env_list(var_name: str, default: str):
 
 ALLOWED_HOSTS = _split_env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,django,fastapi",
+    "localhost,127.0.0.1,django,fastapi,smartfarm-django",
 )
 
 INSTALLED_APPS = [
