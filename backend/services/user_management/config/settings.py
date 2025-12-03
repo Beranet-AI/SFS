@@ -14,7 +14,7 @@ def _split_env_list(var_name: str, default: str):
 
 ALLOWED_HOSTS = _split_env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,django,fastapi,smartfarm_django,smartfarm_django:8000",
+    "localhost,127.0.0.1,django,fastapi,smartfarm-django,smartfarm-django:8000",
 )
 
 # در حالت توسعه، همه دامنه‌ها مجازند (برای تست)
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'config.middleware.ServiceTokenAuthMiddleware',
     'config.middleware.AllowAllHostsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'config.middleware.ServiceTokenAuthMiddleware',

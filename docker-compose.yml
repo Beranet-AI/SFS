@@ -21,7 +21,7 @@ services:
     build:
       context: ./backend/services/user_management
       dockerfile: Dockerfile
-    container_name: smartfarm_django
+    container_name: smartfarm-django
     restart: unless-stopped
     env_file:
       - ./backend/services/user_management/.env.docker

@@ -7,7 +7,7 @@ from pydantic_settings import BaseSettings
 logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
-    DJANGO_API_BASE_URL: str = "http://smartfarm_django:8000/api/v1"
+    DJANGO_API_BASE_URL: str = "http://django:8000/api/v1"
     DJANGO_SERVICE_TOKEN: str = "super-secret-token"
     DJANGO_AUTH_USERNAME: str = "fastapi_service"
 
