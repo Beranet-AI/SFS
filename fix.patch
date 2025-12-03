@@ -1,0 +1,394 @@
+diff --git a/backend/services/decision_engine_fastapi/.env.docker b/backend/services/decision_engine_fastapi/.env.docker
+index 9aa1f4e5971acc600e6e66c0d2375f56f195266f..1ea73ca209005c7dedbb00e644755810c90f3161 100644
+--- a/backend/services/decision_engine_fastapi/.env.docker
++++ b/backend/services/decision_engine_fastapi/.env.docker
+@@ -1,2 +1,2 @@
+-django_api_base_url=http://smartfarm_django:8000/api/v1
++django_api_base_url=http://django:8000/api/v1
+ django_service_token=super-secret-token
+diff --git a/backend/services/decision_engine_fastapi/app/config.py b/backend/services/decision_engine_fastapi/app/config.py
+index 24769b1fbfb240027ac600050e5cbc5c2ed6a52f..1c1402f6e2d5ddb08f93137fb4b08f2d95e20dcc 100644
+--- a/backend/services/decision_engine_fastapi/app/config.py
++++ b/backend/services/decision_engine_fastapi/app/config.py
+@@ -1,10 +1,23 @@
++import logging
++from pathlib import Path
++
+ from pydantic_settings import BaseSettings
+ 
++
++logger = logging.getLogger(__name__)
++
+ class Settings(BaseSettings):
+     django_api_base_url: str
+     django_service_token: str
+ 
+     class Config:
+         env_file = ".env.docker"
+ 
+ settings = Settings()
++_env_file_path = Path(Settings.Config.env_file)
++logger.info(
++    "Loaded FastAPI settings from env_file=%s (exists=%s) with DJANGO_API_BASE_URL=%s",
++    _env_file_path.resolve(),
++    _env_file_path.exists(),
++    settings.django_api_base_url,
++)
+diff --git a/backend/services/decision_engine_fastapi/app/django_client.py b/backend/services/decision_engine_fastapi/app/django_client.py
+index 61daaf1841780baad61054f23c7725d8af5725b3..6b9c590df4d12a8c2c2c07c6a97444d967498b7f 100644
+--- a/backend/services/decision_engine_fastapi/app/django_client.py
++++ b/backend/services/decision_engine_fastapi/app/django_client.py
+@@ -16,47 +16,78 @@ retry_strategy = Retry(
+     backoff_factor=1,
+     status_forcelist=(502, 503, 504),
+     allowed_methods=frozenset(["GET", "POST"]),
+ )
+ adapter = HTTPAdapter(max_retries=retry_strategy)
+ session.mount("http://", adapter)
+ session.mount("https://", adapter)
+ 
+ 
+ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
+     """
+     ارسال یک SensorReading به Django
+     reading باید شبیه همین باشد:
+     {
+         "sensor_id": 1,
+         "value": 25.7,
+         "quality": "good",
+         "raw_payload": {...}
+     }
+     """
+     if "sensor_id" not in reading or not reading.get("sensor_id"):
+         raise ValueError("sensor_id is required to post a sensor reading to Django")
+ 
+     url = f"{settings.django_api_base_url.rstrip('/')}/sensor-readings/"
+     logger.info("Posting reading to Django: %s", url)
++    logger.info("Outgoing reading payload: %s", reading)
+ 
+-    headers = {
+-        "Authorization": f"Token {settings.django_service_token}",
+-        "Content-Type": "application/json",
+-    }
++    headers = _auth_headers(include_json=True)
++    logger.debug(
++        "Using Django request headers: %s",
++        {"Authorization": "Token ***", "Content-Type": headers.get("Content-Type")},
++    )
+ 
+     resp = session.post(
+         url,
+         json=reading,
+         headers=headers,
+         timeout=10,
+     )
+ 
+     if resp.status_code not in (200, 201):
+         logger.error(
+             "Error posting to Django endpoint=sensor-readings/ status=%s body=%s",
+             resp.status_code,
+             resp.text,
+         )
+         resp.raise_for_status()
+ 
+     return resp.json()
++
++
++def _auth_headers(include_json: bool = False) -> Dict[str, str]:
++    headers = {
++        "Authorization": f"Token {settings.django_service_token}",
++    }
++    if include_json:
++        headers["Content-Type"] = "application/json"
++    return headers
++
++
++def sensor_exists(sensor_id: int) -> bool:
++    """Check whether a sensor exists before attempting to post readings."""
++    url = f"{settings.django_api_base_url.rstrip('/')}/sensors/{sensor_id}/"
++    resp = session.get(url, headers=_auth_headers(), timeout=5)
++    if resp.status_code == 404:
++        logger.error("Sensor %s not found in Django (url=%s)", sensor_id, url)
++        return False
++    try:
++        resp.raise_for_status()
++    except Exception:
++        logger.error(
++            "Error checking sensor existence id=%s status=%s body=%s",
++            sensor_id,
++            resp.status_code,
++            resp.text,
++        )
++        raise
++    return True
+diff --git a/backend/services/decision_engine_fastapi/app/main.py b/backend/services/decision_engine_fastapi/app/main.py
+index 566bce368fbb41ab117e73d87b66a0a7405cafe5..0f71fa7f2bd140b74f1aece36354d36d45cc7fb3 100644
+--- a/backend/services/decision_engine_fastapi/app/main.py
++++ b/backend/services/decision_engine_fastapi/app/main.py
+@@ -1,59 +1,66 @@
+ # app/main.py
+ 
+ from __future__ import annotations
+ 
+ from typing import Optional, Dict, Any
+ 
+ from fastapi import FastAPI, HTTPException
+ from pydantic import BaseModel
+ 
+-from .django_client import post_sensor_reading
++from .django_client import post_sensor_reading, sensor_exists
+ 
+ 
+ app = FastAPI(title="SmartFarm Decision Engine")
+ 
+ 
+ class SensorReadingIn(BaseModel):
+     sensor_id: int
+     value: float
+     quality: str = "good"
+     raw_payload: Optional[Dict[str, Any]] = None
+ 
+ 
+ @app.post("/ingest-reading")
+ async def ingest_reading(reading: SensorReadingIn):
+     """
+     این endpoint توسط LabVIEW صدا زده می‌شود.
+     JSON ورودی مثل نمونهٔ زیر است:
+ 
+     {
+       "sensor_id": 1,
+       "value": 22.85,
+       "quality": "good",
+       "raw_payload": {"source": "labview"}
+     }
+     """
+ 
+     # نگاشت به فرمت موردنیاز Django (SensorReadingSerializer)
+     payload = {
+         "sensor_id": reading.sensor_id,            # در Django فیلد اسمش sensor است
+         "value": reading.value,
+         "quality": reading.quality,
+         "raw_payload": reading.raw_payload or {},
+         # ts را می‌گذاریم خود Django/Serializer مقداردهی کند (auto_now_add یا default)
+     }
+ 
+     try:
++        if not sensor_exists(reading.sensor_id):
++            raise HTTPException(
++                status_code=400,
++                detail=f"Sensor with id={reading.sensor_id} does not exist in Django.",
++            )
+         django_response = post_sensor_reading(payload)
++    except HTTPException:
++        raise
+     except Exception as exc:
+         # هر خطایی در تماس با Django اینجا هندل می‌شود
+         raise HTTPException(
+             status_code=400,
+             detail=f"Error posting reading to Django: {exc}",
+         )
+ 
+     return {
+         "reading_stored": True,
+         "django_response": django_response,
+     }
+ 
+diff --git a/backend/services/user_management/.env.docker b/backend/services/user_management/.env.docker
+index 827b14f5c90b504974795863465164a939c08919..fa8b8845037d9db00fe9a7a558486f79dc4f712d 100644
+--- a/backend/services/user_management/.env.docker
++++ b/backend/services/user_management/.env.docker
+@@ -1,19 +1,19 @@
+ # Django service configuration for docker-compose
+ USE_POSTGRES=true
+ POSTGRES_DB=smartfarm
+ POSTGRES_USER=smartfarm
+ POSTGRES_PASSWORD=smartfarm_password
+ POSTGRES_HOST=db
+ POSTGRES_PORT=5432
+ 
+ DJANGO_SECRET_KEY=dev-secret-key-change-me
+ DJANGO_DEBUG=false
+-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,django,fastapi
++DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,django,fastapi,smartfarm-django
+ DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:9000,http://fastapi:9000
+ 
+ # Service account for FastAPI
+ DJANGO_AUTH_USERNAME=fastapi_service
+ DJANGO_AUTH_PASSWORD=fastapi_service_password
+ DJANGO_AUTH_EMAIL=fastapi_service@local
+ 
+ SERVICE_AUTH_TOKEN=super-secret-token
+diff --git a/backend/services/user_management/api/middleware.py b/backend/services/user_management/api/middleware.py
+index b1c8bc45e5024ae5915dc39642c131106e0d5ec7..38b43e4d91ce7e533a501b4a819743d2ef6a3a69 100644
+--- a/backend/services/user_management/api/middleware.py
++++ b/backend/services/user_management/api/middleware.py
+@@ -1,18 +1,38 @@
+-from django.http import JsonResponse
++import os
++import logging
++
+ from django.conf import settings
++from django.contrib.auth import get_user_model
++from django.http import JsonResponse
++
++logger = logging.getLogger(__name__)
+ 
+ class ServiceTokenAuthMiddleware:
+     """
+     احراز هویت بر اساس توکن ثابت بین سرویس‌ها (مثلاً FastAPI → Django).
+     """
+     def __init__(self, get_response):
+         self.get_response = get_response
+         self.expected_token = getattr(settings, "SERVICE_AUTH_TOKEN", None)
++        self.service_username = os.getenv("DJANGO_AUTH_USERNAME")
++        self.user_model = get_user_model()
+ 
+     def __call__(self, request):
+         auth_header = request.headers.get("Authorization", "")
+         token = auth_header.replace("Token ", "")
+         if request.path.startswith("/api/v1/") and self.expected_token:
+             if token != self.expected_token:
+                 return JsonResponse({"detail": "Invalid or missing service token."}, status=401)
++            if not self.service_username:
++                return JsonResponse({"detail": "Service user not configured."}, status=401)
++
++            try:
++                request.user = self.user_model.objects.get(username=self.service_username)
++                request._force_auth_user = request.user
++            except self.user_model.DoesNotExist:
++                logger.error(
++                    "Service token validated but service user '%s' is missing. Run manage.py ensure_service_user.",
++                    self.service_username,
++                )
++                return JsonResponse({"detail": "Service user missing."}, status=401)
+         return self.get_response(request)
+diff --git a/backend/services/user_management/config/settings.py b/backend/services/user_management/config/settings.py
+index 522ebf5e6c7a45d076e26253c1af143b8101feb3..cd6d649ee25251840ff170fab6cc5f0ec72b1239 100644
+--- a/backend/services/user_management/config/settings.py
++++ b/backend/services/user_management/config/settings.py
+@@ -1,45 +1,45 @@
+ import os
+ from datetime import timedelta
+ from pathlib import Path
+ 
+ 
+ BASE_DIR = Path(__file__).resolve().parent.parent
+ 
+ # --- تنظیمات عمومی با ENV (برای dev و docker) ---
+ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
+ 
+ DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
+ 
+ 
+ def _split_env_list(var_name: str, default: str):
+     return [host.strip() for host in os.getenv(var_name, default).split(",") if host.strip()]
+ 
+ 
+ ALLOWED_HOSTS = _split_env_list(
+     "DJANGO_ALLOWED_HOSTS",
+-    "localhost,127.0.0.1,django,fastapi",
++    "localhost,127.0.0.1,django,fastapi,smartfarm-django",
+ )
+ 
+ INSTALLED_APPS = [
+     "django.contrib.admin",
+     "django.contrib.auth",
+     "django.contrib.contenttypes",
+     "django.contrib.sessions",
+     "django.contrib.messages",
+     "django.contrib.staticfiles",
+     "rest_framework",
+     "corsheaders",
+     "api",
+     "farm",
+     "devices",
+     "telemetry",
+     "livestock",
+     "alerts",
+ ]
+ 
+ MIDDLEWARE = [
+     "django.middleware.security.SecurityMiddleware",
+     "api.middleware.ServiceTokenAuthMiddleware",
+     "corsheaders.middleware.CorsMiddleware",
+     "django.contrib.sessions.middleware.SessionMiddleware",
+     "django.middleware.common.CommonMiddleware",
+diff --git a/docker-compose.yml b/docker-compose.yml
+index cdf0278ae0061bb538cc20f1e54af4ca8ef21354..725531e3c3a58aa6a0157f7c698056202df633dd 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -1,71 +1,71 @@
+ version: "3.9"
+ 
+ services:
+ 
+   db:
+     image: postgres:15
+     container_name: smartfarm_db
+     restart: unless-stopped
+     environment:
+       POSTGRES_DB: ${POSTGRES_DB:-smartfarm}
+       POSTGRES_USER: ${POSTGRES_USER:-smartfarm}
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartfarm_password}
+     volumes:
+       - postgres_data:/var/lib/postgresql/data
+     ports:
+       - "5432:5432"
+     networks:
+       - smartnet
+ 
+   django:
+     build:
+       context: ./backend/services/user_management
+       dockerfile: Dockerfile
+-    container_name: smartfarm_django
++    container_name: smartfarm-django
+     restart: unless-stopped
+     env_file:
+       - ./backend/services/user_management/.env.docker
+     environment:
+       DJANGO_AUTH_USERNAME: ${DJANGO_AUTH_USERNAME:-fastapi_service}
+       DJANGO_AUTH_PASSWORD: ${DJANGO_AUTH_PASSWORD:-fastapi_service_password}
+       DJANGO_AUTH_EMAIL: ${DJANGO_AUTH_EMAIL:-fastapi_service@local}
+       SERVICE_AUTH_TOKEN: ${SERVICE_AUTH_TOKEN:-super-secret-token}
+     depends_on:
+       - db
+     ports:
+       - "8000:8000"
+     networks:
+       - smartnet
+     command: >
+       sh -c "python wait_for_db.py &&
+              python manage.py migrate --noinput &&
+              python manage.py ensure_service_user &&
+              python manage.py runserver 0.0.0.0:8000"
+ 
+   fastapi:
+     build:
+       context: ./backend/services/decision_engine_fastapi
+       dockerfile: Dockerfile
+     container_name: smartfarm_fastapi
+     restart: unless-stopped
+     env_file:
+       - ./backend/services/decision_engine_fastapi/.env.docker
+     environment:
+-      DJANGO_API_BASE_URL: ${DJANGO_API_BASE_URL:-http://smartfarm_django:8000/api/v1}
+-      DJANGO_TOKEN_URL: ${DJANGO_TOKEN_URL:-http://smartfarm_django:8000/api/v1/auth/token/}
++      DJANGO_API_BASE_URL: ${DJANGO_API_BASE_URL:-http://django:8000/api/v1}
++      DJANGO_TOKEN_URL: ${DJANGO_TOKEN_URL:-http://django:8000/api/v1/auth/token/}
+       DJANGO_AUTH_USERNAME: ${DJANGO_AUTH_USERNAME:-fastapi_service}
+       DJANGO_AUTH_PASSWORD: ${DJANGO_AUTH_PASSWORD:-fastapi_service_password}
+     depends_on:
+       - django
+     ports:
+       - "9000:9000"
+     networks:
+       - smartnet
+     command: >
+       uvicorn app.main:app --host 0.0.0.0 --port 9000 --reload
+ 
+ volumes:
+   postgres_data:
+ 
+ networks:
+   smartnet:
