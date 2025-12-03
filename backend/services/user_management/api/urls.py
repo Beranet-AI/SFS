@@ -2,8 +2,6 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
-
 from farm.views import FarmViewSet, BarnViewSet, ZoneViewSet
 from devices.views import DeviceViewSet, SensorTypeViewSet, SensorViewSet
 from telemetry.views import SensorReadingViewSet, LatestReadingsView

@@ -37,7 +37,13 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
         raise ValueError("sensor_id is required to post a sensor reading to Django")
 
     url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/sensor-readings/"
-    
+    #sensor_id = reading["sensor_id"]
+    #url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/sensors/{sensor_id}/"
+
+    # همین‌جا print کن:
+    print("BASE URL =", settings.DJANGO_API_BASE_URL)
+    print("Sensor URL =", url)
+
     logger.info("Posting reading to Django: %s", url)
     logger.info("Outgoing reading payload: %s", reading)
 
@@ -67,7 +73,8 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
 
 def _auth_headers(include_json: bool = False) -> Dict[str, str]:
     headers = {
-        "Authorization": f"Token {settings.django_service_token}",
+        "Authorization": f"Token {settings.DJANGO_SERVICE_TOKEN}",
+        "Accept": "application/json",    #
     }
     if include_json:
         headers["Content-Type"] = "application/json"
@@ -76,7 +83,7 @@ def _auth_headers(include_json: bool = False) -> Dict[str, str]:
 
 def sensor_exists(sensor_id: int) -> bool:
     """Check whether a sensor exists before attempting to post readings."""
-    url = f"{settings.django_api_base_url.rstrip('/')}/sensors/{sensor_id}/"
+    url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/sensors/{sensor_id}/"
     resp = session.get(url, headers=_auth_headers(), timeout=5)
     if resp.status_code == 404:
         logger.error("Sensor %s not found in Django (url=%s)", sensor_id, url)
