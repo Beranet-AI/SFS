@@ -43,7 +43,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'config.middleware.AllowAllHostsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'config.middleware.ServiceTokenMiddleware',
+    'config.middleware.ServiceTokenAuthMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
