@@ -38,11 +38,13 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
 
     url = f"{settings.django_api_base_url.rstrip('/')}/sensor-readings/"
     logger.info("Posting reading to Django: %s", url)
+    logger.info("Outgoing reading payload: %s", reading)
 
-    headers = {
-        "Authorization": f"Token {settings.django_service_token}",
-        "Content-Type": "application/json",
-    }
+    headers = _auth_headers(include_json=True)
+    logger.debug(
+        "Using Django request headers: %s",
+        {"Authorization": "Token ***", "Content-Type": headers.get("Content-Type")},
+    )
 
     resp = session.post(
         url,
@@ -60,3 +62,32 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
         resp.raise_for_status()
 
     return resp.json()
+
+
+def _auth_headers(include_json: bool = False) -> Dict[str, str]:
+    headers = {
+        "Authorization": f"Token {settings.django_service_token}",
+    }
+    if include_json:
+        headers["Content-Type"] = "application/json"
+    return headers
+
+
+def sensor_exists(sensor_id: int) -> bool:
+    """Check whether a sensor exists before attempting to post readings."""
+    url = f"{settings.django_api_base_url.rstrip('/')}/sensors/{sensor_id}/"
+    resp = session.get(url, headers=_auth_headers(), timeout=5)
+    if resp.status_code == 404:
+        logger.error("Sensor %s not found in Django (url=%s)", sensor_id, url)
+        return False
+    try:
+        resp.raise_for_status()
+    except Exception:
+        logger.error(
+            "Error checking sensor existence id=%s status=%s body=%s",
+            sensor_id,
+            resp.status_code,
+            resp.text,
+        )
+        raise
+    return True
