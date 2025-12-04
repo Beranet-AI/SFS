@@ -10,7 +10,7 @@ class ServiceTokenAuthMiddleware(MiddlewareMixin):
     """
     def process_request(self, request):
         # اگر توکنی تعریف نشده باشد، middleware کاری نمی‌کند
-        expected_token = getattr(settings, 'SERVICE_TOKEN', None)
+        expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
         if not expected_token:
             return None
 
