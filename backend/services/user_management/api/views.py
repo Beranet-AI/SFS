@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from devices.models import SensorReading  # اگر چنین مدلی وجود دارد
-from devices.serializers import SensorReadingSerializer  # اگر serializer تعریف شده
+from telemetry.models import SensorReading
+from telemetry.serializers import SensorReadingSerializer
 from django.http import JsonResponse, Http404
 from devices.models import Sensor
 

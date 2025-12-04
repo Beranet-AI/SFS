@@ -4,23 +4,23 @@ from django.http import JsonResponse
 
 
 class ServiceTokenAuthMiddleware(MiddlewareMixin):
-    """
-    Middleware برای بررسی توکن سرویس بین FastAPI و Django.
-    این middleware فقط روی مسیرهایی که نیاز به احراز هویت بین‌سرویسی دارند اعمال می‌شود.
-    """
     def process_request(self, request):
-        # اگر توکنی تعریف نشده باشد، middleware کاری نمی‌کند
+        # مسیرهایی که نیاز به توکن ندارند
+        public_paths = ['/admin/', '/static/', '/media/', '/favicon.ico']
+        if any(request.path.startswith(p) for p in public_paths):
+            return None
+
         expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
         if not expected_token:
             return None
 
-        # گرفتن توکن از header
         token = request.headers.get('Authorization', '').replace('Token ', '')
 
         if token != expected_token:
             return JsonResponse({'detail': 'Invalid service token'}, status=403)
 
         return None
+
 
 
 class AllowAllHostsMiddleware(MiddlewareMixin):
