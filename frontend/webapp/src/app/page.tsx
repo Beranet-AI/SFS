@@ -1,4 +1,5 @@
-// app/page.tsx
+'use client';
+
 import React from "react";
 
 type SingleReading = {
@@ -17,8 +18,8 @@ type LatestReadingsResponse = {
 };
 
 async function getLatestReadings(): Promise<LatestReadingsResponse> {
-  const baseUrl = process.env.DJANGO_API_BASE_URL;
-  const token = process.env.DJANGO_API_TOKEN;
+  const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL;
+  const token = process.env.NEXT_PUBLIC_DJANGO_API_TOKEN;
 
   if (!baseUrl || !token) {
     throw new Error(
@@ -27,18 +28,10 @@ async function getLatestReadings(): Promise<LatestReadingsResponse> {
   }
 
   const res = await fetch(`${baseUrl}/dashboard/latest-readings/`, {
-    
     headers: {
-      Authorization: `Token ${token}`,  // به جای Bearer
+      Authorization: `Token ${token}`,
       Accept: "application/json",
     },
-
-
-    //headers: {
-    //  Authorization: `Bearer ${token}`,
-    //  Accept: "application/json",
-    //},
-    // برای این‌که همیشه آخرین مقدار را بگیرد:
     cache: "no-store",
   });
 
@@ -50,7 +43,7 @@ async function getLatestReadings(): Promise<LatestReadingsResponse> {
     );
   }
 
-  return (await res.json()) as LatestReadingsResponse;
+  return await res.json();
 }
 
 export default async function HomePage() {
