@@ -4,15 +4,19 @@ from django.http import JsonResponse
 
 
 class ServiceTokenAuthMiddleware(MiddlewareMixin):
+
     def process_request(self, request):
         # مسیرهایی که نیاز به توکن ندارند
         public_paths = ['/admin/', '/static/', '/media/', '/favicon.ico']
+
         if any(request.path.startswith(p) for p in public_paths):
             return None
 
         expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
         if not expected_token:
             return None
+
+        print("Authorization header received:", request.headers.get("Authorization"))    #تست
 
         token = request.headers.get('Authorization', '').replace('Token ', '')
 

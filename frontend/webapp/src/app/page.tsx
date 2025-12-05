@@ -27,10 +27,17 @@ async function getLatestReadings(): Promise<LatestReadingsResponse> {
   }
 
   const res = await fetch(`${baseUrl}/dashboard/latest-readings/`, {
+    
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Token ${token}`,  // به جای Bearer
       Accept: "application/json",
     },
+
+
+    //headers: {
+    //  Authorization: `Bearer ${token}`,
+    //  Accept: "application/json",
+    //},
     // برای این‌که همیشه آخرین مقدار را بگیرد:
     cache: "no-store",
   });
