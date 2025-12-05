@@ -49,3 +49,21 @@ class LatestReadingsView(APIView):
                 result[code] = SensorReadingSerializer(latest_reading).data
 
         return Response(result)
+
+
+from rest_framework import viewsets
+from api.permissions import IsAuthenticatedOrService
+from .models import SensorReading
+from .serializers import SensorReadingSerializer
+
+class SensorReadingViewSet(viewsets.ModelViewSet):
+    queryset = SensorReading.objects.select_related("sensor", "sensor__device").all()
+    serializer_class = SensorReadingSerializer
+    permission_classes = [IsAuthenticatedOrService]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        sensor_id = self.request.query_params.get("sensor_id")
+        if sensor_id:
+            qs = qs.filter(sensor_id=sensor_id)
+        return qs
