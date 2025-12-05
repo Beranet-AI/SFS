@@ -1,13 +1,14 @@
+from typing import Any, Dict
+
 from rest_framework import serializers
 from devices.models import Sensor
 from telemetry.models import SensorReading
 from django.utils import timezone
 
-
 class SensorReadingSerializer(serializers.ModelSerializer):
     # sensor_id را به فیلد FK مدل sensor نگاشت می‌کنیم
     sensor_id = serializers.PrimaryKeyRelatedField(
-        source="sensor",              # توی model فیلد sensor پر می‌شود
+        source="sensor",              # توی مدل، فیلد sensor پر می‌شود
         queryset=Sensor.objects.all(),
         write_only=True
     )
@@ -29,20 +30,8 @@ class SensorReadingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["sensor", "created_at"]
 
-    def create(self, validated_data):
-        # اگر ts در Request نبود، الان را بگذار
+    def create(self, validated_data: Dict[str, Any]) -> SensorReading:
+        # اگر ts در Request نبود، الان (زمان حال) را قرار می‌دهیم
         if "ts" not in validated_data:
             validated_data["ts"] = timezone.now()
         return super().create(validated_data)
-
-
-#نکات مهم:
-
-#خط ts = serializers.DateTimeField(required=False) باعث می‌شه DRF دیگه نگه «ts اجباریه».
-
-#در create اگر ts نیومده بود، خودمون timezone.now() می‌ذاریم.
-
-#این کار بدون هیچ migration انجام می‌شه، فقط در لایه Serializer.
-
-
-

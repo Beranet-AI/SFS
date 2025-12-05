@@ -1,27 +1,17 @@
-# api/permissions.py
-
-#from rest_framework.permissions import BasePermission
-
-#class IsAuthenticatedOrService(BasePermission):
-#    """
-#    اجازه دسترسی به کاربران لاگین‌شده یا درخواست‌هایی که توسط سرویس تأیید شده‌اند (service_authenticated).
-#    """
-#    def has_permission(self, request, view):
-#        return (
-#            bool(request.user and request.user.is_authenticated)
-#            or getattr(request, "service_authenticated", False)
-#       )
-
+from typing import Any
 
 from rest_framework.permissions import BasePermission
+from rest_framework.request import Request
 from django.conf import settings
 
 class IsAuthenticatedOrService(BasePermission):
-    def has_permission(self, request, view):
+    """
+    اجازه دسترسی به کاربران احراز هویت‌شده یا درخواست‌های سرویس با توکن معتبر.
+    """
+    def has_permission(self, request: Request, view: Any) -> bool:
         expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
         auth_header = request.headers.get('Authorization', '')
         return (
-            request.user and request.user.is_authenticated
-        ) or (
-            expected_token and auth_header == f"Token {expected_token}"
+            bool(request.user and request.user.is_authenticated)
+            or (expected_token and auth_header == f"Token {expected_token}")
         )
