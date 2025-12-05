@@ -1,60 +1,59 @@
-'use client';
+'use client'
 
-import React from "react";
+import React, { useEffect, useState } from 'react'
 
 type SingleReading = {
-  id: number;
-  sensor: number;
-  ts: string;
-  value: number;
-  raw_payload: Record<string, unknown> | null;
-  quality: string;
-  created_at: string;
-};
-
-type LatestReadingsResponse = {
-  temperature: SingleReading | null;
-  ammonia: SingleReading | null;
-};
-
-async function getLatestReadings(): Promise<LatestReadingsResponse> {
-  const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL;
-  const token = process.env.NEXT_PUBLIC_DJANGO_API_TOKEN;
-
-  if (!baseUrl || !token) {
-    throw new Error(
-      "DJANGO_API_BASE_URL یا DJANGO_API_TOKEN در .env.local تنظیم نشده است."
-    );
-  }
-
-  const res = await fetch(`${baseUrl}/dashboard/latest-readings/`, {
-    headers: {
-      Authorization: `Token ${token}`,
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error("Dashboard API error:", res.status, text);
-    throw new Error(
-      `Dashboard API error: ${res.status} - ${text.substring(0, 200)}`
-    );
-  }
-
-  return await res.json();
+  id: number
+  sensor: number
+  ts: string
+  value: number
+  raw_payload: Record<string, unknown> | null
+  quality: string
+  created_at: string
 }
 
-export default async function HomePage() {
-  let data: LatestReadingsResponse | null = null;
-  let errorMessage: string | null = null;
+type LatestReadingsResponse = {
+  temperature: SingleReading | null
+  ammonia: SingleReading | null
+}
 
-  try {
-    data = await getLatestReadings();
-  } catch (err: any) {
-    errorMessage = err?.message ?? "خطای نامشخص در دریافت داده‌ها";
-  }
+export default function HomePage() {
+  const [data, setData] = useState<LatestReadingsResponse | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchReadings = async () => {
+      const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
+      const token = process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
+
+      if (!baseUrl || !token) {
+        setErrorMessage('NEXT_PUBLIC_DJANGO_API_BASE_URL یا NEXT_PUBLIC_DJANGO_API_TOKEN در .env.local تنظیم نشده است.')
+        return
+      }
+
+      try {
+        const res = await fetch(`${baseUrl}/dashboard/latest-readings/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            Accept: 'application/json',
+          },
+          cache: 'no-store',
+        })
+
+        if (!res.ok) {
+          const text = await res.text()
+          setErrorMessage(`Dashboard API error: ${res.status} - ${text.substring(0, 200)}`)
+        } else {
+          const result = (await res.json()) as LatestReadingsResponse
+          setData(result)
+        }
+      } catch (err: any) {
+        setErrorMessage(err?.message ?? 'خطای نامشخص در دریافت داده‌ها')
+      }
+    }
+
+    fetchReadings()
+  }, [])
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6">
@@ -84,12 +83,10 @@ export default async function HomePage() {
                     <span className="text-base text-slate-400">°C</span>
                   </p>
                   <p className="mt-2 text-xs text-slate-400">
-                    Sensor ID: {data.temperature.sensor} | کیفیت:{" "}
-                    {data.temperature.quality}
+                    Sensor ID: {data.temperature.sensor} | کیفیت: {data.temperature.quality}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Last update:{" "}
-                    {new Date(data.temperature.ts).toLocaleString()}
+                    Last update: {new Date(data.temperature.ts).toLocaleString()}
                   </p>
                 </>
               ) : (
@@ -109,8 +106,7 @@ export default async function HomePage() {
                     <span className="text-base text-slate-400">ppm</span>
                   </p>
                   <p className="mt-2 text-xs text-slate-400">
-                    Sensor ID: {data.ammonia.sensor} | کیفیت:{" "}
-                    {data.ammonia.quality}
+                    Sensor ID: {data.ammonia.sensor} | کیفیت: {data.ammonia.quality}
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
                     Last update: {new Date(data.ammonia.ts).toLocaleString()}
@@ -126,10 +122,9 @@ export default async function HomePage() {
         )}
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          داده‌ها از Django API: /api/v1/dashboard/latest-readings/ خوانده
-          می‌شود.
+          داده‌ها از Django API: /api/v1/dashboard/latest-readings/ خوانده می‌شود.
         </p>
       </div>
     </main>
-  );
+  )
 }
