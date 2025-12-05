@@ -1,12 +1,10 @@
 # config/settings.py
-
 import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
-
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
 def _split_env_list(var_name: str, default: str):
@@ -17,7 +15,6 @@ ALLOWED_HOSTS = _split_env_list(
     "localhost,127.0.0.1,django,fastapi,smartfarm-django,smartfarm-django:8000",
 )
 
-# در حالت توسعه، همه دامنه‌ها مجازند (برای تست)
 if DEBUG:
     ALLOWED_HOSTS += ["*"]
 
@@ -41,17 +38,16 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'config.middleware.ServiceTokenAuthMiddleware',
-    'config.middleware.AllowAllHostsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'config.middleware.ServiceTokenAuthMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",  # ← باید بالاترین باشد
+    "config.middleware.ServiceTokenAuthMiddleware",
+    "config.middleware.AllowAllHostsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 TEMPLATES = [
@@ -71,7 +67,6 @@ TEMPLATES = [
 ]
 
 ROOT_URLCONF = "config.urls"
-
 WSGI_APPLICATION = "config.wsgi.application"
 
 USE_POSTGRES = os.getenv("USE_POSTGRES", "false").lower() == "true"
@@ -109,7 +104,6 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -132,6 +126,3 @@ DJANGO_SERVICE_TOKEN = os.getenv("DJANGO_SERVICE_TOKEN")
 
 if DEBUG:
     print("Effective ALLOWED_HOSTS =", ALLOWED_HOSTS)
-
-
-
