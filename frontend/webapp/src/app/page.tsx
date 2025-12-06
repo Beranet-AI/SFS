@@ -140,6 +140,164 @@ const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> =>
     headers: config.headers,
     cache: 'no-store',
   })
+  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
+    'dashboard/farm-hierarchy/',
+    hierarchyFetcher,
+    {
+      refreshInterval: 30000,
+    }
+  )
+
+  const farms = hierarchy?.farms ?? []
+  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
+  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (farms.length && !selectedFarmId) {
+      setSelectedFarmId(farms[0].id)
+    }
+  }, [farms, selectedFarmId])
+
+  const selectedFarm: FarmNode | null = React.useMemo(
+    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
+    [farms, selectedFarmId]
+  )
+
+  React.useEffect(() => {
+    if (selectedFarm?.barns?.length) {
+      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
+        setSelectedBarnId(selectedFarm.barns[0].id)
+      }
+    } else {
+      setSelectedBarnId(null)
+    }
+  }, [selectedBarnId, selectedFarm])
+
+  const selectedBarn = React.useMemo(
+    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
+    [selectedBarnId, selectedFarm]
+  )
+
+  const renderSensors = (sensors: FarmNode['sensors']) => {
+    if (!sensors?.length) {
+      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sensors.map((sensor) => (
+          <span
+            key={`sensor-${sensor.id}`}
+            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
+          >
+            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
+  }
+
+  return res.json()
+}
+
+export default function HomePage() {
+  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
+    'dashboard/farm-hierarchy/',
+    hierarchyFetcher,
+    {
+      refreshInterval: 30000,
+    }
+  )
+
+  const farms = hierarchy?.farms ?? []
+  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
+  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
+  const [selectedZoneId, setSelectedZoneId] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (farms.length && !selectedFarmId) {
+      setSelectedFarmId(farms[0].id)
+    }
+  }, [farms, selectedFarmId])
+
+  const selectedFarm: FarmNode | null = React.useMemo(
+    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
+    [farms, selectedFarmId]
+  )
+
+  React.useEffect(() => {
+    if (selectedFarm?.barns?.length) {
+      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
+        setSelectedBarnId(selectedFarm.barns[0].id)
+      }
+    } else {
+      setSelectedBarnId(null)
+    }
+  }, [selectedBarnId, selectedFarm])
+
+  const selectedBarn = React.useMemo(
+    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
+    [selectedBarnId, selectedFarm]
+  )
+
+  React.useEffect(() => {
+    if (selectedBarn?.zones?.length) {
+      if (!selectedZoneId || !selectedBarn.zones.some((zone) => zone.id === selectedZoneId)) {
+        setSelectedZoneId(selectedBarn.zones[0].id)
+      }
+    } else {
+      setSelectedZoneId(null)
+    }
+  }, [selectedBarn, selectedZoneId])
+
+  const selectedZone = React.useMemo(
+    () => selectedBarn?.zones.find((zone) => zone.id === selectedZoneId) ?? null,
+    [selectedBarn, selectedZoneId]
+  )
+
+  const selectedZoneSensorTypes = React.useMemo(() => {
+    if (!selectedZone?.sensors?.length) return []
+
+    const codes = selectedZone.sensors
+      .map((sensor) => sensor.sensor_type.code)
+      .filter(Boolean)
+
+    return Array.from(new Set(codes))
+  }, [selectedZone])
+
+  const { data, error } = useSWR(
+    selectedZoneSensorTypes.length
+      ? (['dashboard/latest-readings/', selectedZoneSensorTypes.join(',')] as LatestReadingsKey)
+      : null,
+    latestReadingsFetcher,
+    {
+      refreshInterval: 5000,
+    }
+  )
+
+  const renderSensors = (sensors: FarmNode['sensors']) => {
+    if (!sensors?.length) {
+      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sensors.map((sensor) => (
+          <span
+            key={`sensor-${sensor.id}`}
+            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
+          >
+            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
 
   if (!res.ok) {
     const text = await res.text()
