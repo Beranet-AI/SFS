@@ -1,11 +1,19 @@
 // src/app/api/readings/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const DJANGO_API_BASE_URL = process.env.DJANGO_API_BASE_URL;
-const DJANGO_API_TOKEN = process.env.DJANGO_API_TOKEN;
+const resolveBase = () =>
+  process.env.DJANGO_API_BASE_URL || process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL;
 
-export async function GET() {
-  if (!DJANGO_API_BASE_URL || !DJANGO_API_TOKEN) {
+const resolveToken = () =>
+  process.env.DJANGO_API_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN || process.env.NEXT_PUBLIC_FASTAPI_TOKEN;
+
+const ensureTrailingSlash = (base: string) => (base.endsWith("/") ? base : `${base}/`);
+
+export async function GET(request: NextRequest) {
+  const base = resolveBase();
+  const token = resolveToken();
+
+  if (!base || !token) {
     return NextResponse.json(
       { detail: "DJANGO_API_BASE_URL یا DJANGO_API_TOKEN تنظیم نشده است." },
       { status: 500 }
@@ -13,14 +21,20 @@ export async function GET() {
   }
 
   try {
-    // آدرس جنگو – اینجا فرض می‌کنیم env این شکلی ست شده:
-    // DJANGO_API_BASE_URL=http://127.0.0.1:8000/api/v1
-    const url = `${DJANGO_API_BASE_URL}/sensor-readings/`;
+    const searchParams = request.nextUrl.searchParams;
+    const sensorId = searchParams.get("sensor_id");
+    const limit = searchParams.get("limit") || "20";
 
-    const resp = await fetch(url, {
+    const url = new URL("sensor-readings/", ensureTrailingSlash(base));
+    if (sensorId) {
+      url.searchParams.set("sensor_id", sensorId);
+    }
+    url.searchParams.set("limit", limit);
+
+    const resp = await fetch(url.toString(), {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${DJANGO_API_TOKEN}`,
+        Authorization: `Token ${token}`,
         Accept: "application/json",
       },
     });
