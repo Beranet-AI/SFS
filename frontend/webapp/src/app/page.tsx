@@ -11,6 +11,7 @@ import { sensorMetaMap } from '../lib/sensorMeta'
 import type { FarmHierarchyResponse, FarmNode, SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
+type LatestReadingsKey = [path: string, sensorTypesOverride?: string | null]
 
 type ApiConfigOptions = {
   preferDjango?: boolean
@@ -104,13 +105,16 @@ const resolveSensorTypes = async (config: ApiConfig, configuredSensorTypes?: str
   return sensorTypesCache.value
 }
 
-const latestReadingsFetcher = async (path: string): Promise<LatestReadingsResponse> => {
+const latestReadingsFetcher = async (
+  [path, sensorTypesOverride]: LatestReadingsKey
+): Promise<LatestReadingsResponse> => {
   const config = buildApiConfig()
   const configuredSensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES
 
   const target = config.buildUrl(path)
 
-  const sensorTypes = await resolveSensorTypes(config, configuredSensorTypes)
+  const sensorTypes =
+    sensorTypesOverride || (await resolveSensorTypes(config, configuredSensorTypes))
 
   // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
   target.searchParams.set('sensor_types', sensorTypes)
@@ -135,19 +139,6 @@ const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> =>
   const res = await fetch(target.toString(), {
     headers: config.headers,
     cache: 'no-store',
-  })
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
-  }
-
-  return res.json()
-}
-
-export default function HomePage() {
-  const { data, error } = useSWR('dashboard/latest-readings/', latestReadingsFetcher, {
-    refreshInterval: 5000,
   })
   const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
     'dashboard/farm-hierarchy/',
@@ -185,6 +176,108 @@ export default function HomePage() {
   const selectedBarn = React.useMemo(
     () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
     [selectedBarnId, selectedFarm]
+  )
+
+  const renderSensors = (sensors: FarmNode['sensors']) => {
+    if (!sensors?.length) {
+      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sensors.map((sensor) => (
+          <span
+            key={`sensor-${sensor.id}`}
+            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
+          >
+            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
+  }
+
+  return res.json()
+}
+
+export default function HomePage() {
+  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
+    'dashboard/farm-hierarchy/',
+    hierarchyFetcher,
+    {
+      refreshInterval: 30000,
+    }
+  )
+
+  const farms = hierarchy?.farms ?? []
+  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
+  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
+  const [selectedZoneId, setSelectedZoneId] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (farms.length && !selectedFarmId) {
+      setSelectedFarmId(farms[0].id)
+    }
+  }, [farms, selectedFarmId])
+
+  const selectedFarm: FarmNode | null = React.useMemo(
+    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
+    [farms, selectedFarmId]
+  )
+
+  React.useEffect(() => {
+    if (selectedFarm?.barns?.length) {
+      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
+        setSelectedBarnId(selectedFarm.barns[0].id)
+      }
+    } else {
+      setSelectedBarnId(null)
+    }
+  }, [selectedBarnId, selectedFarm])
+
+  const selectedBarn = React.useMemo(
+    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
+    [selectedBarnId, selectedFarm]
+  )
+
+  React.useEffect(() => {
+    if (selectedBarn?.zones?.length) {
+      if (!selectedZoneId || !selectedBarn.zones.some((zone) => zone.id === selectedZoneId)) {
+        setSelectedZoneId(selectedBarn.zones[0].id)
+      }
+    } else {
+      setSelectedZoneId(null)
+    }
+  }, [selectedBarn, selectedZoneId])
+
+  const selectedZone = React.useMemo(
+    () => selectedBarn?.zones.find((zone) => zone.id === selectedZoneId) ?? null,
+    [selectedBarn, selectedZoneId]
+  )
+
+  const selectedZoneSensorTypes = React.useMemo(() => {
+    if (!selectedZone?.sensors?.length) return []
+
+    const codes = selectedZone.sensors
+      .map((sensor) => sensor.sensor_type.code)
+      .filter(Boolean)
+
+    return Array.from(new Set(codes))
+  }, [selectedZone])
+
+  const { data, error } = useSWR(
+    selectedZoneSensorTypes.length
+      ? (['dashboard/latest-readings/', selectedZoneSensorTypes.join(',')] as LatestReadingsKey)
+      : null,
+    latestReadingsFetcher,
+    {
+      refreshInterval: 5000,
+    }
   )
 
   const renderSensors = (sensors: FarmNode['sensors']) => {
@@ -245,6 +338,7 @@ export default function HomePage() {
                     onClick={() => {
                       setSelectedFarmId(farm.id)
                       setSelectedBarnId(null)
+                      setSelectedZoneId(null)
                     }}
                     className={`rounded-lg border px-4 py-3 text-left transition hover:border-slate-400/80 hover:shadow ${
                       selectedFarmId === farm.id ? 'border-emerald-400/80 bg-emerald-950/30' : 'border-slate-800 bg-slate-950/40'
@@ -282,7 +376,10 @@ export default function HomePage() {
                         <button
                           key={`barn-${barn.id}`}
                           type="button"
-                          onClick={() => setSelectedBarnId(barn.id)}
+                          onClick={() => {
+                            setSelectedBarnId(barn.id)
+                            setSelectedZoneId(null)
+                          }}
                           className={`rounded-lg border px-3 py-3 text-left transition hover:border-slate-400/80 hover:shadow ${
                             selectedBarnId === barn.id ? 'border-sky-400/80 bg-sky-950/40' : 'border-slate-800 bg-slate-900/40'
                           }`}
@@ -318,14 +415,23 @@ export default function HomePage() {
                       {selectedBarn.zones.length ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {selectedBarn.zones.map((zone) => (
-                            <div key={`zone-${zone.id}`} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                            <button
+                              key={`zone-${zone.id}`}
+                              type="button"
+                              onClick={() => setSelectedZoneId(zone.id)}
+                              className={`w-full rounded-lg border p-3 text-left transition hover:border-emerald-400/80 hover:shadow ${
+                                selectedZoneId === zone.id
+                                  ? 'border-emerald-400/80 bg-emerald-950/40'
+                                  : 'border-slate-800 bg-slate-950/60'
+                              }`}
+                            >
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-sm font-semibold">{zone.name}</p>
                                 <span className="text-xs text-slate-400">سنسورها: {zone.sensor_count}</span>
                               </div>
                               {zone.code && <p className="text-xs text-slate-500">کد: {zone.code}</p>}
                               {renderSensors(zone.sensors)}
-                            </div>
+                            </button>
                           ))}
                         </div>
                       ) : (
@@ -348,7 +454,19 @@ export default function HomePage() {
           </div>
         )}
 
-        {!error && data && (
+        {!selectedZone && !error && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-900/20 px-4 py-3 text-sm text-amber-100">
+            لطفاً یک زون را انتخاب کنید تا مقادیر سنسورها نمایش داده شود.
+          </div>
+        )}
+
+        {selectedZone && !selectedZoneSensorTypes.length && !error && (
+          <div className="rounded-lg border border-slate-700 bg-slate-900/50 px-4 py-3 text-sm text-slate-200">
+            برای زون انتخاب‌شده هنوز سنسوری ثبت نشده است.
+          </div>
+        )}
+
+        {!error && selectedZone && selectedZoneSensorTypes.length > 0 && data && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(data).map(([key, reading]) => {
               const meta = sensorMetaMap[key] || { name: key }
@@ -372,8 +490,9 @@ export default function HomePage() {
           واکشی می‌شود. اگر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را ست نکنید، فرانت‌اند ابتدا <code>sensor-types/</code> را می‌خواند و
           به صورت خودکار کد سنسورها را از Django استخراج می‌کند؛ در غیر این صورت مقدار متغیر را (مثلاً <code>temp_sensor,ammonia</code>)
           استفاده می‌کند. در صورت نیاز می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا
-          مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود. برای ساختار مزرعه نیز از
-          <code>dashboard/farm-hierarchy/</code> استفاده می‌شود و انتخاب مزرعه/بارن/زون در بالا مسیر نظارت را شفاف می‌کند.
+          مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود. اکنون کارت‌ها فقط پس از انتخاب
+          زون (و وجود سنسور در آن زون) نمایش داده می‌شوند. برای ساختار مزرعه نیز از <code>dashboard/farm-hierarchy/</code> استفاده
+          می‌شود و انتخاب مزرعه/بارن/زون در بالا مسیر نظارت را شفاف می‌کند.
         </p>
       </div>
     </main>
