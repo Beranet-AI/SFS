@@ -7,7 +7,7 @@ import useSWR from 'swr'
 import SensorCard from '../components/SensorCard'
 import { sensorMetaMap } from '../lib/sensorMeta'
 
-import type { FarmHierarchyResponse, FarmNode, SingleReading } from '../lib/types'
+import type { AlertLog, FarmHierarchyResponse, FarmNode, SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
 type LatestReadingsKey = [path: string, sensorTypesOverride?: string | null]
@@ -86,62 +86,6 @@ async function resolveSensorTypes(
     headers: config.headers,
     cache: 'no-store',
   })
-  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
-    'dashboard/farm-hierarchy/',
-    hierarchyFetcher,
-    {
-      refreshInterval: 30000,
-    }
-  )
-
-  const farms = hierarchy?.farms ?? []
-  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
-  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
-
-  React.useEffect(() => {
-    if (farms.length && !selectedFarmId) {
-      setSelectedFarmId(farms[0].id)
-    }
-  }, [farms, selectedFarmId])
-
-  const selectedFarm: FarmNode | null = React.useMemo(
-    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
-    [farms, selectedFarmId]
-  )
-
-  React.useEffect(() => {
-    if (selectedFarm?.barns?.length) {
-      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
-        setSelectedBarnId(selectedFarm.barns[0].id)
-      }
-    } else {
-      setSelectedBarnId(null)
-    }
-  }, [selectedBarnId, selectedFarm])
-
-  const selectedBarn = React.useMemo(
-    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
-    [selectedBarnId, selectedFarm]
-  )
-
-  const renderSensors = (sensors: FarmNode['sensors']) => {
-    if (!sensors?.length) {
-      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
-    }
-
-    return (
-      <div className="flex flex-wrap gap-2 mt-2">
-        {sensors.map((sensor) => (
-          <span
-            key={`sensor-${sensor.id}`}
-            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
-          >
-            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
-          </span>
-        ))}
-      </div>
-    )
-  }
 
   if (!res.ok) {
     const text = await res.text()
@@ -203,6 +147,23 @@ async function hierarchyFetcher(path: string): Promise<FarmHierarchyResponse> {
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
+  }
+
+  return res.json()
+}
+
+async function activeAlertsFetcher(path: string): Promise<AlertLog[]> {
+  const config = buildApiConfig({ preferDjango: true })
+  const target = config.buildUrl(path)
+
+  const res = await fetch(target.toString(), {
+    headers: config.headers,
+    cache: 'no-store',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Active alerts error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
   }
 
   return res.json()
@@ -312,6 +273,36 @@ export default function HomePage() {
       revalidateOnFocus: false,
     }
   )
+
+  const activeAlertKey = React.useMemo(() => {
+    if (!selectedFarm) return null
+    if (selectedZoneId) return `alerts/active/?zone_id=${selectedZoneId}`
+    if (selectedBarnId) return `alerts/active/?barn_id=${selectedBarnId}`
+    return `alerts/active/?farm_id=${selectedFarm.id}`
+  }, [selectedBarnId, selectedFarm, selectedZoneId])
+
+  const { data: activeAlerts, error: alertsError } = useSWR<AlertLog[]>(
+    activeAlertKey,
+    activeAlertsFetcher,
+    {
+      refreshInterval: 10000,
+      revalidateOnFocus: false,
+    }
+  )
+
+  const alertsBySensor = React.useMemo(() => {
+    const map = new Map<number, AlertLog[]>()
+    if (activeAlerts) {
+      activeAlerts.forEach((alert) => {
+        if (alert.sensor !== null && alert.status === 'open') {
+          const current = map.get(alert.sensor) || []
+          current.push(alert)
+          map.set(alert.sensor, current)
+        }
+      })
+    }
+    return map
+  }, [activeAlerts])
 
   const renderSensors = (sensors: FarmNode['sensors']) => {
     if (!sensors?.length) {
@@ -505,6 +496,37 @@ export default function HomePage() {
           </div>
         )}
 
+        {alertsError && (
+          <div className="rounded-lg border border-red-500 bg-red-900/30 px-4 py-3 text-sm">
+            <p className="font-semibold">خطا در واکشی هشدارها</p>
+            <p className="mt-1 whitespace-pre-wrap break-words">{alertsError.message}</p>
+          </div>
+        )}
+
+        {!alertsError && activeAlerts && activeAlerts.length > 0 && (
+          <div className="rounded-lg border border-red-500/60 bg-red-900/20 px-4 py-3 text-sm text-red-50">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-semibold">هشدارهای فعال</p>
+              <span className="text-xs text-red-100/80">{activeAlerts.length} هشدار باز</span>
+            </div>
+            <div className="mt-2 space-y-2">
+              {activeAlerts.map((alert) => (
+                <div
+                  key={`alert-${alert.id}`}
+                  className="rounded-md border border-red-400/50 bg-red-950/40 px-3 py-2"
+                >
+                  <p className="font-medium">{alert.message}</p>
+                  <p className="text-[11px] text-red-100/70 mt-1">
+                    سنسور: {alert.sensor ?? 'نامشخص'} | مقدار: {alert.reading_value ?? '—'} | زمان:
+                    {' '}
+                    {new Date(alert.raised_at).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {!error &&
           selectedFarm &&
           selectedFarmHasSensors &&
@@ -515,6 +537,9 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(data).map(([key, reading]) => {
                 const meta = sensorMetaMap[key] || { name: key }
+                const activeAlert = reading
+                  ? alertsBySensor.get(reading.sensor)?.[0] ?? null
+                  : null
                 return (
                   <SensorCard
                     key={key}
@@ -524,6 +549,7 @@ export default function HomePage() {
                     icon={meta.icon}
                     color={meta.color}
                     reading={reading}
+                    alert={activeAlert}
                   />
                 )
               })}

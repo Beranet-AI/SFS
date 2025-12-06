@@ -72,3 +72,34 @@ export type FarmHierarchyResponse = {
   farms: FarmNode[];
 };
 
+export type AlertRule = {
+  id: number;
+  name: string;
+  description?: string | null;
+  farm: number;
+  sensor: number | null;
+  sensor_type: number | null;
+  threshold_value: number;
+  operator: 'greater_than' | 'less_than';
+  severity: 'info' | 'warn' | 'critical';
+  is_active: boolean;
+  created_at: string;
+};
+
+export type AlertLog = {
+  id: number;
+  rule: number | null;
+  farm: number;
+  barn: number | null;
+  zone: number | null;
+  sensor: number | null;
+  severity: 'info' | 'warn' | 'critical';
+  reading_value: number | null;
+  message: string;
+  status: 'open' | 'ack' | 'resolved';
+  raised_at: string;
+  resolved_at: string | null;
+  extra_data: Record<string, unknown> | null;
+  created_at: string;
+};
+
