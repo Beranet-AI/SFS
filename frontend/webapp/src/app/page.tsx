@@ -25,6 +25,7 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
   const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
+  const sensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES || 'temperature,ammonia'
 
   if (!fastApiBase && !djangoApiBase) {
     throw new Error(
@@ -35,6 +36,9 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
   const targetPath = joinPath(apiPrefix, path)
   const target = new URL(targetPath, base)
+
+  // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
+  target.searchParams.set('sensor_types', sensorTypes)
 
   const headers: HeadersInit = {
     Accept: 'application/json',
@@ -97,9 +101,10 @@ export default function HomePage() {
 
         <p className="mt-4 text-center text-xs text-slate-500">
           داده‌ها از FastAPI (یا به صورت مستقیم از Django) از مسیر <code>dashboard/latest-readings/</code> روی <code>BASE_URL</code>
-          واکشی می‌شود؛ در صورت نیاز می‌توانید پیشوندی مثل <code>api/v1</code> را در متغیر
-          <code>NEXT_PUBLIC_API_PREFIX</code> تنظیم کنید تا مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/</code>
-          ساخته شود.
+          واکشی می‌شود. اگر کد سنسورهای شما در Django متفاوت است (مثلاً <code>temp_sensor</code> به‌جای <code>temperature</code>)،
+          متغیر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را با لیست درست (مثل <code>temp_sensor,ammonia</code>) تنظیم کنید. در صورت نیاز
+          می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا مسیر کامل مانند
+          <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود.
         </p>
       </div>
     </main>
