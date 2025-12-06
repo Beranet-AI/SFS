@@ -85,8 +85,7 @@ export default function HomePage() {
         )}
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          داده‌ها از FastAPI (یا به صورت مستقیم از Django) از مسیر <code>dashboard/latest-readings/</code> روی <code>BASE_URL</code>
-          واکشی می‌شود تا پیشوندهایی مثل <code>/api/v1/</code> حفظ شوند.
+          داده‌ها از FastAPI (که به Django متصل است) از مسیر <code>/dashboard/latest-readings/</code> واکشی می‌شود.
         </p>
       </div>
     </main>
