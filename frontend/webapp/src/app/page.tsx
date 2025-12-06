@@ -12,6 +12,10 @@ import type { FarmHierarchyResponse, FarmNode, SingleReading } from '../lib/type
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
 
+type ApiConfigOptions = {
+  preferDjango?: boolean
+}
+
 type ApiConfig = {
   base: string
   apiPrefix: string
@@ -27,19 +31,24 @@ const joinPath = (prefix: string, endpoint: string) => {
   return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
 }
 
-const buildApiConfig = (): ApiConfig => {
+const buildApiConfig = (options: ApiConfigOptions = {}): ApiConfig => {
   const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
   const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
+  const preferDjango = options.preferDjango ?? false
 
-  if (!fastApiBase && !djangoApiBase) {
+  const primaryBase = preferDjango ? djangoApiBase : fastApiBase
+  const fallbackBase = preferDjango ? fastApiBase : djangoApiBase
+  const resolvedBase = primaryBase || fallbackBase
+
+  if (!resolvedBase) {
     throw new Error(
       'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
     )
   }
 
-  const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
+  const base = ensureTrailingSlash(resolvedBase)
   const headers: HeadersInit = {
     Accept: 'application/json',
   }
@@ -120,7 +129,7 @@ const latestReadingsFetcher = async (path: string): Promise<LatestReadingsRespon
 }
 
 const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> => {
-  const config = buildApiConfig()
+  const config = buildApiConfig({ preferDjango: true })
   const target = config.buildUrl(path)
 
   const res = await fetch(target.toString(), {
