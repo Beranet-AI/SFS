@@ -21,6 +21,12 @@ router.register(r"alerts", AlertViewSet, basename="alert")
 
 urlpatterns = [
     path("", include(router.urls)),
+    # Explicit path for active alerts to avoid router/action resolution issues in production
+    path(
+        "alerts/active/",
+        AlertViewSet.as_view({"get": "active_alerts"}),
+        name="alert-active",
+    ),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
     path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
