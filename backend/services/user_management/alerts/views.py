@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -52,4 +53,38 @@ class AlertViewSet(viewsets.ModelViewSet):
     def active_alerts(self, request, *args, **kwargs):
         qs = self.get_queryset().filter(status="open")
         serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class ActiveAlertsView(APIView):
+    permission_classes = [IsAuthenticatedOrService]
+
+    def get(self, request, *args, **kwargs):
+        qs = Alert.objects.select_related(
+            "farm",
+            "barn",
+            "zone",
+            "sensor",
+            "animal",
+            "rule",
+        ).filter(status="open")
+
+        farm_id = request.query_params.get("farm_id")
+        status = request.query_params.get("status")
+        severity = request.query_params.get("severity")
+        zone_id = request.query_params.get("zone_id")
+        sensor_id = request.query_params.get("sensor_id")
+
+        if farm_id:
+            qs = qs.filter(farm_id=farm_id)
+        if status:
+            qs = qs.filter(status=status)
+        if severity:
+            qs = qs.filter(severity=severity)
+        if zone_id:
+            qs = qs.filter(zone_id=zone_id)
+        if sensor_id:
+            qs = qs.filter(sensor_id=sensor_id)
+
+        serializer = AlertSerializer(qs, many=True)
         return Response(serializer.data)
