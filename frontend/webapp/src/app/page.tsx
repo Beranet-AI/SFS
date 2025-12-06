@@ -8,9 +8,16 @@ import useSWR from 'swr'
 import SensorCard from '../components/SensorCard'
 import { sensorMetaMap } from '../lib/sensorMeta'
 
-import type { SingleReading } from '../lib/types'
+import type { FarmHierarchyResponse, FarmNode, SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
+
+type ApiConfig = {
+  base: string
+  apiPrefix: string
+  headers: HeadersInit
+  buildUrl: (endpoint: string) => URL
+}
 
 const ensureTrailingSlash = (base: string) => (base.endsWith('/') ? base : `${base}/`)
 
@@ -20,14 +27,35 @@ const joinPath = (prefix: string, endpoint: string) => {
   return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
 }
 
+const buildApiConfig = (): ApiConfig => {
+  const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
+  const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
+  const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
+  const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
+
+  if (!fastApiBase && !djangoApiBase) {
+    throw new Error(
+      'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
+    )
+  }
+
+  const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
+  const headers: HeadersInit = {
+    Accept: 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Token ${token}`
+  }
+
+  const buildUrl = (endpoint: string) => new URL(joinPath(apiPrefix, endpoint), base)
+
+  return { base, apiPrefix, headers, buildUrl }
+}
+
 const sensorTypesCache: { value: string | null } = { value: null }
 
-const resolveSensorTypes = async (
-  base: string,
-  apiPrefix: string,
-  headers: HeadersInit,
-  configuredSensorTypes?: string
-): Promise<string> => {
+const resolveSensorTypes = async (config: ApiConfig, configuredSensorTypes?: string): Promise<string> => {
   const explicit = (configuredSensorTypes || '')
     .split(',')
     .map((c) => c.trim())
@@ -41,9 +69,9 @@ const resolveSensorTypes = async (
     return sensorTypesCache.value
   }
 
-  const sensorTypesUrl = new URL(joinPath(apiPrefix, 'sensor-types/'), base)
+  const sensorTypesUrl = config.buildUrl('sensor-types/')
   const res = await fetch(sensorTypesUrl.toString(), {
-    headers,
+    headers: config.headers,
     cache: 'no-store',
   })
 
@@ -67,38 +95,19 @@ const resolveSensorTypes = async (
   return sensorTypesCache.value
 }
 
-const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
-  const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
-  const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
-  const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
-  const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
+const latestReadingsFetcher = async (path: string): Promise<LatestReadingsResponse> => {
+  const config = buildApiConfig()
   const configuredSensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES
 
-  if (!fastApiBase && !djangoApiBase) {
-    throw new Error(
-      'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
-    )
-  }
+  const target = config.buildUrl(path)
 
-  const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
-  const targetPath = joinPath(apiPrefix, path)
-  const target = new URL(targetPath, base)
-
-  const headers: HeadersInit = {
-    Accept: 'application/json',
-  }
-
-  if (token) {
-    headers.Authorization = `Token ${token}`
-  }
-
-  const sensorTypes = await resolveSensorTypes(base, apiPrefix, headers, configuredSensorTypes)
+  const sensorTypes = await resolveSensorTypes(config, configuredSensorTypes)
 
   // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
   target.searchParams.set('sensor_types', sensorTypes)
 
   const res = await fetch(target.toString(), {
-    headers,
+    headers: config.headers,
     cache: 'no-store',
   })
 
@@ -110,10 +119,83 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   return res.json()
 }
 
+const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> => {
+  const config = buildApiConfig()
+  const target = config.buildUrl(path)
+
+  const res = await fetch(target.toString(), {
+    headers: config.headers,
+    cache: 'no-store',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
+  }
+
+  return res.json()
+}
+
 export default function HomePage() {
-  const { data, error } = useSWR('dashboard/latest-readings/', fetcher, {
+  const { data, error } = useSWR('dashboard/latest-readings/', latestReadingsFetcher, {
     refreshInterval: 5000,
   })
+  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
+    'dashboard/farm-hierarchy/',
+    hierarchyFetcher,
+    {
+      refreshInterval: 30000,
+    }
+  )
+
+  const farms = hierarchy?.farms ?? []
+  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
+  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (farms.length && !selectedFarmId) {
+      setSelectedFarmId(farms[0].id)
+    }
+  }, [farms, selectedFarmId])
+
+  const selectedFarm: FarmNode | null = React.useMemo(
+    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
+    [farms, selectedFarmId]
+  )
+
+  React.useEffect(() => {
+    if (selectedFarm?.barns?.length) {
+      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
+        setSelectedBarnId(selectedFarm.barns[0].id)
+      }
+    } else {
+      setSelectedBarnId(null)
+    }
+  }, [selectedBarnId, selectedFarm])
+
+  const selectedBarn = React.useMemo(
+    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
+    [selectedBarnId, selectedFarm]
+  )
+
+  const renderSensors = (sensors: FarmNode['sensors']) => {
+    if (!sensors?.length) {
+      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sensors.map((sensor) => (
+          <span
+            key={`sensor-${sensor.id}`}
+            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
+          >
+            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6">
@@ -121,6 +203,134 @@ export default function HomePage() {
         <h1 className="text-2xl md:text-3xl font-semibold text-center">
           SmartFarm – Live Telemetry Dashboard
         </h1>
+
+        <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 shadow">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-semibold">ساختار مزرعه → بارن → زون</h2>
+              <p className="text-sm text-slate-400">
+                ابتدا مزرعه را انتخاب کنید تا بارن‌ها، زون‌ها و سنسورهای هر بخش نمایش داده شود.
+              </p>
+            </div>
+            <span className="text-xs text-slate-500">به‌روزرسانی هر ۳۰ ثانیه از مسیر dashboard/farm-hierarchy/</span>
+          </div>
+
+          {hierarchyError && (
+            <div className="mt-3 rounded-lg border border-red-500 bg-red-900/30 px-4 py-3 text-sm">
+              <p className="font-semibold">خطا در واکشی ساختار مزارع</p>
+              <p className="mt-1 whitespace-pre-wrap break-words">{hierarchyError.message}</p>
+            </div>
+          )}
+
+          {!hierarchy && !hierarchyError && (
+            <p className="mt-3 text-sm text-slate-400">در حال بارگذاری ساختار مزارع...</p>
+          )}
+
+          {hierarchy?.farms?.length ? (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {farms.map((farm) => (
+                  <button
+                    key={`farm-${farm.id}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedFarmId(farm.id)
+                      setSelectedBarnId(null)
+                    }}
+                    className={`rounded-lg border px-4 py-3 text-left transition hover:border-slate-400/80 hover:shadow ${
+                      selectedFarmId === farm.id ? 'border-emerald-400/80 bg-emerald-950/30' : 'border-slate-800 bg-slate-950/40'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <p className="text-base font-semibold">{farm.name}</p>
+                        {farm.location && <p className="text-xs text-slate-500">{farm.location}</p>}
+                      </div>
+                      <span className="text-xs text-slate-400">سنسورها: {farm.sensor_count}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500">تعداد بارن‌ها: {farm.barns.length}</p>
+                  </button>
+                ))}
+              </div>
+
+              {selectedFarm && (
+                <div className="space-y-3 rounded-lg border border-slate-800/80 bg-slate-950/40 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-lg font-semibold">بارن‌های {selectedFarm.name}</h3>
+                    <span className="text-xs text-slate-400">تعداد سنسورها: {selectedFarm.sensor_count}</span>
+                  </div>
+
+                  {selectedFarm.sensors.length > 0 && (
+                    <div>
+                      <p className="text-xs text-slate-400">سنسورهای ثبت‌شده برای خود مزرعه (بدون بارن/زون):</p>
+                      {renderSensors(selectedFarm.sensors)}
+                    </div>
+                  )}
+
+                  {selectedFarm.barns.length ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedFarm.barns.map((barn) => (
+                        <button
+                          key={`barn-${barn.id}`}
+                          type="button"
+                          onClick={() => setSelectedBarnId(barn.id)}
+                          className={`rounded-lg border px-3 py-3 text-left transition hover:border-slate-400/80 hover:shadow ${
+                            selectedBarnId === barn.id ? 'border-sky-400/80 bg-sky-950/40' : 'border-slate-800 bg-slate-900/40'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="text-base font-medium">{barn.name}</p>
+                            <span className="text-xs text-slate-400">سنسورها: {barn.sensor_count}</span>
+                          </div>
+                          <p className="mt-1 text-xs text-slate-500">تعداد زون‌ها: {barn.zones.length}</p>
+                          {barn.description && <p className="mt-1 text-xs text-slate-500">{barn.description}</p>}
+                          {renderSensors(barn.sensors)}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-500">برای این مزرعه هنوز بارنی ثبت نشده است.</p>
+                  )}
+
+                  {selectedBarn && (
+                    <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900/40 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h4 className="text-base font-semibold">زون‌های {selectedBarn.name}</h4>
+                        <span className="text-xs text-slate-400">سنسورها: {selectedBarn.sensor_count}</span>
+                      </div>
+
+                      {selectedBarn.sensors.length > 0 && (
+                        <div>
+                          <p className="text-xs text-slate-400">سنسورهای همین بارن:</p>
+                          {renderSensors(selectedBarn.sensors)}
+                        </div>
+                      )}
+
+                      {selectedBarn.zones.length ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {selectedBarn.zones.map((zone) => (
+                            <div key={`zone-${zone.id}`} className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm font-semibold">{zone.name}</p>
+                                <span className="text-xs text-slate-400">سنسورها: {zone.sensor_count}</span>
+                              </div>
+                              {zone.code && <p className="text-xs text-slate-500">کد: {zone.code}</p>}
+                              {renderSensors(zone.sensors)}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-slate-500">زون ثبت نشده است؛ سنسورها در سطح خود بارن هستند.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            !hierarchyError && <p className="mt-3 text-sm text-slate-500">هنوز مزرعه‌ای ثبت نشده است.</p>
+          )}
+        </section>
 
         {error && (
           <div className="rounded-lg border border-red-500 bg-red-900/30 px-4 py-3 text-sm">
@@ -153,7 +363,8 @@ export default function HomePage() {
           واکشی می‌شود. اگر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را ست نکنید، فرانت‌اند ابتدا <code>sensor-types/</code> را می‌خواند و
           به صورت خودکار کد سنسورها را از Django استخراج می‌کند؛ در غیر این صورت مقدار متغیر را (مثلاً <code>temp_sensor,ammonia</code>)
           استفاده می‌کند. در صورت نیاز می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا
-          مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود.
+          مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود. برای ساختار مزرعه نیز از
+          <code>dashboard/farm-hierarchy/</code> استفاده می‌شود و انتخاب مزرعه/بارن/زون در بالا مسیر نظارت را شفاف می‌کند.
         </p>
       </div>
     </main>
