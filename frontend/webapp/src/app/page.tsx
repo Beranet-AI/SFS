@@ -12,10 +12,19 @@ import type { SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
 
+const ensureTrailingSlash = (base: string) => (base.endsWith('/') ? base : `${base}/`)
+
+const joinPath = (prefix: string, endpoint: string) => {
+  const cleanPrefix = prefix.replace(/^\/+|\/+$/g, '')
+  const cleanEndpoint = endpoint.replace(/^\/+/, '')
+  return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
+}
+
 const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
+  const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
 
   if (!fastApiBase && !djangoApiBase) {
     throw new Error(
@@ -23,7 +32,9 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
     )
   }
 
-  const target = new URL(path, fastApiBase || djangoApiBase)
+  const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
+  const targetPath = joinPath(apiPrefix, path)
+  const target = new URL(targetPath, base)
 
   const headers: HeadersInit = {
     Accept: 'application/json',
@@ -40,7 +51,7 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Dashboard API error: ${res.status} - ${text.substring(0, 200)}`)
+    throw new Error(`Dashboard API error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
   }
 
   return res.json()
@@ -85,7 +96,10 @@ export default function HomePage() {
         )}
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          داده‌ها از FastAPI (که به Django متصل است) از مسیر <code>/dashboard/latest-readings/</code> واکشی می‌شود.
+          داده‌ها از FastAPI (یا به صورت مستقیم از Django) از مسیر <code>dashboard/latest-readings/</code> روی <code>BASE_URL</code>
+          واکشی می‌شود؛ در صورت نیاز می‌توانید پیشوندی مثل <code>api/v1</code> را در متغیر
+          <code>NEXT_PUBLIC_API_PREFIX</code> تنظیم کنید تا مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/</code>
+          ساخته شود.
         </p>
       </div>
     </main>
