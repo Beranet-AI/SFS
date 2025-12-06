@@ -1,9 +1,11 @@
 from typing import Any, Dict
 
+from django.utils import timezone
 from rest_framework import serializers
+
+from alerts.services import evaluate_alerts_for_reading
 from devices.models import Sensor
 from telemetry.models import SensorReading
-from django.utils import timezone
 
 class SensorReadingSerializer(serializers.ModelSerializer):
     # sensor_id را به فیلد FK مدل sensor نگاشت می‌کنیم
@@ -34,4 +36,6 @@ class SensorReadingSerializer(serializers.ModelSerializer):
         # اگر ts در Request نبود، الان (زمان حال) را قرار می‌دهیم
         if "ts" not in validated_data:
             validated_data["ts"] = timezone.now()
-        return super().create(validated_data)
+        reading = super().create(validated_data)
+        evaluate_alerts_for_reading(reading)
+        return reading
