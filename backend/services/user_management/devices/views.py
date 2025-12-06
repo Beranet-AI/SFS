@@ -26,3 +26,4 @@ class SensorViewSet(viewsets.ModelViewSet):
     serializer_class = SensorSerializer
     permission_classes = [permissions.IsAuthenticated]
     permission_classes = [IsAuthenticatedOrService]
+

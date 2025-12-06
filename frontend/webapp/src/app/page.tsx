@@ -1,18 +1,14 @@
+
+// frontend/webapp/src/app/page.tsx
+
 'use client'
 
 import React from 'react'
 import useSWR from 'swr'
 import SensorCard from '../components/SensorCard'
+import { sensorMetaMap } from '../lib/sensorMeta'
 
-type SingleReading = {
-  id: number
-  sensor: number
-  ts: string
-  value: number
-  raw_payload: Record<string, unknown> | null
-  quality: string
-  created_at: string
-}
+import type { SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
 
@@ -42,21 +38,12 @@ const fetcher = async (url: string): Promise<LatestReadingsResponse> => {
 
 export default function HomePage() {
   const { data, error } = useSWR('/dashboard/latest-readings/', fetcher, {
-    refreshInterval: 5000, // هر ۵ ثانیه یک بار اطلاعات را بگیرد
+    refreshInterval: 5000,
   })
-
-  const defaultUnits: Record<string, string> = {
-    temperature: '°C',
-    ammonia: 'ppm',
-  }
-  const sensorLabelsFa: Record<string, string> = {
-    temperature: 'دما',
-    ammonia: 'آمونیاک',
-  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-4xl space-y-6">
+      <div className="w-full max-w-6xl space-y-6">
         <h1 className="text-2xl md:text-3xl font-semibold text-center">
           SmartFarm – Live Telemetry Dashboard
         </h1>
@@ -69,16 +56,21 @@ export default function HomePage() {
         )}
 
         {!error && data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.entries(data).map(([key, reading]) => (
-              <SensorCard
-                key={key}
-                name={key.charAt(0).toUpperCase() + key.slice(1)}
-                faLabel={sensorLabelsFa[key]}
-                unit={defaultUnits[key]}
-                reading={reading}
-              />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(data).map(([key, reading]) => {
+              const meta = sensorMetaMap[key] || { name: key }
+              return (
+                <SensorCard
+                  key={key}
+                  name={meta.name}
+                  faLabel={meta.faLabel}
+                  unit={meta.unit}
+                  icon={meta.icon}
+                  color={meta.color}
+                  reading={reading}
+                />
+              )
+            })}
           </div>
         )}
 

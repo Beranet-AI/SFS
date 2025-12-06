@@ -1,43 +1,43 @@
-from typing import Any, Dict, List, Optional
+from django.shortcuts import render
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.request import Request
+from rest_framework.permissions import IsAuthenticated
 
-from devices.models import SensorType
-from telemetry.models import SensorReading
-from telemetry.serializers import SensorReadingSerializer
 from api.permissions import IsAuthenticatedOrService
+from .models import SensorReading
+from .serializers import SensorReadingSerializer
+from devices.models import SensorType
+
+
+class SensorReadingViewSet(viewsets.ModelViewSet):
+    queryset = SensorReading.objects.select_related("sensor", "sensor__device").all()
+    serializer_class = SensorReadingSerializer
+    permission_classes = [IsAuthenticatedOrService]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        sensor_id = self.request.query_params.get("sensor_id")
+        if sensor_id:
+            qs = qs.filter(sensor_id=sensor_id)
+        return qs
+
 
 class LatestReadingsView(APIView):
     """
-    API برمی‌گرداند آخرین ریدینگ هر SensorType موردنیاز.
-    اگر پارامتر query با نام ``sensor_types`` داده شود (CSV)، همان کدها بررسی می‌شوند،
-    در غیر این صورت از تمام SensorType‌های موجود استفاده می‌شود.
+    API آخرین ریدینگ برای هر SensorType را برمی‌گرداند.
     """
+
     permission_classes = [IsAuthenticatedOrService]
 
-    def get(self, request: Request, format: Optional[str] = None) -> Response:
-        requested_types = request.query_params.get("sensor_types")
-        sensor_types_qs = SensorType.objects.all()
+    def get(self, request, format=None):
+        requested_types = request.query_params.get("sensor_types", "temperature,ammonia")
+        type_codes = [code.strip() for code in requested_types.split(",") if code.strip()]
 
-        if requested_types:
-            # اگر پارامتر داده شده باشد، فقط کدهای معتبر (موجود در دیتابیس) را در نظر می‌گیریم
-            raw_codes: List[str] = [code.strip() for code in requested_types.split(",") if code.strip()]
-            sensor_type_map: Dict[str, int] = {
-                s.code.lower(): s.id for s in sensor_types_qs if s.code.lower() in raw_codes
-            }
-            type_codes: List[str] = [code for code in raw_codes if code in sensor_type_map]
-        else:
-            # در غیر این صورت، تمام SensorType‌های موجود استفاده می‌شوند
-            sensor_type_map: Dict[str, int] = {s.code.lower(): s.id for s in sensor_types_qs}
-            type_codes: List[str] = list(sensor_type_map.keys())
+        sensor_types = SensorType.objects.filter(code__in=type_codes).values_list("id", "code")
+        result = {code: None for code in type_codes}
 
-        result: Dict[str, Any] = {code: None for code in type_codes}
-
-        for code in type_codes:
-            sensor_type_id = sensor_type_map.get(code)
-            if not sensor_type_id:
-                continue
+        for sensor_type_id, code in sensor_types:
             latest_reading = (
                 SensorReading.objects
                 .select_related("sensor", "sensor__device", "sensor__sensor_type")
@@ -51,19 +51,34 @@ class LatestReadingsView(APIView):
         return Response(result)
 
 
-from rest_framework import viewsets
-from api.permissions import IsAuthenticatedOrService
-from .models import SensorReading
-from .serializers import SensorReadingSerializer
+class HistoricalReadingsView(APIView):
+    """
+    API برای بازگرداندن داده‌های تاریخی یک سنسور خاص.
+    پارامترها:
+      - sensor_id (الزامی)
+      - limit (پیش‌فرض: 50)
+      - ts__gte / ts__lte (اختیاری: فیلتر بر اساس بازه زمانی)
+    """
 
-class SensorReadingViewSet(viewsets.ModelViewSet):
-    queryset = SensorReading.objects.select_related("sensor", "sensor__device").all()
-    serializer_class = SensorReadingSerializer
     permission_classes = [IsAuthenticatedOrService]
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-        sensor_id = self.request.query_params.get("sensor_id")
-        if sensor_id:
-            qs = qs.filter(sensor_id=sensor_id)
-        return qs
+    def get(self, request, format=None):
+        sensor_id = request.query_params.get("sensor_id")
+        if not sensor_id:
+            return Response({"detail": "پارامتر sensor_id الزامی است."}, status=400)
+
+        limit = int(request.query_params.get("limit", 50))
+        ts_gte = request.query_params.get("ts__gte")
+        ts_lte = request.query_params.get("ts__lte")
+
+        qs = SensorReading.objects.filter(sensor_id=sensor_id)
+
+        if ts_gte:
+            qs = qs.filter(ts__gte=ts_gte)
+        if ts_lte:
+            qs = qs.filter(ts__lte=ts_lte)
+
+        qs = qs.order_by("-ts")[:limit]
+
+        serialized = SensorReadingSerializer(qs, many=True)
+        return Response(serialized.data)
