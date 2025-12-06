@@ -20,12 +20,59 @@ const joinPath = (prefix: string, endpoint: string) => {
   return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
 }
 
+const sensorTypesCache: { value: string | null } = { value: null }
+
+const resolveSensorTypes = async (
+  base: string,
+  apiPrefix: string,
+  headers: HeadersInit,
+  configuredSensorTypes?: string
+): Promise<string> => {
+  const explicit = (configuredSensorTypes || '')
+    .split(',')
+    .map((c) => c.trim())
+    .filter(Boolean)
+
+  if (explicit.length) {
+    return explicit.join(',')
+  }
+
+  if (sensorTypesCache.value) {
+    return sensorTypesCache.value
+  }
+
+  const sensorTypesUrl = new URL(joinPath(apiPrefix, 'sensor-types/'), base)
+  const res = await fetch(sensorTypesUrl.toString(), {
+    headers,
+    cache: 'no-store',
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Sensor types fetch failed: ${res.status} - ${text.substring(0, 200)} (URL: ${sensorTypesUrl})`)
+  }
+
+  const payload = await res.json()
+  const codes = Array.isArray(payload)
+    ? payload
+        .map((item) => (item && typeof item === 'object' ? (item as { code?: string }).code : null))
+        .filter((code): code is string => Boolean(code))
+    : []
+
+  if (!codes.length) {
+    throw new Error('Sensor types endpoint returned no codes. لطفاً مطمئن شوید SensorType در Django تعریف شده است.')
+  }
+
+  sensorTypesCache.value = codes.join(',')
+  return sensorTypesCache.value
+}
+
 const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
   const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
-  const sensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES || 'temperature,ammonia'
+  const configuredSensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES
 
   if (!fastApiBase && !djangoApiBase) {
     throw new Error(
@@ -37,9 +84,6 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   const targetPath = joinPath(apiPrefix, path)
   const target = new URL(targetPath, base)
 
-  // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
-  target.searchParams.set('sensor_types', sensorTypes)
-
   const headers: HeadersInit = {
     Accept: 'application/json',
   }
@@ -47,6 +91,11 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
   if (token) {
     headers.Authorization = `Token ${token}`
   }
+
+  const sensorTypes = await resolveSensorTypes(base, apiPrefix, headers, configuredSensorTypes)
+
+  // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
+  target.searchParams.set('sensor_types', sensorTypes)
 
   const res = await fetch(target.toString(), {
     headers,
@@ -101,10 +150,10 @@ export default function HomePage() {
 
         <p className="mt-4 text-center text-xs text-slate-500">
           داده‌ها از FastAPI (یا به صورت مستقیم از Django) از مسیر <code>dashboard/latest-readings/</code> روی <code>BASE_URL</code>
-          واکشی می‌شود. اگر کد سنسورهای شما در Django متفاوت است (مثلاً <code>temp_sensor</code> به‌جای <code>temperature</code>)،
-          متغیر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را با لیست درست (مثل <code>temp_sensor,ammonia</code>) تنظیم کنید. در صورت نیاز
-          می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا مسیر کامل مانند
-          <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود.
+          واکشی می‌شود. اگر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را ست نکنید، فرانت‌اند ابتدا <code>sensor-types/</code> را می‌خواند و
+          به صورت خودکار کد سنسورها را از Django استخراج می‌کند؛ در غیر این صورت مقدار متغیر را (مثلاً <code>temp_sensor,ammonia</code>)
+          استفاده می‌کند. در صورت نیاز می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا
+          مسیر کامل مانند <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود.
         </p>
       </div>
     </main>
