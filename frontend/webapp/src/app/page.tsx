@@ -47,7 +47,7 @@ const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
 }
 
 export default function HomePage() {
-  const { data, error } = useSWR('/dashboard/latest-readings/', fetcher, {
+  const { data, error } = useSWR('dashboard/latest-readings/', fetcher, {
     refreshInterval: 5000,
   })
 
