@@ -1,0 +1,46 @@
+import React from "react";
+
+type SensorCardProps = {
+  name: string;
+  faLabel?: string;
+  unit?: string;
+  reading: {
+    sensor: number;
+    ts: string;
+    value: number;
+    quality: string;
+  } | null;
+};
+
+export default function SensorCard({
+  name,
+  faLabel,
+  unit,
+  reading,
+}: SensorCardProps) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 shadow">
+      <h2 className="text-lg font-medium mb-2">
+        {name} {faLabel && `(${faLabel})`}
+      </h2>
+      {reading ? (
+        <>
+          <p className="text-3xl font-semibold">
+            {reading.value.toFixed(2)}{" "}
+            <span className="text-base text-slate-400">{unit}</span>
+          </p>
+          <p className="mt-2 text-xs text-slate-400">
+            Sensor ID: {reading.sensor} | کیفیت: {reading.quality}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Last update: {new Date(reading.ts).toLocaleString()}
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-slate-400">
+          هنوز داده‌ای برای {faLabel || name} ثبت نشده است.
+        </p>
+      )}
+    </div>
+  );
+}
