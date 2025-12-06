@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 // frontend/webapp/src/app/page.tsx
 
@@ -31,7 +31,7 @@ const joinPath = (prefix: string, endpoint: string) => {
   return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
 }
 
-function buildApiConfig(options: ApiConfigOptions = {}): ApiConfig {
+const buildApiConfig = (options: ApiConfigOptions = {}): ApiConfig => {
   const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
@@ -64,10 +64,10 @@ function buildApiConfig(options: ApiConfigOptions = {}): ApiConfig {
 
 const sensorTypesCache: { value: string | null } = { value: null }
 
-async function resolveSensorTypes(
+const resolveSensorTypes = async (
   config: ApiConfig,
   configuredSensorTypes?: string
-): Promise<string> {
+): Promise<string> => {
   const explicit = (configuredSensorTypes || '')
     .split(',')
     .map((c) => c.trim())
@@ -107,10 +107,10 @@ async function resolveSensorTypes(
   return sensorTypesCache.value
 }
 
-async function latestReadingsFetcher([
+const latestReadingsFetcher = async ([
   path,
   sensorTypesOverride,
-]: LatestReadingsKey): Promise<LatestReadingsResponse> {
+]: LatestReadingsKey): Promise<LatestReadingsResponse> => {
   const config = buildApiConfig()
   const configuredSensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES
 
@@ -135,7 +135,7 @@ async function latestReadingsFetcher([
   return res.json()
 }
 
-async function hierarchyFetcher(path: string): Promise<FarmHierarchyResponse> {
+const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> => {
   const config = buildApiConfig({ preferDjango: true })
   const target = config.buildUrl(path)
 
@@ -382,6 +382,138 @@ export default function HomePage() {
     latestReadingsFetcher,
     {
       refreshInterval: 5000,
+    }
+  )
+
+  const renderSensors = (sensors: FarmNode['sensors']) => {
+    if (!sensors?.length) {
+      return <span className="text-xs text-slate-500">سنسوری ثبت نشده</span>
+    }
+
+    return (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sensors.map((sensor) => (
+          <span
+            key={`sensor-${sensor.id}`}
+            className="rounded-full bg-slate-800/70 px-3 py-1 text-xs text-slate-200 border border-slate-700"
+          >
+            {sensor.name} <span className="text-slate-400">({sensor.sensor_type.code})</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Farm hierarchy error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
+  }
+
+  return res.json()
+}
+
+export default function HomePage() {
+  const { data: hierarchy, error: hierarchyError } = useSWR<FarmHierarchyResponse>(
+    'dashboard/farm-hierarchy/',
+    hierarchyFetcher,
+    {
+      refreshInterval: 30000,
+    }
+  )
+
+  const farms = hierarchy?.farms ?? []
+  const [selectedFarmId, setSelectedFarmId] = React.useState<number | null>(null)
+  const [selectedBarnId, setSelectedBarnId] = React.useState<number | null>(null)
+  const [selectedZoneId, setSelectedZoneId] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    if (farms.length && !selectedFarmId) {
+      setSelectedFarmId(farms[0].id)
+    }
+  }, [farms, selectedFarmId])
+
+  const selectedFarm: FarmNode | null = React.useMemo(
+    () => farms.find((farm) => farm.id === selectedFarmId) ?? null,
+    [farms, selectedFarmId]
+  )
+
+  const selectedFarmHasSensors = React.useMemo(() => {
+    if (!selectedFarm) return false
+
+    const farmLevel = selectedFarm.sensors?.length ?? 0
+    const barns = selectedFarm.barns ?? []
+
+    const barnLevel = barns.some((barn) => {
+      const direct = barn.sensors?.length ?? 0
+      const zones = barn.zones ?? []
+      const zoneSensors = zones.some((zone) => (zone.sensors?.length ?? 0) > 0)
+      return direct > 0 || zoneSensors
+    })
+
+    return farmLevel > 0 || barnLevel
+  }, [selectedFarm])
+
+  React.useEffect(() => {
+    if (selectedFarm?.barns?.length) {
+      if (!selectedBarnId || !selectedFarm.barns.some((barn) => barn.id === selectedBarnId)) {
+        setSelectedBarnId(selectedFarm.barns[0].id)
+      }
+    } else {
+      setSelectedBarnId(null)
+    }
+  }, [selectedBarnId, selectedFarm])
+
+  React.useEffect(() => {
+    if (!selectedFarmHasSensors) {
+      setSelectedBarnId(null)
+      setSelectedZoneId(null)
+    }
+  }, [selectedFarmHasSensors])
+
+  const selectedBarn = React.useMemo(
+    () => selectedFarm?.barns.find((barn) => barn.id === selectedBarnId) ?? null,
+    [selectedBarnId, selectedFarm]
+  )
+
+  React.useEffect(() => {
+    if (selectedBarn?.zones?.length) {
+      if (!selectedZoneId || !selectedBarn.zones.some((zone) => zone.id === selectedZoneId)) {
+        setSelectedZoneId(selectedBarn.zones[0].id)
+      }
+    } else {
+      setSelectedZoneId(null)
+    }
+  }, [selectedBarn, selectedZoneId])
+
+  const selectedZone = React.useMemo(
+    () => selectedBarn?.zones.find((zone) => zone.id === selectedZoneId) ?? null,
+    [selectedBarn, selectedZoneId]
+  )
+
+  const selectedZoneHasSensors = React.useMemo(() => {
+    if (!selectedZone) return false
+    return (selectedZone.sensors?.length ?? 0) > 0
+  }, [selectedZone])
+
+  const selectedZoneSensorTypes = React.useMemo(() => {
+    if (!selectedZone?.sensors?.length) return []
+
+    const codes = selectedZone.sensors
+      .map((sensor) => sensor.sensor_type.code)
+      .filter(Boolean)
+
+    return Array.from(new Set(codes))
+  }, [selectedZone])
+
+  const { data, error } = useSWR(
+    selectedZoneSensorTypes.length
+      ? (['dashboard/latest-readings/', selectedZoneSensorTypes.join(',')] as LatestReadingsKey)
+      : null,
+    latestReadingsFetcher,
+    {
+      refreshInterval: 5000,
+      keepPreviousData: false,
+      revalidateOnFocus: false,
     }
   )
 
