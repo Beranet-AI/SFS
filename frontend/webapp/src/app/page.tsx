@@ -12,32 +12,57 @@ import type { SingleReading } from '../lib/types'
 
 type LatestReadingsResponse = Record<string, SingleReading | null>
 
-const fetcher = async (url: string): Promise<LatestReadingsResponse> => {
-  const baseUrl = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
-  const token = process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
+const ensureTrailingSlash = (base: string) => (base.endsWith('/') ? base : `${base}/`)
 
-  if (!baseUrl || !token) {
-    throw new Error('NEXT_PUBLIC_DJANGO_API_BASE_URL یا NEXT_PUBLIC_DJANGO_API_TOKEN در .env.local تنظیم نشده است.')
+const joinPath = (prefix: string, endpoint: string) => {
+  const cleanPrefix = prefix.replace(/^\/+|\/+$/g, '')
+  const cleanEndpoint = endpoint.replace(/^\/+/, '')
+  return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
+}
+
+const fetcher = async (path: string): Promise<LatestReadingsResponse> => {
+  const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
+  const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
+  const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
+  const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
+  const sensorTypes = process.env.NEXT_PUBLIC_SENSOR_TYPES || 'temperature,ammonia'
+
+  if (!fastApiBase && !djangoApiBase) {
+    throw new Error(
+      'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
+    )
   }
 
-  const res = await fetch(`${baseUrl}${url}`, {
-    headers: {
-      Authorization: `Token ${token}`,
-      Accept: 'application/json',
-    },
+  const base = ensureTrailingSlash(fastApiBase || djangoApiBase!)
+  const targetPath = joinPath(apiPrefix, path)
+  const target = new URL(targetPath, base)
+
+  // کنترل می‌کنیم که لیست سنسورها دقیقاً با کدهای تعریف‌شده در Django هماهنگ باشد
+  target.searchParams.set('sensor_types', sensorTypes)
+
+  const headers: HeadersInit = {
+    Accept: 'application/json',
+  }
+
+  if (token) {
+    headers.Authorization = `Token ${token}`
+  }
+
+  const res = await fetch(target.toString(), {
+    headers,
     cache: 'no-store',
   })
 
   if (!res.ok) {
     const text = await res.text()
-    throw new Error(`Dashboard API error: ${res.status} - ${text.substring(0, 200)}`)
+    throw new Error(`Dashboard API error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
   }
 
   return res.json()
 }
 
 export default function HomePage() {
-  const { data, error } = useSWR('/dashboard/latest-readings/', fetcher, {
+  const { data, error } = useSWR('dashboard/latest-readings/', fetcher, {
     refreshInterval: 5000,
   })
 
@@ -75,7 +100,11 @@ export default function HomePage() {
         )}
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          داده‌ها از Django API: <code>/api/v1/dashboard/latest-readings/</code> خوانده می‌شود.
+          داده‌ها از FastAPI (یا به صورت مستقیم از Django) از مسیر <code>dashboard/latest-readings/</code> روی <code>BASE_URL</code>
+          واکشی می‌شود. اگر کد سنسورهای شما در Django متفاوت است (مثلاً <code>temp_sensor</code> به‌جای <code>temperature</code>)،
+          متغیر <code>NEXT_PUBLIC_SENSOR_TYPES</code> را با لیست درست (مثل <code>temp_sensor,ammonia</code>) تنظیم کنید. در صورت نیاز
+          می‌توانید پیشوندی مثل <code>api/v1</code> را هم در <code>NEXT_PUBLIC_API_PREFIX</code> بگذارید تا مسیر کامل مانند
+          <code>/api/v1/dashboard/latest-readings/?sensor_types=...</code> ساخته شود.
         </p>
       </div>
     </main>
