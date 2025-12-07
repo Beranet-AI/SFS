@@ -1,0 +1,92 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: smartfarm
+      POSTGRES_USER: smartfarm
+      POSTGRES_PASSWORD: smartfarm
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    networks:
+      - iot
+
+  user_management:
+    build: ../../backend/services/user_management
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/user_management/.env
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  data_ingestion:
+    build: ../../backend/services/data_ingestion
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/data_ingestion/.env
+    depends_on:
+      - mqtt
+      - user_management
+    networks:
+      - backend
+      - iot
+
+  device_controller:
+    build: ../../backend/services/device_controller
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/device_controller/.env
+    depends_on:
+      - mqtt
+      - user_management
+    networks:
+      - backend
+      - iot
+
+  alerting:
+    build: ../../backend/services/alerting
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/alerting/.env
+    depends_on:
+      - user_management
+    networks:
+      - backend
+
+  api_gateway:
+    build: ../../backend/services/api_gateway
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/api_gateway/.env
+    depends_on:
+      - user_management
+      - data_ingestion
+    ports:
+      - "8000:8000"
+    networks:
+      - backend
+
+  ai_service:
+    build: ../../backend/services/ai_service
+    env_file:
+      - ../../infra/.env.global
+      - ../../backend/services/ai_service/.env
+    networks:
+      - backend
+
+volumes:
+  db_data:
+
+networks:
+  backend:
+  iot:
