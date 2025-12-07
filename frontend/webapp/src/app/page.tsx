@@ -14,6 +14,12 @@ type LatestReadingsKey = [path: string, sensorTypesOverride?: string | null]
 
 type ApiConfigOptions = {
   preferDjango?: boolean
+  /**
+   * When true, refuse to fall back to the alternative base URL. This is useful for
+   * endpoints that only exist on Django so we do not accidentally call FastAPI and
+   * receive 404s.
+   */
+  requirePreferred?: boolean
 }
 
 type ApiConfig = {
@@ -60,12 +66,13 @@ const buildApiConfig = (options: ApiConfigOptions = {}): ApiConfig => {
 
   const primaryBase = preferDjango ? djangoApiBase : fastApiBase
   const fallbackBase = preferDjango ? fastApiBase : djangoApiBase
-  const resolvedBase = primaryBase || fallbackBase
+  const resolvedBase = primaryBase || (options.requirePreferred ? null : fallbackBase)
 
   if (!resolvedBase) {
-    throw new Error(
-      'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
-    )
+    const envHint = preferDjango
+      ? 'لطفاً NEXT_PUBLIC_DJANGO_API_BASE_URL را در .env.local تنظیم کنید؛ این مسیر فقط در Django موجود است.'
+      : 'حداقل یکی از متغیرهای NEXT_PUBLIC_FASTAPI_BASE_URL یا NEXT_PUBLIC_DJANGO_API_BASE_URL در .env.local تنظیم نشده است.'
+    throw new Error(envHint)
   }
 
   const base = ensureTrailingSlash(resolvedBase)
@@ -157,7 +164,7 @@ const latestReadingsFetcher = async ([
 }
 
 const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> => {
-  const config = buildApiConfig({ preferDjango: true })
+  const config = buildApiConfig({ preferDjango: true, requirePreferred: true })
   const target = config.buildUrl(path)
 
   const res = await fetch(target.toString(), {
@@ -174,7 +181,7 @@ const hierarchyFetcher = async (path: string): Promise<FarmHierarchyResponse> =>
 }
 
 async function activeAlertsFetcher(path: string): Promise<AlertLog[]> {
-  const config = buildApiConfig({ preferDjango: true })
+  const config = buildApiConfig({ preferDjango: true, requirePreferred: true })
   const target = config.buildUrl(path)
 
   const res = await fetch(target.toString(), {
