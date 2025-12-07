@@ -117,6 +117,54 @@ docs/
 tests/
 ```
 
+### New Folder Tree (high level)
+```
+services/
+  identity-service/
+  farm-service/
+  device-registry-service/
+  ingestion-service/
+  decision-alerts-service/
+  device-control-service/
+  analytics-service/
+  api-gateway/
+shared-kernel/
+  domain/
+  libraries/
+frontend/
+edge/
+infrastructure/
+  docker/
+  k8s/
+configs/
+docs/
+tests/
+```
+
+### Mapping Table (old → new)
+| Current Path | New Path | Notes |
+| --- | --- | --- |
+| `backend/services/user_management/api/` | `services/identity-service/interfaces/api/rest/` | Auth + user endpoints. |
+| `backend/services/user_management/config/` | `services/identity-service/interfaces/api/django_config/` | Settings + middleware. |
+| `backend/services/user_management/farm/` | `services/farm-service/interfaces/api/rest/` | Farm CRUD splits into dedicated service. |
+| `backend/services/user_management/livestock/` | `services/farm-service/interfaces/api/rest/` | Animal lifecycle and tagging. |
+| `backend/services/user_management/devices/` | `services/device-registry-service/interfaces/api/rest/` | Device/sensor registry APIs. |
+| `backend/services/data_ingestion/` | `services/ingestion-service/` | Telemetry intake HTTP/MQTT adapters. |
+| `backend/services/decision_engine_fastapi/` | `services/decision-alerts-service/` | Merge with alerting for rule evaluation. |
+| `backend/services/alerting/` | `services/decision-alerts-service/` | Alert lifecycle (raise/ack/resolve). |
+| `backend/services/device_controller/` | `services/device-control-service/` | Actuation commands + results. |
+| `backend/services/api_gateway/` | `services/api-gateway/` | Public ingress and routing. |
+| `backend/services/ai_service/` | `services/analytics-service/` | Model training/inference endpoints. |
+| `backend/domain/entities/` | `shared-kernel/domain/entities/` | Shared value objects/identifiers. |
+| `backend/domain/models.py` | `shared-kernel/domain/__init__.py` | Backwards-compatible re-exports only. |
+| `frontend/` | `frontend/` (unchanged) | Consumes gateway APIs; stay separate package. |
+| `infrastructure/docker/` | `infrastructure/docker/` (unchanged) | Compose/K8s overlays stay grouped. |
+| `edge/` | `edge/` (unchanged) | Edge agent remains isolated. |
+| `configs/` | `configs/` (unchanged) | Cross-service configs/templates. |
+| `logs/` | `infrastructure/archive/logs/` | Archive runtime logs outside source tree. |
+| `data/` | `infrastructure/archive/data/` | Move sample data away from runtime paths. |
+| `tests/` | `tests/` (unchanged) | Host integration/system tests spanning services. |
+
 ### Path Mapping (old → new)
 - `backend/services/user_management/config/*` → `services/identity-service/interfaces/api/django_config/`
 - `backend/services/user_management/api/*` → `services/identity-service/interfaces/api/rest/`
