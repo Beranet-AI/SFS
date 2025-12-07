@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15
@@ -23,7 +21,7 @@ services:
     build: ../../backend/services/user_management
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/user_management/.env
+      - ../../backend/services/user_management/.env.example
     depends_on:
       - db
     networks:
@@ -35,7 +33,7 @@ services:
     build: ../../backend/services/data_ingestion
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/data_ingestion/.env
+      - ../../backend/services/data_ingestion/.env.example
     depends_on:
       - mqtt
       - user_management
@@ -47,7 +45,7 @@ services:
     build: ../../backend/services/device_controller
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/device_controller/.env
+      - ../../backend/services/device_controller/.env.example
     depends_on:
       - mqtt
       - user_management
@@ -59,7 +57,7 @@ services:
     build: ../../backend/services/alerting
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/alerting/.env
+      - ../../backend/services/alerting/.env.example
     depends_on:
       - user_management
     networks:
@@ -69,7 +67,7 @@ services:
     build: ../../backend/services/api_gateway
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/api_gateway/.env
+      - ../../backend/services/api_gateway/.env.example
     depends_on:
       - user_management
       - data_ingestion
@@ -80,7 +78,7 @@ services:
     build: ../../backend/services/ai_service
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/ai_service/.env
+      - ../../backend/services/ai_service/.env.example
     networks:
       - backend
 
