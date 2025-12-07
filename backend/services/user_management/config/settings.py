@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "devices",
     "telemetry",
     "livestock",
-    "alerting.alerts",
+    "health",
 ]
 
 MIDDLEWARE = [
@@ -73,7 +73,12 @@ TEMPLATES = [
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 
-USE_POSTGRES = os.getenv("USE_POSTGRES", "false").lower() == "true"
+_use_postgres_env = os.getenv("USE_POSTGRES")
+USE_POSTGRES = (
+    (_use_postgres_env.lower() == "true")
+    if _use_postgres_env is not None
+    else bool(os.getenv("DATABASE_URL") or os.getenv("POSTGRES_HOST"))
+)
 
 if USE_POSTGRES:
     DATABASES = {
