@@ -6,7 +6,7 @@ pip install psycopg2-binary
 4.python manage.py startapp farm
 5.python manage.py startapp devices
 6.ثبت appها در settings.py
-user_management/config/settings.py
+management/config/settings.py
 INSTALLED_APPS = [
     # ...
     "rest_framework",
@@ -17,16 +17,16 @@ INSTALLED_APPS = [
 ]
 7.نگاشت Farm / Barn / Zone به مدل‌های Django
 در فایل:
-user_management/farm/models.py
+management/farm/models.py
 
 8.نگاشت Device / SensorType / Sensor به مدل‌های Django
 در فایل:
-user_management/devices/models.py
+management/devices/models.py
 
-9.cd SmartFarmSystemEnterprise/backend/services/user_management
+9.cd SmartFarmSystemEnterprise/backend/services/management
 python manage.py makemigrations farm devices
 
-10.SmartFarmSystemEnterprise/backend/services/user_management/config/settings.py
+10.SmartFarmSystemEnterprise/backend/services/management/config/settings.py
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -36,6 +36,6 @@ DATABASES = {
 
 11.python manage.py migrate
 
-اجرای سرویس user_management (Django)
-cd C:\Users\behzad.ramezan\SmartFarm_Project\SmartFarmSystemEnterprise\backend\services\user_management
+اجرای سرویس management (Django)
+cd C:\Users\behzad.ramezan\SmartFarm_Project\SmartFarmSystemEnterprise\backend\services\management
 python manage.py runserver

@@ -1,4 +1,4 @@
-# backend/services/user_management/Dockerfile
+# backend/services/management/Dockerfile
 
 FROM python:3.11-slim
 
@@ -23,4 +23,4 @@ COPY . /app/
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/bin/sh", "-c", "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"]

@@ -1,4 +1,4 @@
-version: "3.9"
+name: sfs
 
 services:
   db:
@@ -19,26 +19,29 @@ services:
     networks:
       - iot
 
-  user_management:
-    build: ../../backend/services/user_management
+  django:
+    build: ../../backend/services/management
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/user_management/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/management/.env.example
     depends_on:
       - db
     networks:
-      - backend
+      backend:
+        aliases:
+          - management
+          - user_management
     ports:
       - "8000:8000"
 
   data_ingestion:
     build: ../../backend/services/data_ingestion
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/data_ingestion/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/data_ingestion/.env.example
     depends_on:
       - mqtt
-      - user_management
+      - django
     networks:
       - backend
       - iot
@@ -46,11 +49,11 @@ services:
   device_controller:
     build: ../../backend/services/device_controller
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/device_controller/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/device_controller/.env.example
     depends_on:
       - mqtt
-      - user_management
+      - django
     networks:
       - backend
       - iot
@@ -58,20 +61,20 @@ services:
   alerting:
     build: ../../backend/services/alerting
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/alerting/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/alerting/.env.example
     depends_on:
-      - user_management
+      - django
     networks:
       - backend
 
   api_gateway:
     build: ../../backend/services/api_gateway
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/api_gateway/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/api_gateway/.env.example
     depends_on:
-      - user_management
+      - django
       - data_ingestion
     networks:
       - backend
@@ -79,8 +82,8 @@ services:
   ai_service:
     build: ../../backend/services/ai_service
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/ai_service/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/ai_service/.env.example
     networks:
       - backend
 
