@@ -23,4 +23,5 @@ urlpatterns = [
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
     path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
+    path("alerts/active/", ActiveAlertsView.as_view(), name="alerts-active"),
 ]
