@@ -11,11 +11,18 @@ from telemetry.views import HistoricalReadingsView, LatestReadingsView, SensorRe
 def _register_alert_routes(router: DefaultRouter) -> None:
     """Register alerting routes only when the alerting package is installed."""
 
-    spec = importlib.util.find_spec("alerting.alerts.views")
+    try:
+        spec = importlib.util.find_spec("alerting.alerts.views")
+    except ModuleNotFoundError:
+        return
+
     if spec is None:
         return
 
-    alert_views = importlib.import_module("alerting.alerts.views")
+    try:
+        alert_views = importlib.import_module("alerting.alerts.views")
+    except ModuleNotFoundError:
+        return
     router.register(
         r"alert-rules",
         getattr(alert_views, "AlertRuleViewSet"),
