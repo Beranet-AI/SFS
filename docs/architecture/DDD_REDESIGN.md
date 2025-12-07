@@ -107,7 +107,7 @@ shared-kernel/
   libraries/auth/, observability/
 frontend/
 edge/
-infra/
+infrastructure/
   docker/
   k8s/
 configs/
@@ -130,7 +130,7 @@ tests/
 - `backend/services/ai_service/*` → `services/analytics-service/`
 - `backend/domain/entities/*` → `shared-kernel/domain/entities/`
 - `backend/domain/models.py` (shim) → `shared-kernel/domain/__init__.py` (re-export or deprecated notice)
-- Legacy `logs/`, `data/`, SQLite artifacts → archive/remove under `infra/archive/` during migration.
+- Legacy `logs/`, `data/`, SQLite artifacts → archive/remove under `infrastructure/archive/` during migration.
 
 ## 7) Communication & Auth Design
 - **Gateway-first:** All external traffic via api-gateway; internal services on a private network. 
@@ -147,7 +147,7 @@ tests/
 - **Docker:** Per-service multi-stage builds (builder + runtime), slim Python base (e.g., `python:3.11-slim`), non-root user, dependency caching via `pip install --no-cache-dir` with wheels cache.
 - **Compose:** Define isolated networks: `public` (gateway) and `services`; each service exposes only internal ports; gateway publishes external port 80/443; volumes only for persistent data and minimal bind mounts. Remove shared `.env` in favor of per-service `.env.docker` templates.
 - **Env/Secrets:** `.env.example` per service; use Docker secrets/K8s secrets; store prod secrets in Vault/GitHub Actions secrets; rotate signing keys; avoid committing SQLite/db files (`user_management/db.sqlite3`).
-- **CI/CD:** GitHub Actions matrix per service: lint (ruff/flake8, mypy), test, build image, scan (Trivy/Snyk), push to registry; compose smoke tests; dependency updates via Dependabot; secret scanning (Gitleaks); IaC scanning for `infra/`.
+- **CI/CD:** GitHub Actions matrix per service: lint (ruff/flake8, mypy), test, build image, scan (Trivy/Snyk), push to registry; compose smoke tests; dependency updates via Dependabot; secret scanning (Gitleaks); IaC scanning for `infrastructure/`.
 - **Monorepo:** Keep monorepo but enforce service boundaries under `services/`; shared-kernel packages versioned internally; use tools like `poetry`/`pip-tools` or `npm workspaces` per service.
 
 ## 9) Migration Plan
