@@ -14,7 +14,7 @@ AlertEvaluator = Callable[[SensorReading], None]
 def _resolve_alert_evaluator() -> AlertEvaluator:
     """Return the alert evaluation hook if the alerting service is installed.
 
-    The user_management service may run without the alerting package in its
+    The management service may run without the alerting package in its
     image, so we lazily import the evaluator only when the module exists.
     """
     try:

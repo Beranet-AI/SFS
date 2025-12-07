@@ -8,7 +8,7 @@ This document refines the microservices architecture using Domain-Driven Design 
 - **Generic domains:** API gateway, shared observability/security, reporting/analytics enablement.
 
 ### Subdomains (inferred from code and folders)
-- **Identity & Access:** Django `api/permissions.py`, middleware, auth settings in `backend/services/user_management`.
+- **Identity & Access:** Django `api/permissions.py`, middleware, auth settings in `backend/services/management`.
 - **Farm Registry:** Django apps `farm`, `livestock`, `devices` storing farms, barns, livestock, devices, tags.
 - **Telemetry Ingestion:** FastAPI services `data_ingestion`, `decision_engine_fastapi` handling sensor inputs and pipeline hand-off.
 - **Rule Engine & Alerts:** FastAPI `alerting`, decision logic in `decision_engine_fastapi` for evaluating conditions and emitting alerts.
@@ -37,9 +37,9 @@ This document refines the microservices architecture using Domain-Driven Design 
 ## 3) Bounded Context Responsibilities (Service/Table Mapping)
 | Bounded Context | Responsibility | Service | Database | Depends on |
 | --- | --- | --- | --- | --- |
-| Identity & Access | Users, roles, permissions, tokens | user_management (Django) | Postgres `identity` | – |
-| Farm Management | Farms, barns, zones, animals, tags | user_management/farm & livestock apps (→ future farm service) | Postgres `farm_mgmt` | Identity |
-| Device Registry | Devices, sensors, status, assignments | user_management/devices (→ future device service) | Postgres `device_registry` | Farm Management, Identity |
+| Identity & Access | Users, roles, permissions, tokens | management (Django) | Postgres `identity` | – |
+| Farm Management | Farms, barns, zones, animals, tags | management/farm & livestock apps (→ future farm service) | Postgres `farm_mgmt` | Identity |
+| Device Registry | Devices, sensors, status, assignments | management/devices (→ future device service) | Postgres `device_registry` | Farm Management, Identity |
 | Telemetry Ingestion | Device enrollment, telemetry intake, schema validation | data_ingestion (FastAPI) | Time-series/queue + Postgres `ingestion` | Device Registry |
 | Decision & Alerts | Rules, thresholds, alert lifecycle | alerting + decision_engine_fastapi (merge) | Postgres `alerts` | Telemetry events, Farm/Device references |
 | Device Control | Actuation commands, feedback | device_controller | Postgres `device_control` | Decision & Alerts, Device Registry |
@@ -144,11 +144,11 @@ tests/
 ### Mapping Table (old → new)
 | Current Path | New Path | Notes |
 | --- | --- | --- |
-| `backend/services/user_management/api/` | `services/identity-service/interfaces/api/rest/` | Auth + user endpoints. |
-| `backend/services/user_management/config/` | `services/identity-service/interfaces/api/django_config/` | Settings + middleware. |
-| `backend/services/user_management/farm/` | `services/farm-service/interfaces/api/rest/` | Farm CRUD splits into dedicated service. |
-| `backend/services/user_management/livestock/` | `services/farm-service/interfaces/api/rest/` | Animal lifecycle and tagging. |
-| `backend/services/user_management/devices/` | `services/device-registry-service/interfaces/api/rest/` | Device/sensor registry APIs. |
+| `backend/services/management/api/` | `services/identity-service/interfaces/api/rest/` | Auth + user endpoints. |
+| `backend/services/management/config/` | `services/identity-service/interfaces/api/django_config/` | Settings + middleware. |
+| `backend/services/management/farm/` | `services/farm-service/interfaces/api/rest/` | Farm CRUD splits into dedicated service. |
+| `backend/services/management/livestock/` | `services/farm-service/interfaces/api/rest/` | Animal lifecycle and tagging. |
+| `backend/services/management/devices/` | `services/device-registry-service/interfaces/api/rest/` | Device/sensor registry APIs. |
 | `backend/services/data_ingestion/` | `services/ingestion-service/` | Telemetry intake HTTP/MQTT adapters. |
 | `backend/services/decision_engine_fastapi/` | `services/decision-alerts-service/` | Merge with alerting for rule evaluation. |
 | `backend/services/alerting/` | `services/decision-alerts-service/` | Alert lifecycle (raise/ack/resolve). |
@@ -166,11 +166,11 @@ tests/
 | `tests/` | `tests/` (unchanged) | Host integration/system tests spanning services. |
 
 ### Path Mapping (old → new)
-- `backend/services/user_management/config/*` → `services/identity-service/interfaces/api/django_config/`
-- `backend/services/user_management/api/*` → `services/identity-service/interfaces/api/rest/`
-- `backend/services/user_management/farm/*` → `services/farm-service/interfaces/api/rest/`
-- `backend/services/user_management/livestock/*` → `services/farm-service/interfaces/api/rest/`
-- `backend/services/user_management/devices/*` → `services/device-registry-service/interfaces/api/rest/`
+- `backend/services/management/config/*` → `services/identity-service/interfaces/api/django_config/`
+- `backend/services/management/api/*` → `services/identity-service/interfaces/api/rest/`
+- `backend/services/management/farm/*` → `services/farm-service/interfaces/api/rest/`
+- `backend/services/management/livestock/*` → `services/farm-service/interfaces/api/rest/`
+- `backend/services/management/devices/*` → `services/device-registry-service/interfaces/api/rest/`
 - `backend/services/alerting/*` + `backend/services/decision_engine_fastapi/*` → `services/decision-alerts-service/`
 - `backend/services/device_controller/*` → `services/device-control-service/`
 - `backend/services/data_ingestion/*` → `services/ingestion-service/`
@@ -194,7 +194,7 @@ tests/
 ## 8) Docker, Env, CI/CD, Monorepo
 - **Docker:** Per-service multi-stage builds (builder + runtime), slim Python base (e.g., `python:3.11-slim`), non-root user, dependency caching via `pip install --no-cache-dir` with wheels cache.
 - **Compose:** Define isolated networks: `public` (gateway) and `services`; each service exposes only internal ports; gateway publishes external port 80/443; volumes only for persistent data and minimal bind mounts. Remove shared `.env` in favor of per-service `.env.docker` templates.
-- **Env/Secrets:** `.env.example` per service; use Docker secrets/K8s secrets; store prod secrets in Vault/GitHub Actions secrets; rotate signing keys; avoid committing SQLite/db files (`user_management/db.sqlite3`).
+- **Env/Secrets:** `.env.example` per service; use Docker secrets/K8s secrets; store prod secrets in Vault/GitHub Actions secrets; rotate signing keys; avoid committing SQLite/db files (`management/db.sqlite3`).
 - **CI/CD:** GitHub Actions matrix per service: lint (ruff/flake8, mypy), test, build image, scan (Trivy/Snyk), push to registry; compose smoke tests; dependency updates via Dependabot; secret scanning (Gitleaks); IaC scanning for `infrastructure/`.
 - **Monorepo:** Keep monorepo but enforce service boundaries under `services/`; shared-kernel packages versioned internally; use tools like `poetry`/`pip-tools` or `npm workspaces` per service.
 

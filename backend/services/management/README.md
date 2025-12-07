@@ -1,4 +1,4 @@
-# Django user_management service
+# Django management service
 
 این سرویس مسئول:
 - مدیریت کاربران

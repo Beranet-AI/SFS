@@ -1,4 +1,4 @@
-# backend/services/user_management/Dockerfile
+# backend/services/management/Dockerfile
 
 FROM python:3.11-slim
 

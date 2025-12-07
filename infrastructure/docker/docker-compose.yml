@@ -20,15 +20,16 @@ services:
       - iot
 
   django:
-    build: ../../backend/services/user_management
+    build: ../../backend/services/management
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/user_management/.env.example
+      - ../../backend/services/management/.env.example
     depends_on:
       - db
     networks:
       backend:
         aliases:
+          - management
           - user_management
     ports:
       - "8000:8000"

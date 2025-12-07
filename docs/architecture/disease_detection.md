@@ -133,7 +133,7 @@ Field-level tables live in the `health` bounded context and own the disease doma
 - Rollout: start with tree-based model; iterate with LSTM when sequence depth is sufficient; gate releases via canary in ai_service.
 
 ## 12) Directory/Service Touch Points
-- Django: `backend/services/user_management/health/` models/admin/migrations already own schema.
+- Django: `backend/services/management/health/` models/admin/migrations already own schema.
 - FastAPI: add ai_service under `backend/services/ai_service/` (Dockerized) or extend data_ingestion with the endpoints above.
 - LabVIEW: extend channel map and payload to include new sensors; send to FastAPI ingestion.
 - Node.js: add dashboard modules described above; call Django/ai_service APIs, no server restarts for new diseases/models.

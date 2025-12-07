@@ -51,6 +51,6 @@ _register_alert_routes(router)
 urlpatterns = [
     path("", include(router.urls)),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
-    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),
+    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
 ]
