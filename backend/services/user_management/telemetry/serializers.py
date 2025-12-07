@@ -17,8 +17,11 @@ def _resolve_alert_evaluator() -> AlertEvaluator:
     The user_management service may run without the alerting package in its
     image, so we lazily import the evaluator only when the module exists.
     """
+    try:
+        spec = importlib.util.find_spec("alerting.alerts.services")
+    except ModuleNotFoundError:
+        return lambda reading: None
 
-    spec = importlib.util.find_spec("alerting.alerts.services")
     if spec is None:
         return lambda reading: None
 
