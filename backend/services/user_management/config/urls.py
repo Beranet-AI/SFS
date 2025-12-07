@@ -3,7 +3,11 @@ from django.urls import path, include
 from api import views
 
 # Import ActiveAlertsView directly to guarantee the endpoint is always routable
+<<<<<<< HEAD
 from alerting.alerts.views import ActiveAlertsView
+=======
+from alerts.views import ActiveAlertsView
+>>>>>>> main
 
 urlpatterns = [
     path("admin/", admin.site.urls),
