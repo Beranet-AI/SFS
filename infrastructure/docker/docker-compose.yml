@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15
@@ -22,8 +20,8 @@ services:
   user_management:
     build: ../../backend/services/user_management
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/user_management/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/user_management/.env.example
     depends_on:
       - db
     networks:
@@ -34,8 +32,8 @@ services:
   data_ingestion:
     build: ../../backend/services/data_ingestion
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/data_ingestion/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/data_ingestion/.env.example
     depends_on:
       - mqtt
       - user_management
@@ -46,8 +44,8 @@ services:
   device_controller:
     build: ../../backend/services/device_controller
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/device_controller/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/device_controller/.env.example
     depends_on:
       - mqtt
       - user_management
@@ -58,8 +56,8 @@ services:
   alerting:
     build: ../../backend/services/alerting
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/alerting/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/alerting/.env.example
     depends_on:
       - user_management
     networks:
@@ -68,8 +66,8 @@ services:
   api_gateway:
     build: ../../backend/services/api_gateway
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/api_gateway/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/api_gateway/.env.example
     depends_on:
       - user_management
       - data_ingestion
@@ -79,8 +77,8 @@ services:
   ai_service:
     build: ../../backend/services/ai_service
     env_file:
-      - ../../infra/.env.global
-      - ../../backend/services/ai_service/.env
+      - ../../infrastructure/.env.example
+      - ../../backend/services/ai_service/.env.example
     networks:
       - backend
 

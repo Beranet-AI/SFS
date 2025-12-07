@@ -1,8 +1,9 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from telemetry.views import SensorReadingViewSet, LatestReadingsView, HistoricalReadingsView
+
 from devices.views import DeviceViewSet, SensorTypeViewSet, SensorViewSet
 from farm.views import BarnViewSet, FarmHierarchyView, FarmViewSet, ZoneViewSet
+from telemetry.views import HistoricalReadingsView, LatestReadingsView, SensorReadingViewSet
 router = DefaultRouter()
 router.register(r"devices", DeviceViewSet, basename="device")
 router.register(r"sensor-types", SensorTypeViewSet, basename="sensor-type")
@@ -13,9 +14,7 @@ router.register(r"barns", BarnViewSet, basename="barn")
 router.register(r"zones", ZoneViewSet, basename="zone")
 urlpatterns = [
     path("", include(router.urls)),
-    path("", include("alerting.alerts.urls")),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
     path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
-    path("alerts/active/", ActiveAlertsView.as_view(), name="alerts-active"),
 ]
