@@ -35,7 +35,7 @@ This repository is organized to match the proposed layered architecture for the 
 - `frontend/mobileapp/` – Reserved for a future mobile client scaffold.
 
 ## Infrastructure & ops
-- `infrastructure/docker/` – Docker Compose stacks and Docker assets (.gitkeep placeholder).
+- `infrastructure/docker/` – Docker Compose stacks and Docker assets (primary `docker-compose.yml` lives here).
 - `infrastructure/k8s/` – Kubernetes/Helm manifests (.gitkeep placeholder).
 - `infrastructure/mqtt_broker/` – MQTT broker configuration (.gitkeep placeholder).
 
