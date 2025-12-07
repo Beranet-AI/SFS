@@ -283,6 +283,27 @@ export default function HomePage() {
     return Array.from(new Set(codes))
   }, [selectedZone])
 
+  const {
+    data: activeAlerts,
+    error: alertsError,
+  } = useSWR<AlertLog[]>('alerts/active/', activeAlertsFetcher, {
+    refreshInterval: 10000,
+  })
+
+  const alertsBySensor = React.useMemo(() => {
+    const map = new Map<number, AlertLog[]>()
+    if (!activeAlerts) return map
+
+    activeAlerts.forEach((alert) => {
+      if (alert.sensor == null) return
+      const existing = map.get(alert.sensor) ?? []
+      existing.push(alert)
+      map.set(alert.sensor, existing)
+    })
+
+    return map
+  }, [activeAlerts])
+
   const { data, error } = useSWR(
     selectedZoneSensorTypes.length
       ? (['dashboard/latest-readings/', selectedZoneSensorTypes.join(',')] as LatestReadingsKey)
