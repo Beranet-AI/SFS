@@ -50,7 +50,7 @@ tests/
 - **Backwards compatibility:** `backend/domain/models.py` now re-exports the entities so existing imports continue to work during migration.
 
 ## Microservice boundaries & bounded contexts
-- **User Management (Django):** owns identity, RBAC, farm/barn/zones master data; expose REST and internal gRPC/HTTP ports only to trusted services.
+- **Management (Django):** owns identity, RBAC, farm/barn/zones master data; expose REST and internal gRPC/HTTP ports only to trusted services.
 - **Ingestion (FastAPI/MQTT):** responsible for sensor/device registration and raw payload intake; publish canonical events (`sensor.reading.ingested`) onto a message bus.
 - **Decision/Alerts (FastAPI):** consumes canonical readings, evaluates rules, and emits alerts (`alert.raised`, `alert.resolved`).
 - **Device Controller (FastAPI):** subscribes to commands/events for actuation; isolates edge-communication protocols.
@@ -60,7 +60,7 @@ tests/
 ### Bounded context diagram
 ```mermaid
 graph TD
-  UM[User Management
+  MGT[Management
   (Identity, RBAC,
   Farm/Barn/Zone)]
   ING[Ingestion
@@ -79,7 +79,7 @@ graph TD
   (Public API,
   AuthZ)]
 
-  API --> UM
+  API --> MGT
   API --> ING
   API --> DEC
   API --> AI
@@ -87,7 +87,7 @@ graph TD
   DEC --> CTRL
   DEC --> API
   ING --> AI
-  UM --> DEC
+  MGT --> DEC
 ```
 
 ## Clean/Hexagonal architecture view
@@ -130,7 +130,7 @@ graph LR
 - Store secrets in a vault (HashiCorp Vault/AWS Secrets Manager); inject at runtime via environment or sidecar, never in Git.
 
 ## Security & token plan
-- Standardize on **JWT access tokens** issued by User Management; short-lived access tokens + refresh tokens; include service-to-service audiences.
+- Standardize on **JWT access tokens** issued by the Management service; short-lived access tokens + refresh tokens; include service-to-service audiences.
 - Gateway validates tokens and forwards **JWT bearer** to downstream services; internal services verify audience/issuer using shared JWKS.
 - Rotate secrets quarterly; use **OPA/Rego** or API Gateway middleware for fine-grained authorization.
 - Enable **secret scanning**, SAST (Bandit/semgrep), and container image scanning (Trivy/Grype) in CI.

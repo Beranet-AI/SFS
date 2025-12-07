@@ -17,7 +17,7 @@ This document refines the microservices architecture using Domain-Driven Design 
 - **Gateway:** `backend/services/api_gateway` providing facade.
 
 ## 2) Bounded Contexts & Context Map
-- **Identity & Access BC:** Authentication, authorization, tenant/farm membership. Upstream to all internal services (customer-supplier for auth tokens). Implemented by Django user management service.
+- **Identity & Access BC:** Authentication, authorization, tenant/farm membership. Upstream to all internal services (customer-supplier for auth tokens). Implemented by the Django management service.
 - **Farm Management BC:** Farm/barn/zone/animal/tag registries; owns lifecycle and IDs. Supplies references to other contexts (upstream supplier; others are conformist). Implemented by Django farm/livestock/apps.
 - **Device Registry BC:** Device + sensor inventory and status. Depends on Farm Management for farm/barn/zone identities. Consumed by Ingestion and Device Control. Implemented by Django `devices` app (future dedicated service).
 - **Telemetry Ingestion BC:** Receives raw sensor/device payloads, validates against Device Registry, publishes canonical `telemetry.reading.ingested` events. Downstream consumers: Decision & Alerts, Analytics. Implemented by FastAPI `data_ingestion`.

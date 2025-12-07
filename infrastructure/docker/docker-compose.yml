@@ -19,7 +19,7 @@ services:
     networks:
       - iot
 
-  django:
+  management:
     build: ../../backend/services/management
     env_file:
       - ../../infrastructure/.env.example
@@ -30,7 +30,6 @@ services:
       backend:
         aliases:
           - management
-          - user_management
     ports:
       - "8000:8000"
 
@@ -41,7 +40,7 @@ services:
       - ../../backend/services/data_ingestion/.env.example
     depends_on:
       - mqtt
-      - django
+      - management
     networks:
       - backend
       - iot
@@ -53,7 +52,7 @@ services:
       - ../../backend/services/device_controller/.env.example
     depends_on:
       - mqtt
-      - django
+      - management
     networks:
       - backend
       - iot
@@ -64,7 +63,7 @@ services:
       - ../../infrastructure/.env.example
       - ../../backend/services/alerting/.env.example
     depends_on:
-      - django
+      - management
     networks:
       - backend
 
@@ -74,7 +73,7 @@ services:
       - ../../infrastructure/.env.example
       - ../../backend/services/api_gateway/.env.example
     depends_on:
-      - django
+      - management
       - data_ingestion
     networks:
       - backend
