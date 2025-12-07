@@ -1,57 +1,64 @@
-# decision_engine_fastapi/app/rules_engine.py
+"""Simple rules engine for evaluating sensor readings."""
 
-from typing import List, Dict, Any
+from __future__ import annotations
+
+import logging
+import operator
+from typing import Any, Dict, Iterable, List, Mapping
+
+
+logger = logging.getLogger(__name__)
+
+COMPARATORS = {
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+    "==": operator.eq,
+    "!=": operator.ne,
+}
 
 
 def evaluate_rules_for_reading(
-    rules: List[Dict[str, Any]],
-    reading: Dict[str, Any],
+    rules: Iterable[Mapping[str, Any]],
+    reading: Mapping[str, Any],
 ) -> List[Dict[str, Any]]:
-    """
-    rules: لیست قوانین فعال بر اساس خروجی API Django از /alert-rules/
-    reading: داده SensorReading که همین الان ثبت شده/یا می‌خواهیم ثبت کنیم.
-    خروجی: لیست قوانین تریگر شده
-    """
-
-    triggered: List[Dict[str, Any]] = []
+    """Return rules that are triggered for the supplied reading."""
 
     sensor_id = reading.get("sensor_id") or reading.get("sensor")
     value = reading.get("value")
 
     if sensor_id is None or value is None:
-        return triggered
+        return []
 
+    triggered: List[Dict[str, Any]] = []
     for rule in rules:
         params = rule.get("params") or {}
         rule_sensor_id = params.get("sensor_id")
         threshold = params.get("threshold")
-        operator = params.get("operator", ">")
+        operator_symbol = params.get("operator", ">")
 
-        # اگر rule برای سنسور خاصی تعریف شده و با این سنسور نمی‌خواند → رد
         if rule_sensor_id is not None and rule_sensor_id != sensor_id:
             continue
-
         if threshold is None:
             continue
 
-        if _compare(value, threshold, operator):
-            triggered.append(rule)
+        if _compare(value, threshold, operator_symbol):
+            triggered.append(dict(rule))
 
     return triggered
 
 
-def _compare(value: float, threshold: float, operator: str) -> bool:
-    if operator == ">":
-        return value > threshold
-    if operator == ">=":
-        return value >= threshold
-    if operator == "<":
-        return value < threshold
-    if operator == "<=":
-        return value <= threshold
-    if operator == "==":
-        return value == threshold
-    if operator == "!=":
-        return value != threshold
-    # اگر operator ناشناخته بود، فعلاً false
-    return False
+def _compare(value: Any, threshold: Any, operator_symbol: str) -> bool:
+    comparator = COMPARATORS.get(operator_symbol)
+    if comparator is None:
+        logger.warning("Unknown operator '%s' provided to rules engine", operator_symbol)
+        return False
+
+    try:
+        return comparator(float(value), float(threshold))
+    except (TypeError, ValueError):
+        logger.warning(
+            "Comparison failed for value=%r threshold=%r operator=%s", value, threshold, operator_symbol
+        )
+        return False

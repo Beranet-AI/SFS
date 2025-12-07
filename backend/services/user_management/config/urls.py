@@ -8,7 +8,7 @@ from alerting.alerts.views import ActiveAlertsView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/v1/", include("api.urls")),
     # Explicit top-level mapping so /api/v1/alerts/active/ never 404s
     path("api/v1/alerts/active/", ActiveAlertsView.as_view(), name="alert-active-root"),
+    path("api/v1/", include("api.urls")),
 ]
