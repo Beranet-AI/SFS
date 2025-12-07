@@ -23,6 +23,13 @@ class Cow(models.Model):
         default=0,
         help_text="Number of calvings",
     )
+    breed = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="Breed identifier or code",
+    )
+    date_of_birth = models.DateField(null=True, blank=True)
     days_in_milk = models.PositiveIntegerField(
         null=True,
         blank=True,
@@ -143,6 +150,17 @@ class SensorData(models.Model):
     ts = models.DateTimeField(db_index=True)
     value = models.FloatField()
     unit = models.CharField(max_length=20, null=True, blank=True)
+    aggregation = models.CharField(
+        max_length=30,
+        null=True,
+        blank=True,
+        help_text="raw, minute, hourly, daily",
+    )
+    sample_interval_seconds = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Sampling interval used to compute the observation",
+    )
     quality = models.CharField(
         max_length=10,
         choices=QUALITY_CHOICES,
@@ -199,6 +217,11 @@ class Prediction(models.Model):
         null=True,
         blank=True,
         help_text="Probability or confidence score",
+    )
+    lead_time_hours = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Lead time between prediction and diagnosis window start",
     )
     predicted_at = models.DateTimeField(default=timezone.now, db_index=True)
     features = models.JSONField(
@@ -264,3 +287,166 @@ class DiseaseRecord(models.Model):
 
     def __str__(self) -> str:
         return f"{self.disease} for {self.cow} ({self.status})"
+
+
+class ClinicalEvent(models.Model):
+    EVENT_TYPES = (
+        ("diagnosis", "Diagnosis"),
+        ("observation", "Observation"),
+        ("treatment", "Treatment"),
+        ("lab", "Lab"),
+    )
+
+    cow = models.ForeignKey(
+        Cow,
+        on_delete=models.CASCADE,
+        related_name="clinical_events",
+    )
+    disease = models.ForeignKey(
+        Disease,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="clinical_events",
+    )
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    occurred_at = models.DateTimeField(default=timezone.now, db_index=True)
+    notes = models.TextField(null=True, blank=True)
+    symptom = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="Primary symptom or observation",
+    )
+    severity = models.CharField(max_length=50, null=True, blank=True)
+    source = models.CharField(
+        max_length=50,
+        default="manual",
+        help_text="manual, vet, app, ingest",
+    )
+
+    class Meta:
+        db_table = "clinical_events"
+        verbose_name = "Clinical Event"
+        verbose_name_plural = "Clinical Events"
+        indexes = [
+            models.Index(fields=["cow", "occurred_at"]),
+            models.Index(fields=["disease", "event_type"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event_type} for {self.cow} at {self.occurred_at}"
+
+
+class TreatmentLog(models.Model):
+    cow = models.ForeignKey(
+        Cow,
+        on_delete=models.CASCADE,
+        related_name="treatments",
+    )
+    disease = models.ForeignKey(
+        Disease,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="treatments",
+    )
+    clinical_event = models.ForeignKey(
+        ClinicalEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="treatments",
+    )
+    treatment_type = models.CharField(max_length=200)
+    medication = models.CharField(max_length=200, null=True, blank=True)
+    dose = models.CharField(max_length=100, null=True, blank=True)
+    administered_by = models.CharField(max_length=100, null=True, blank=True)
+    started_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "treatment_logs"
+        verbose_name = "Treatment Log"
+        verbose_name_plural = "Treatment Logs"
+        indexes = [
+            models.Index(fields=["cow", "started_at"]),
+            models.Index(fields=["disease", "treatment_type"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.treatment_type} for {self.cow}"
+
+
+class LabResult(models.Model):
+    cow = models.ForeignKey(
+        Cow,
+        on_delete=models.CASCADE,
+        related_name="lab_results",
+    )
+    disease = models.ForeignKey(
+        Disease,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lab_results",
+    )
+    clinical_event = models.ForeignKey(
+        ClinicalEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="lab_results",
+    )
+    parameter = models.CharField(max_length=100)
+    value = models.FloatField()
+    unit = models.CharField(max_length=20, null=True, blank=True)
+    result_at = models.DateTimeField(default=timezone.now, db_index=True)
+    reference_range = models.CharField(max_length=100, null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = "lab_results"
+        verbose_name = "Lab Result"
+        verbose_name_plural = "Lab Results"
+        indexes = [
+            models.Index(fields=["cow", "result_at"]),
+            models.Index(fields=["disease", "parameter"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.parameter} for {self.cow} @ {self.result_at}"
+
+
+class ManagementEvent(models.Model):
+    EVENT_TYPES = (
+        ("pen_move", "Pen Move"),
+        ("diet_change", "Diet Change"),
+        ("milking_schedule", "Milking Schedule"),
+        ("seasonal", "Seasonal"),
+        ("other", "Other"),
+    )
+
+    cow = models.ForeignKey(
+        Cow,
+        on_delete=models.CASCADE,
+        related_name="management_events",
+        null=True,
+        blank=True,
+    )
+    event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
+    description = models.TextField(null=True, blank=True)
+    occurred_at = models.DateTimeField(default=timezone.now, db_index=True)
+    metadata = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        db_table = "management_events"
+        verbose_name = "Management Event"
+        verbose_name_plural = "Management Events"
+        indexes = [
+            models.Index(fields=["event_type", "occurred_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.event_type} @ {self.occurred_at}"

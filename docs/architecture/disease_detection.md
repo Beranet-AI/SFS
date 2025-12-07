@@ -1,60 +1,59 @@
-# AI-Based Livestock Disease Detection (Mastitis-first)
+# AI-Driven Mastitis Detection Blueprint
 
-This document describes how to integrate AI-driven disease detection—starting with mastitis—into the SmartFarm system without breaking the current multi-layer architecture (LabVIEW → FastAPI → Django → Node.js dashboard).
+This document makes the mastitis detection stack implementation-ready while keeping the existing LabVIEW → FastAPI → Django → Node.js architecture intact. The same patterns generalize to other diseases and new sensor types.
 
-## Data Model Extensions (Django)
-Field-level tables are introduced in the new `health` app to keep disease data isolated while reusing existing farm/livestock registries.
+## 1) Data Model Extensions (Django `health` app)
+Field-level tables live in the `health` bounded context and own the disease domain data.
 
-### `health_cows` (table: `cows`)
-- `id` (PK)
+### `cows` (extends livestock registry)
 - `animal_id` (FK → `livestock_animal`, unique)
-- `lactation_stage` (char: early/mid/late/dry)
-- `parity` (int, #calvings)
+- `lactation_stage` (`early|mid|late|dry`)
+- `parity` (int)
+- `breed` (char)
+- `date_of_birth` (date)
 - `days_in_milk` (int, nullable)
 - `last_calving_date` (date, nullable)
-- `created_at`, `updated_at`
+- timestamps
 
-### `health_diseases` (table: `diseases`)
-- `id` (PK)
-- `code` (unique), `name`
-- `description`
+### `diseases`
+- `code` (unique), `name`, `description`
 - `symptoms` (JSON array)
 - `detection_methods` (JSON array)
 - timestamps
 
-### `health_ml_models` (table: `ml_models`)
-- `id` (PK)
-- `name`, `version`
+### `ml_models`
+- `name`, `version`, `framework` (sklearn/pytorch/tf/onnx)
 - `disease_id` (FK → `diseases`)
-- `framework` (sklearn/pytorch/onnx/etc.)
-- `artifact_path` (URI to model binary)
-- `input_schema` (JSON feature spec)
-- `metrics` (JSON: AUC/F1/precision/recall)
+- `artifact_path` (URI in object storage)
+- `input_schema` (JSON feature list)
+- `metrics` (JSON: AUC/F1/precision/recall/lead_time)
 - `is_active` (bool)
 - timestamps
 
-### `health_sensor_data` (table: `sensor_data`)
-- `id` (PK)
+### `sensor_data`
 - `sensor_id` (FK → `devices_sensor`)
 - `sensor_type_id` (FK → `devices_sensortype`)
-- `cow_id` (FK → `cows`, nullable for ambient sensors)
+- `cow_id` (FK → `cows`, nullable for ambient)
 - `ts` (datetime, indexed)
-- `value`, `unit`, `quality`, `raw_payload`
+- `value`, `unit`
+- `aggregation` (`raw|minute|hourly|daily`)
+- `sample_interval_seconds` (int, nullable)
+- `quality` (`good|suspect|bad`)
+- `raw_payload`
 - `created_at`
 
-### `health_predictions` (table: `predictions`)
-- `id` (PK)
+### `predictions`
 - `model_id` (FK → `ml_models`)
 - `disease_id` (FK → `diseases`)
 - `cow_id` (FK → `cows`)
 - `status` (`healthy|suspected|at_risk`)
 - `probability` (decimal)
+- `lead_time_hours` (float, nullable)
 - `predicted_at` (datetime, indexed)
-- `features` (JSON feature vector)
+- `features` (JSON)
 - `feature_window_start`, `feature_window_end`
 
-### `health_disease_records` (table: `disease_records`)
-- `id` (PK)
+### `disease_records`
 - `cow_id` (FK → `cows`)
 - `disease_id` (FK → `diseases`)
 - `status` (`suspected|confirmed|recovered`)
@@ -62,64 +61,81 @@ Field-level tables are introduced in the new `health` app to keep disease data i
 - `diagnosed_at`, `resolved_at`
 - `notes`
 
-## Recommended Microservice Placement
-- **Inference microservice (FastAPI)** under `backend/services/ai_service`:
-  - Receives pre-processed sensor windows and returns predictions.
-  - Uses model registry (`ml_models`) for loading artifacts and metadata.
-  - Publishes prediction events to message bus (e.g., RabbitMQ/Redis Streams) and persists via Django API.
-- **Django health bounded context** (`health` app):
-  - Owns diseases, cows, predictions, disease records, model registry metadata.
-  - Exposes REST endpoints for CRUD and querying predictions.
-- **Data ingestion (FastAPI)**: Streams raw sensor payloads; enrich with `cow_id` mapping and forward to inference service asynchronously.
+### New clinical and management logs
+- `clinical_events`: `{cow_id, disease_id?, event_type (diagnosis|observation|treatment|lab), occurred_at, symptom, severity, source, notes}`
+- `treatment_logs`: `{cow_id, disease_id?, clinical_event_id?, treatment_type, medication?, dose?, administered_by?, started_at, completed_at?, notes}`
+- `lab_results`: `{cow_id, disease_id?, clinical_event_id?, parameter, value, unit?, result_at, reference_range?, notes}`
+- `management_events`: `{cow_id?, event_type (pen_move|diet_change|milking_schedule|seasonal|other), description?, occurred_at, metadata}`
 
-## Sensors for Mastitis and Wiring
-- **Electrical Conductivity (EC)**: inline milk meters → LabVIEW Modbus/TCP → FastAPI ingestion → stored in `sensor_data`.
-- **Somatic Cell Count (SCC)**: lab device integration via LabVIEW serial driver; batch upload via FastAPI.
-- **pH & Milk Color**: optical/colorimetric sensors via LabVIEW DAQ; normalized to `[0,1]` features.
-- **Udder Surface Temperature (IR)**: thermal camera; optional CNN pipeline; send summary stats (mean/max) per quarter.
-- **Body Temperature**: rumen bolus or rectal probe sensors.
-- **Activity/Motion & Rumination**: accelerometer collars; compute features (step count, lying bouts, rumination minutes).
-- **Eating/Feed Intake**: load cells or RFID feed bins; join on `cow_id` using RFID tag mapping.
+## 2) Input Data Requirements
+- **Static cow metadata**: `cow_id`, parity, breed, DOB, last_calving_date, DIM (populate `days_in_milk`).
+- **Time-series** (per sampling rules below): milk_yield, milk_conductivity, SCC, body_temperature, skin_temperature, rumination_time, activity_level, feed_intake, body_weight, ambient_temperature, milking_time.
+- **Clinical events**: timestamped diagnosis/treatment/lab notes using `clinical_events`, `treatment_logs`, `lab_results`.
+- **Management events**: pen moves, diet changes, milking schedule updates via `management_events`.
 
-**LabVIEW → FastAPI bridge**: Each sensor channel publishes `{sensor_code, sensor_id, cow_external_id?, ts, value, unit}` to the ingestion HTTP endpoint. FastAPI enriches with `sensor_id`/`cow_id` via Django lookup before persisting.
+## 3) Sensor Integration
+- **LabVIEW drivers**: extend channel map to include EC/SCC analyzers, rumination collars, load-cell scales, IR thermometers/cameras, feed-intake bins, and neck-collar accelerometers.
+- **Payload format**: `{sensor_code, sensor_id, cow_external_id?, ts, value, unit, aggregation?, sample_interval_seconds?}`.
+- **FastAPI ingestion**: enrich payloads with `sensor_id`/`cow_id` via Django lookup, persist to `sensor_data`, and forward windows to AI inference service async.
+- **Manual entry**: mobile/web form posts to Django `clinical_events` for lab/clinical notes.
 
-## FastAPI Inference API (ai_service)
-- `POST /api/v1/predictions` – body: `{cow_id, disease_code, model_name?, window_start, window_end, features:[...]}` → returns `{status, probability, prediction_id}` and emits event.
-- `GET /api/v1/models` – list active models with metadata.
-- `POST /api/v1/models/{model_id}/reload` – hot-reload artifact from `artifact_path`.
-- `POST /api/v1/models/{model_id}/train` – kick off training job using labeled windows; store metrics and new version.
-- `GET /api/v1/health` – readiness/liveness.
+## 4) Sampling Frequency (standardize in ingestion jobs)
+- Milk yield/EC/SCC: **per milking** (3x daily typical).
+- Activity/rumination: **raw 1-minute** → aggregate hourly + daily.
+- Body/skin temp: **daily** or per milking; IR camera aggregates per session.
+- Weight/feed intake: **daily** (post-milking exit lane scale, feed bin totals).
+- Clinical/management events: **real-time** with precise timestamps.
 
-## Django REST (health app)
-- `GET /api/health/cows/{id}/sensor-data?from=&to=&type=` – windowed series for dashboard.
-- `GET /api/health/cows/{id}/predictions` – timeline of predictions.
-- `POST /api/health/predictions` – persist prediction (used by ai_service callback).
-- `POST /api/health/diseases` / `GET /api/health/diseases` – manage catalog.
-- `POST /api/health/records` – create/update disease records (manual vet input or triggered by prediction).
+## 5) Labeling Strategy
+- Ground truth: clinical diagnosis events (`clinical_events.event_type=diagnosis`).
+- Positive windows: 24–72h before diagnosis.
+- Negative windows: ≥7 days away from any diagnosis.
+- Handle imbalance: class weights, oversampling, focal loss; support active learning by flagging low-confidence predictions for manual labeling.
 
-## Training & Inference Workflow
-1. **Ingestion**: LabVIEW sends sensor samples → FastAPI ingestion → `health_sensor_data` (plus existing `telemetry_sensor_readings`).
-2. **Feature building**: Sliding window aggregation jobs (Celery/Prefect) compute per-cow feature vectors.
-3. **Inference**: ai_service loads active `ml_models` artifacts, scores features, posts to `/api/health/predictions` (Django) and emits events.
-4. **Record keeping**: Django creates/updates `disease_records` when thresholds crossed; alerts service can subscribe to prediction events.
-5. **Retraining**: Scheduled job pulls labeled windows (`disease_records` + `sensor_data`), trains new model version, updates `ml_models` row and artifact URI.
+## 6) Feature Engineering
+- Moving averages/deltas: 24h/48h/7d for EC, yield, rumination, temperature, weight.
+- Z-score per cow to normalize individual baselines.
+- Cross-features: milk/weight ratio, rumination drops vs. baseline, activity variance.
+- Missing data: forward-fill within short gaps; longer gaps get explicit missing indicators.
 
-## Model Recommendations
-- **Tabular sensors**: RandomForest/XGBoost/Bayesian models for quick baselines; upgrade to Temporal CNN/LSTM for sequences.
-- **Thermal imagery**: Lightweight CNN (MobileNet/ResNet18) with Grad-CAM for explainability.
-- **Ensembling**: Stacking (meta-learner) to combine EC, SCC, temp, activity signals.
-- **Versioning**: Store artifacts in object storage (S3/MinIO) with semantic version tags; track metrics in `ml_models.metrics`.
+## 7) Model Pipeline
+- **Models**: start with RandomForest/XGBoost baselines; add LSTM for sequential signals; optional CNN for IR frames.
+- **Containers**: package training + inference as Docker images; load artifacts from object storage (S3/MinIO) based on `ml_models.artifact_path`.
+- **Training**: cron/Prefect/Celery job pulls labeled windows (sensor_data + disease_records), trains, logs metrics, writes new model version row, uploads artifact.
+- **Inference**: FastAPI ai_service loads active model per disease, scores recent window, returns `{status, probability, lead_time_hours}` and posts to Django.
 
-## Directory & File Additions
-- `backend/services/user_management/health/` – Django bounded context with models, admin, migrations.
-- `docs/architecture/disease_detection.md` – architecture, API specs, wiring instructions.
-- ai_service (FastAPI) should host `/api/v1/predictions`, `/api/v1/models`, `/api/v1/health` within `backend/services/ai_service` (containerized separately).
+## 8) FastAPI AI Service (new `ai_service` or embedded in data ingestion)
+- `POST /api/v1/predict/mastitis` → body: `{cow_id, window_start, window_end, features?:{...}}` OR server-side window fetch; returns `{prediction_id, status, probability, lead_time_hours, feature_window_start, feature_window_end}`.
+- `GET /api/v1/predictions?cow_id=&disease_code=&limit=` → list predictions.
+- `POST /api/v1/train/model` → `{disease_code, model_name, version?, training_window_days?, labels_source?}` triggers training job.
+- `GET /api/v1/features/importance?model_id=` → returns top features (Gain/SHAP if available).
+- `GET /api/v1/models` / `POST /api/v1/models/{id}/reload` to manage active artifacts.
 
-## Node.js Dashboard Additions
-- **Management screens**: CRUD for Diseases, Models, Sensors (types + instances), and Cow registry.
-- **Analytics**: Time-series widgets per cow, current status badges (healthy/suspected), model accuracy charts, alert logs.
-- **Extensibility**: Form-driven creation of diseases and models (no code changes); dropdowns pull from `diseases`, `ml_models`, and `sensors` APIs.
+## 9) Django REST (health app)
+- `GET /api/health/cows/{id}/sensor-data?from=&to=&type=&agg=`
+- `GET /api/health/cows/{id}/predictions`
+- `POST /api/health/predictions` (callback from ai_service)
+- `POST /api/health/clinical-events` / `treatment-logs` / `lab-results` / `management-events`
+- CRUD for diseases, models, cows
 
-## Security & Contracts
-- Keep disease data behind authenticated Django REST endpoints; ai_service uses service-token/JWT when posting predictions.
-- No cross-database joins: ai_service reads only via REST or message bus; Django owns writes to disease tables.
+## 10) Node.js Dashboard Additions
+- Disease board: per-cow status badges (healthy/suspected/at_risk) + probability sparkline.
+- Time-series charts: EC, SCC, yield, rumination, temp, weight with thresholds and sampling aggregation switcher.
+- Management UI: add/remove diseases, sensors, models; assign sensors to cows/locations.
+- Clinical & treatment timeline: forms for events/labs/treatments; link predictions to records.
+- Model ops: upload new model artifact/metadata, set active version, view metrics and feature importance.
+- Analytics: recall/precision/lead-time charts; false-alarm log.
+
+## 11) Deployment & Evaluation
+- Pilot 50–100 cows; collect ≥3 months of data; manual labels via `clinical_events`.
+- Sync timestamps across LabVIEW/FastAPI/Django; enforce UTC.
+- Metrics to track: recall (early detection), precision, lead time, AUC/F1; alert volume vs. resolved cases.
+- Rollout: start with tree-based model; iterate with LSTM when sequence depth is sufficient; gate releases via canary in ai_service.
+
+## 12) Directory/Service Touch Points
+- Django: `backend/services/user_management/health/` models/admin/migrations already own schema.
+- FastAPI: add ai_service under `backend/services/ai_service/` (Dockerized) or extend data_ingestion with the endpoints above.
+- LabVIEW: extend channel map and payload to include new sensors; send to FastAPI ingestion.
+- Node.js: add dashboard modules described above; call Django/ai_service APIs, no server restarts for new diseases/models.
+
+Security: ai_service authenticates to Django via service token/JWT; no cross-database joins—only API/event calls. All new disease/sensor/model records are data-driven and require no code changes.

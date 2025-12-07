@@ -1,6 +1,17 @@
 from django.contrib import admin
 
-from .models import Cow, Disease, DiseaseRecord, MLModel, Prediction, SensorData
+from .models import (
+    ClinicalEvent,
+    Cow,
+    Disease,
+    DiseaseRecord,
+    LabResult,
+    ManagementEvent,
+    MLModel,
+    Prediction,
+    SensorData,
+    TreatmentLog,
+)
 
 
 @admin.register(Cow)
@@ -41,4 +52,32 @@ class PredictionAdmin(admin.ModelAdmin):
 class DiseaseRecordAdmin(admin.ModelAdmin):
     list_display = ("disease", "cow", "status", "diagnosed_at", "resolved_at")
     list_filter = ("status", "disease")
+    search_fields = ("cow__animal__id",)
+
+
+@admin.register(ClinicalEvent)
+class ClinicalEventAdmin(admin.ModelAdmin):
+    list_display = ("event_type", "cow", "disease", "occurred_at", "severity")
+    list_filter = ("event_type", "disease")
+    search_fields = ("cow__animal__id", "symptom")
+
+
+@admin.register(TreatmentLog)
+class TreatmentLogAdmin(admin.ModelAdmin):
+    list_display = ("treatment_type", "cow", "disease", "started_at", "completed_at")
+    list_filter = ("treatment_type", "disease")
+    search_fields = ("cow__animal__id", "medication")
+
+
+@admin.register(LabResult)
+class LabResultAdmin(admin.ModelAdmin):
+    list_display = ("parameter", "value", "unit", "cow", "result_at")
+    list_filter = ("parameter", "disease")
+    search_fields = ("cow__animal__id",)
+
+
+@admin.register(ManagementEvent)
+class ManagementEventAdmin(admin.ModelAdmin):
+    list_display = ("event_type", "cow", "occurred_at")
+    list_filter = ("event_type",)
     search_fields = ("cow__animal__id",)
