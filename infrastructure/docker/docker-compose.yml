@@ -22,7 +22,7 @@ services:
   user_management:
     build: ../../backend/services/user_management
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/user_management/.env
     depends_on:
       - db
@@ -34,7 +34,7 @@ services:
   data_ingestion:
     build: ../../backend/services/data_ingestion
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/data_ingestion/.env
     depends_on:
       - mqtt
@@ -46,7 +46,7 @@ services:
   device_controller:
     build: ../../backend/services/device_controller
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/device_controller/.env
     depends_on:
       - mqtt
@@ -58,7 +58,7 @@ services:
   alerting:
     build: ../../backend/services/alerting
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/alerting/.env
     depends_on:
       - user_management
@@ -68,7 +68,7 @@ services:
   api_gateway:
     build: ../../backend/services/api_gateway
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/api_gateway/.env
     depends_on:
       - user_management
@@ -79,7 +79,7 @@ services:
   ai_service:
     build: ../../backend/services/ai_service
     env_file:
-      - ../../infra/.env.global
+      - ../../infrastructure/.env.example
       - ../../backend/services/ai_service/.env
     networks:
       - backend
