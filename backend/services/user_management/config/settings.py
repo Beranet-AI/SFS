@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "devices",
     "telemetry",
     "livestock",
+    "health",
     "alerting.alerts",
 ]
 
