@@ -3,39 +3,37 @@ from django.conf import settings
 from django.http import JsonResponse
 
 class ServiceTokenAuthMiddleware(MiddlewareMixin):
+    """Allow service-to-service token auth without blocking browser users.
+
+    If a ``DJANGO_SERVICE_TOKEN`` is configured, requests that include an
+    ``Authorization: Token <token>`` header must match it. Requests without the
+    header (normal browser/API clients using DRF authentication) are allowed to
+    continue. Admin and static routes bypass the check to keep the admin usable
+    even when the service token is misconfigured.
     """
-    Middleware برای بررسی توکن سرویس بین FastAPI و Django.
-    این middleware فقط روی مسیرهایی که نیاز به احراز هویت بین‌سرویسی دارند اعمال می‌شود.
-    
+
     def process_request(self, request):
-        # عبور درخواست‌های OPTIONS بدون بررسی توکن (برای CORS preflight)
-        if request.method == 'OPTIONS':
+        if request.method == "OPTIONS":
             return None
 
-        expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
-        if not expected_token:
+        if request.path.startswith("/admin/") or request.path.startswith("/static/"):
             return None
 
-        token = request.headers.get('Authorization', '').replace('Token ', '')
+        expected_token = getattr(settings, "DJANGO_SERVICE_TOKEN", None)
+        auth_header = request.headers.get("Authorization", "").strip()
 
-        if token != expected_token:
-            return JsonResponse({'detail': 'Invalid service token'}, status=403)
+        # If no service token is configured or no Authorization header is sent,
+        # let normal DRF/session authentication handle the request.
+        if not expected_token or not auth_header:
+            return None
 
+        if auth_header.startswith("Token "):
+            token = auth_header.removeprefix("Token ").strip()
+            if token != expected_token:
+                return JsonResponse({"detail": "Invalid service token"}, status=403)
+        # Any other auth scheme should be handled by downstream authentication
+        # classes, so we simply return None.
         return None
-    """
-    def process_request(self, request):
-    # اجازه دسترسی به /admin/ و static files
-         if request.path.startswith("/admin/") or request.path.startswith("/static/"):
-             return None
-
-         expected_token = getattr(settings, 'DJANGO_SERVICE_TOKEN', None)
-   
-         token = request.headers.get('Authorization', '').replace('Token ', '')
-
-         if token != expected_token:
-              return JsonResponse({'detail': 'Invalid service token'}, status=403)
-
-         return None
 
 class AllowAllHostsMiddleware(MiddlewareMixin):
     """
