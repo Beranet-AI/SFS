@@ -3,7 +3,11 @@ from rest_framework.routers import DefaultRouter
 from telemetry.views import SensorReadingViewSet, LatestReadingsView, HistoricalReadingsView
 from devices.views import DeviceViewSet, SensorTypeViewSet, SensorViewSet
 from farm.views import BarnViewSet, FarmHierarchyView, FarmViewSet, ZoneViewSet
+<<<<<<< HEAD
+from alerting.alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewSet
+=======
 from alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewSet
+>>>>>>> main
 
 
 

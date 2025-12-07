@@ -1,8 +1,12 @@
 # config/settings.py
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Add the services root (backend/services) to PYTHONPATH so shared apps like
+# alerting can be imported even when they live outside the Django project
+sys.path.append(str(BASE_DIR.parent))
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
@@ -34,7 +38,7 @@ INSTALLED_APPS = [
     "devices",
     "telemetry",
     "livestock",
-    "alerts",
+    "alerting.alerts",
 ]
 
 MIDDLEWARE = [
