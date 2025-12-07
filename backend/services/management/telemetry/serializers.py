@@ -1,39 +1,11 @@
-import importlib
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
 from django.utils import timezone
 from rest_framework import serializers
 
+from alerts.services import evaluate_alerts_for_reading
 from devices.models import Sensor
 from telemetry.models import SensorReading
-
-
-AlertEvaluator = Callable[[SensorReading], None]
-
-
-def _resolve_alert_evaluator() -> AlertEvaluator:
-    """Return the alert evaluation hook if the alerting service is installed.
-
-    The management service may run without the alerting package in its
-    image, so we lazily import the evaluator only when the module exists.
-    """
-    try:
-        spec = importlib.util.find_spec("alerting.alerts.services")
-    except ModuleNotFoundError:
-        return lambda reading: None
-
-    if spec is None:
-        return lambda reading: None
-
-    try:
-        module = importlib.import_module("alerting.alerts.services")
-    except ModuleNotFoundError:
-        return lambda reading: None
-
-    return getattr(module, "evaluate_alerts_for_reading", lambda reading: None)
-
-
-evaluate_alerts_for_reading: AlertEvaluator = _resolve_alert_evaluator()
 
 class SensorReadingSerializer(serializers.ModelSerializer):
     # sensor_id را به فیلد FK مدل sensor نگاشت می‌کنیم
