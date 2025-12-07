@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from telemetry.views import SensorReadingViewSet, LatestReadingsView, HistoricalReadingsView
 from devices.views import DeviceViewSet, SensorTypeViewSet, SensorViewSet
 from farm.views import BarnViewSet, FarmHierarchyView, FarmViewSet, ZoneViewSet
-from alerting.alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewSet
+from alerting.alerts.views import AlertViewSet, AlertRuleViewSet, ActiveAlertsView
 
 
 
@@ -18,17 +18,10 @@ router.register(r"barns", BarnViewSet, basename="barn")
 router.register(r"zones", ZoneViewSet, basename="zone")
 router.register(r"alert-rules", AlertRuleViewSet, basename="alert-rule")
 router.register(r"alerts", AlertViewSet, basename="alert")
-
-
 urlpatterns = [
     path("", include(router.urls)),
-    # Explicit path for active alerts to avoid router/action resolution issues in production
-    path(
-        "alerts/active/",
-        ActiveAlertsView.as_view(),
-        name="alert-active",
-    ),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
     path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
+    path("alerts/active/", ActiveAlertsView.as_view(), name="alerts-active"),
 ]
