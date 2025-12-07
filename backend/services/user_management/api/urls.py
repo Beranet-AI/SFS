@@ -12,9 +12,12 @@ router.register(r"sensor-readings", SensorReadingViewSet, basename="sensor-readi
 router.register(r"farms", FarmViewSet, basename="farm")
 router.register(r"barns", BarnViewSet, basename="barn")
 router.register(r"zones", ZoneViewSet, basename="zone")
+router.register(r"alert-rules", AlertRuleViewSet, basename="alert-rule")
+router.register(r"alerts", AlertViewSet, basename="alert")
+
 urlpatterns = [
     path("", include(router.urls)),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
-    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
+    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
 ]
