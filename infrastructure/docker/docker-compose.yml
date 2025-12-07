@@ -28,6 +28,8 @@ services:
       - db
     networks:
       - backend
+    ports:
+      - "8000:8000"
 
   data_ingestion:
     build: ../../backend/services/data_ingestion
@@ -71,8 +73,6 @@ services:
     depends_on:
       - user_management
       - data_ingestion
-    ports:
-      - "8000:8000"
     networks:
       - backend
 
