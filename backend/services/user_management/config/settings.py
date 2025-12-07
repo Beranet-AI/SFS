@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "telemetry",
     "livestock",
     "health",
-    "alerting.alerts",
 ]
 
 MIDDLEWARE = [
