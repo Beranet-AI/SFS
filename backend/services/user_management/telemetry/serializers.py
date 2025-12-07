@@ -25,7 +25,11 @@ def _resolve_alert_evaluator() -> AlertEvaluator:
     if spec is None:
         return lambda reading: None
 
-    module = importlib.import_module("alerting.alerts.services")
+    try:
+        module = importlib.import_module("alerting.alerts.services")
+    except ModuleNotFoundError:
+        return lambda reading: None
+
     return getattr(module, "evaluate_alerts_for_reading", lambda reading: None)
 
 
