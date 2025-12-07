@@ -6,4 +6,4 @@ This folder is the canonical home for Docker Compose stacks and related artifact
 docker compose -f infrastructure/docker/docker-compose.yml up --build
 ```
 
-Environment files are still expected one level up under `infra/.env.global` (or you can create a local copy alongside this file by adjusting the `env_file` paths).
+Environment variables are loaded from `infrastructure/.env.example` (or a local `infrastructure/.env` copy you create). Update `env_file` paths if you maintain a different location.
