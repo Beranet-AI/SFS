@@ -31,11 +31,31 @@ const joinPath = (prefix: string, endpoint: string) => {
   return cleanPrefix ? `${cleanPrefix}/${cleanEndpoint}` : cleanEndpoint
 }
 
+const inferApiPrefix = (explicitPrefix: string | undefined, base: string) => {
+  const normalizedExplicit = (explicitPrefix || '').replace(/^\/+|\/+$/g, '')
+  if (normalizedExplicit) {
+    return normalizedExplicit
+  }
+
+  try {
+    const url = new URL(base)
+    const basePath = url.pathname.replace(/^\/+|\/+$/g, '')
+    // اگر خود base شامل /api/v1 بود، دیگر prefix را تکرار نکنیم
+    if (basePath.startsWith('api/')) {
+      return ''
+    }
+  } catch {
+    // اگر base قابل پارس نبود، از پیش‌فرض استفاده می‌کنیم
+  }
+
+  // پیش‌فرض معقول برای جلوگیری از 404 روی /alerts/active/ و سایر مسیرهای داشبورد
+  return 'api/v1'
+}
+
 const buildApiConfig = (options: ApiConfigOptions = {}): ApiConfig => {
   const fastApiBase = process.env.NEXT_PUBLIC_FASTAPI_BASE_URL
   const djangoApiBase = process.env.NEXT_PUBLIC_DJANGO_API_BASE_URL
   const token = process.env.NEXT_PUBLIC_FASTAPI_TOKEN || process.env.NEXT_PUBLIC_DJANGO_API_TOKEN
-  const apiPrefix = process.env.NEXT_PUBLIC_API_PREFIX || ''
   const preferDjango = options.preferDjango ?? false
 
   const primaryBase = preferDjango ? djangoApiBase : fastApiBase
@@ -49,6 +69,7 @@ const buildApiConfig = (options: ApiConfigOptions = {}): ApiConfig => {
   }
 
   const base = ensureTrailingSlash(resolvedBase)
+  const apiPrefix = inferApiPrefix(process.env.NEXT_PUBLIC_API_PREFIX, base)
   const headers: HeadersInit = {
     Accept: 'application/json',
   }
