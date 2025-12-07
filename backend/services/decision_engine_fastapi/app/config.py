@@ -1,28 +1,43 @@
-import logging
-from pathlib import Path
+from __future__ import annotations
 
-from pydantic_settings import BaseSettings
+import logging
+from functools import lru_cache
+from typing import Any
+
+from pydantic import AnyUrl, Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 logger = logging.getLogger(__name__)
 
+
 class Settings(BaseSettings):
-    DJANGO_API_BASE_URL: str = "http://django:8000/api/v1"
-    DJANGO_SERVICE_TOKEN: str = "super-secret-token"
-    DJANGO_AUTH_USERNAME: str = "fastapi_service"
+    """Typed configuration for the decision engine service."""
 
-    class Config:
-        env_file = ".env.docker"
+    model_config = SettingsConfigDict(env_file=".env.docker", extra="ignore")
 
-settings = Settings()
+    django_api_base_url: AnyUrl = Field(..., alias="DJANGO_API_BASE_URL")
+    django_service_token: SecretStr = Field(..., alias="DJANGO_SERVICE_TOKEN")
+    django_auth_username: str = Field(
+        "fastapi_service", alias="DJANGO_AUTH_USERNAME", min_length=1
+    )
 
-# 👇 این خط را اضافه کن
-print("BASE URL =", settings.DJANGO_API_BASE_URL)
+    @property
+    def api_base_url(self) -> str:
+        """Normalized base URL without trailing slash."""
 
-_env_file_path = Path(Settings.Config.env_file)
-logger.info(
-    "Loaded FastAPI settings from env_file=%s (exists=%s) with DJANGO_API_BASE_URL=%s",
-    _env_file_path.resolve(),
-    _env_file_path.exists(),
-    settings.DJANGO_API_BASE_URL,
-)
+        return str(self.django_api_base_url).rstrip("/")
+
+
+@lru_cache
+def get_settings() -> Settings:
+    settings = Settings()
+    logger.info(
+        "Loaded FastAPI settings from env_file=%s with DJANGO_API_BASE_URL=%s",
+        settings.model_config.get("env_file"),
+        settings.api_base_url,
+    )
+    return settings
+
+
+settings = get_settings()
