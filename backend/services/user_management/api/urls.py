@@ -7,6 +7,7 @@ from alerting.alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewS
 
 
 
+
 router = DefaultRouter()
 router.register(r"devices", DeviceViewSet, basename="device")
 router.register(r"sensor-types", SensorTypeViewSet, basename="sensor-type")

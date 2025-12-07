@@ -45,4 +45,7 @@ This repository is organized to match the proposed layered architecture for the 
 
 ## Notes
 - Empty directories contain `.gitkeep` to keep the structure visible in Git until assets are added.
+
 - Existing service code has **not** been relocated to avoid breaking imports; use the aliases above when adding new modules to stay consistent with the proposed architecture. The alerting app has been moved into `backend/services/alerting/` to better match the service boundary.
+
+

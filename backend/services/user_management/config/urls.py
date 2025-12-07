@@ -5,6 +5,7 @@ from api import views
 # Import ActiveAlertsView directly to guarantee the endpoint is always routable
 from alerting.alerts.views import ActiveAlertsView
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/", include("api.urls")),
