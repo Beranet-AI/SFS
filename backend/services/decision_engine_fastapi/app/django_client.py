@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import logging
 from typing import Any, Dict
 
 import requests
+from requests import RequestException
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -22,41 +25,35 @@ session.mount("http://", adapter)
 session.mount("https://", adapter)
 
 
+class DjangoClientError(Exception):
+    """Raised when communication with the Django service fails."""
+
+
+class UnexpectedResponseError(DjangoClientError):
+    """Raised when Django returns an unexpected payload."""
+
+
 def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    ارسال یک SensorReading به Django
-    reading باید شبیه همین باشد:
-    {
-        "sensor_id": 1,
-        "value": 25.7,
-        "quality": "good",
-        "raw_payload": {...}
-    }
-    """
-    if "sensor_id" not in reading or not reading.get("sensor_id"):
+    """Send a sensor reading to the Django service."""
+
+    sensor_id = reading.get("sensor_id")
+    if not sensor_id:
         raise ValueError("sensor_id is required to post a sensor reading to Django")
 
-    url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/api/v1/sensor-readings/"
-
-    # Debug info
-    print("BASE URL =", settings.DJANGO_API_BASE_URL)
-    print("Sensor URL =", url)
+    url = _build_url("/sensor-readings/")
 
     logger.info("Posting reading to Django: %s", url)
-    logger.info("Outgoing reading payload: %s", reading)
+    logger.debug("Outgoing reading payload: %s", reading)
 
-    headers = _auth_headers(include_json=True)
-    logger.debug(
-        "Using Django request headers: %s",
-        {"Authorization": "Token ***", "Content-Type": headers.get("Content-Type")},
-    )
-
-    resp = session.post(
-        url,
-        json=reading,
-        headers=headers,
-        timeout=10,
-    )
+    try:
+        resp = session.post(
+            url,
+            json=reading,
+            headers=_auth_headers(include_json=True),
+            timeout=10,
+        )
+    except RequestException as exc:
+        raise DjangoClientError(f"Failed to POST reading to Django: {exc}") from exc
 
     if resp.status_code not in (200, 201):
         logger.error(
@@ -66,12 +63,16 @@ def post_sensor_reading(reading: Dict[str, Any]) -> Dict[str, Any]:
         )
         resp.raise_for_status()
 
-    return resp.json()
+    try:
+        return resp.json()
+    except ValueError as exc:
+        raise UnexpectedResponseError("Received non-JSON response from Django") from exc
 
 
 def _auth_headers(include_json: bool = False) -> Dict[str, str]:
+    token = settings.django_service_token.get_secret_value()
     headers = {
-        "Authorization": f"Token {settings.DJANGO_SERVICE_TOKEN}",
+        "Authorization": f"Token {token}",
         "Accept": "application/json",
     }
     if include_json:
@@ -79,21 +80,35 @@ def _auth_headers(include_json: bool = False) -> Dict[str, str]:
     return headers
 
 
+def _build_url(path: str) -> str:
+    normalized_path = path if path.startswith("/") else f"/{path}"
+    return f"{settings.api_base_url}{normalized_path}"
+
+
 def sensor_exists(sensor_id: int) -> bool:
     """Check whether a sensor exists before attempting to post readings."""
-    url = f"{settings.DJANGO_API_BASE_URL.rstrip('/')}/api/v1/sensors/{sensor_id}/"
-    resp = session.get(url, headers=_auth_headers(), timeout=5)
+
+    url = _build_url(f"/sensors/{sensor_id}/")
+    try:
+        resp = session.get(url, headers=_auth_headers(), timeout=5)
+    except RequestException as exc:
+        raise DjangoClientError(f"Failed to verify sensor {sensor_id} existence: {exc}") from exc
+
     if resp.status_code == 404:
-        logger.error("Sensor %s not found in Django (url=%s)", sensor_id, url)
+        logger.warning("Sensor %s not found in Django (url=%s)", sensor_id, url)
         return False
+
     try:
         resp.raise_for_status()
-    except Exception:
+    except Exception as exc:  # requests.HTTPError is fine but broader keeps context
         logger.error(
             "Error checking sensor existence id=%s status=%s body=%s",
             sensor_id,
             resp.status_code,
             resp.text,
         )
-        raise
+        raise DjangoClientError(
+            f"Failed to verify sensor {sensor_id} existence: {resp.status_code}"
+        ) from exc
+
     return True

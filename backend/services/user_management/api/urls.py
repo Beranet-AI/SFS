@@ -1,12 +1,10 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from telemetry.views import SensorReadingViewSet, LatestReadingsView, HistoricalReadingsView
+
+from alerting.alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewSet
 from devices.views import DeviceViewSet, SensorTypeViewSet, SensorViewSet
 from farm.views import BarnViewSet, FarmHierarchyView, FarmViewSet, ZoneViewSet
-from alerting.alerts.views import ActiveAlertsView, AlertRuleViewSet, AlertViewSet
-
-
-
+from telemetry.views import HistoricalReadingsView, LatestReadingsView, SensorReadingViewSet
 
 router = DefaultRouter()
 router.register(r"devices", DeviceViewSet, basename="device")
@@ -19,16 +17,10 @@ router.register(r"zones", ZoneViewSet, basename="zone")
 router.register(r"alert-rules", AlertRuleViewSet, basename="alert-rule")
 router.register(r"alerts", AlertViewSet, basename="alert")
 
-
 urlpatterns = [
     path("", include(router.urls)),
-    # Explicit path for active alerts to avoid router/action resolution issues in production
-    path(
-        "alerts/active/",
-        ActiveAlertsView.as_view(),
-        name="alert-active",
-    ),
+    path("alerts/active/", ActiveAlertsView.as_view(), name="alerts-active"),
     path("dashboard/latest-readings/", LatestReadingsView.as_view(), name="latest-readings"),
-    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),  # ✅ جدید
+    path("dashboard/historical-readings/", HistoricalReadingsView.as_view(), name="historical-readings"),
     path("dashboard/farm-hierarchy/", FarmHierarchyView.as_view(), name="farm-hierarchy"),
 ]
