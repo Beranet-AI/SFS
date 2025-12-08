@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from app.main import create_app
+from infrastructure.app import create_app
 
 
 def test_health_endpoint_returns_status_ok():
