@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+<<<<<<< HEAD
 from infrastructure.app import create_app
+=======
+from app.main import create_app
+>>>>>>> origin/main
 
 
 def test_health_endpoint_returns_status_ok() -> None:
