@@ -1,7 +1,15 @@
 from datetime import datetime, timezone
+<<<<<<< HEAD
 from django.test import TestCase
 from alerts.models import AlertLog, AlertRule
 from alerts.services import evaluate_alerts_for_reading
+=======
+
+from django.test import TestCase
+
+from alerts.models import AlertLog, AlertRule
+from management.application.alerts.service import evaluate_alerts_for_reading
+>>>>>>> e928450c31f6a2715453db0e3b4a646b6778af82
 from devices.models import Device, Sensor, SensorType
 from farm.models import Farm
 from telemetry.models import SensorReading
