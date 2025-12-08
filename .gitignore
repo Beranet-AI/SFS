@@ -11,7 +11,7 @@ __pycache__/
 .env.*
 !.env.example
 # Allow committed docker env templates for services
-!backend/services/user_management/.env.docker
+!backend/services/management/.env.docker
 !backend/services/decision_engine_fastapi/.env.docker
 venv/
 *.env

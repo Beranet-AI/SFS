@@ -194,7 +194,17 @@ async function activeAlertsFetcher(path: string): Promise<AlertLog[]> {
     throw new Error(`Active alerts error: ${res.status} - ${text.substring(0, 200)} (URL: ${target})`)
   }
 
-  return res.json()
+  const payload = await res.json()
+
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (payload && Array.isArray((payload as any).alerts)) {
+    return (payload as any).alerts
+  }
+
+  return []
 }
 
 export default function HomePage() {
