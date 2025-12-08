@@ -1,8 +1,6 @@
 from typing import Any, Dict
-
 from django.utils import timezone
 from rest_framework import serializers
-
 from alerts.services import evaluate_alerts_for_reading
 from devices.models import Sensor
 from telemetry.models import SensorReading

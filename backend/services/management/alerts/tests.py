@@ -1,7 +1,5 @@
 from datetime import datetime, timezone
-
 from django.test import TestCase
-
 from alerts.models import AlertLog, AlertRule
 from alerts.services import evaluate_alerts_for_reading
 from devices.models import Device, Sensor, SensorType

@@ -1,9 +1,14 @@
 from __future__ import annotations
+
 from typing import Callable, Dict
+
 from django.db import transaction
+
 from alerts.models import AlertLog, AlertRule
 from telemetry.models import SensorReading
 
+
+# Map relational operators to the comparator callable used for threshold checks.
 _OPERATOR_FN: Dict[str, Callable[[float, float], bool]] = {
     ">": lambda v, t: v > t,
     "<": lambda v, t: v < t,
