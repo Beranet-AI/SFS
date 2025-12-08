@@ -1,6 +1,0 @@
-# Django user_management service config
-logging:
-  level: INFO
-  file: logs/user_management.log
-service:
-  name: user_management
