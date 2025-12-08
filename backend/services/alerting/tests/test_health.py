@@ -1,5 +1,11 @@
 from __future__ import annotations
+<<<<<<< HEAD
 from fastapi.testclient import TestClient
+=======
+
+from fastapi.testclient import TestClient
+
+>>>>>>> 6d8e73cf305191ad8ec89e17ac30b5bbc96c1d9a
 from infrastructure.app import create_app
 
 

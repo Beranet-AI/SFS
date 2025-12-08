@@ -44,8 +44,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # ← باید بالاترین باشد
-    "config.middleware.ServiceTokenAuthMiddleware",
-    "config.middleware.AllowAllHostsMiddleware",
+    "management.infrastructure.middleware.ServiceTokenAuthMiddleware",
+    "management.infrastructure.middleware.AllowAllHostsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
