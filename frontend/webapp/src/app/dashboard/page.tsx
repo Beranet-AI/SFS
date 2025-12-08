@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 type SensorReading = {
   id: number;
@@ -19,6 +20,10 @@ export default function DashboardPage() {
   const [readings, setReadings] = useState<SensorReading[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: alertsData } = useSWR("/api/alerts/active", async (url) => {
+    const resp = await fetch(url);
+    return resp.json();
+  }, { refreshInterval: 5000 });
 
   useEffect(() => {
     async function load() {
@@ -52,10 +57,16 @@ export default function DashboardPage() {
 
   const lastTemp = tempReadings[0];
   const lastAmmonia = ammoniaReadings[0];
+  const alertCount = alertsData?.alerts?.length ?? 0;
 
   return (
     <div style={{ padding: "24px", fontFamily: "system-ui" }}>
       <h1>SmartFarm Dashboard</h1>
+      <div style={{ marginTop: "8px", marginBottom: "12px", display: "flex", gap: "12px", alignItems: "center" }}>
+        <span style={{ padding: "6px 10px", borderRadius: "12px", background: alertCount > 0 ? "#7f1d1d" : "#1e3a8a", color: "white" }}>
+          Active alerts: {alertCount}
+        </span>
+      </div>
 
       {loading && <p>Loading readings...</p>}
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
