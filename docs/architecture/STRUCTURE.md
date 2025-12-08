@@ -8,7 +8,7 @@ This repository is organized to match the proposed layered architecture for the 
 - `edge/logs/` – Runtime logs captured from edge gateways (.gitkeep placeholder).
 
 ## Backend services
-- `backend/services/user_management/` – Django stack (farms, barns, zones, sensors).
+- `backend/services/management/` – Django stack (farms, barns, zones, sensors).
 - `backend/services/decision_engine_fastapi/` – FastAPI decision/ingestion gateway that forwards readings to Django.
 - `backend/services/data_ingestion/` – Ingestion scaffold; `logs/` reserved for broker/ingestion logs.
 - `backend/services/device_controller/` – Device control service scaffold.

@@ -1,14 +1,10 @@
-"""
-AI Service entry point.
-You can load your trained models here and expose workers or APIs.
-"""
-import time
+"""Thin entrypoint that delegates to the infrastructure worker loop."""
+
+from infrastructure.app import run_worker
 
 
-def main():
-    print("AI service started. (placeholder)")
-    while True:
-        time.sleep(10)
+def main() -> None:
+    run_worker()
 
 
 if __name__ == "__main__":
