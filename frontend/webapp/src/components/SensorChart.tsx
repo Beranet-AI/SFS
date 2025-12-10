@@ -11,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+const   x  =   5
 
 export default function SensorChart({
   sensorId,
