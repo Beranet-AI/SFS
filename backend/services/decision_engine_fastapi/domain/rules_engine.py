@@ -58,7 +58,5 @@ def _compare(value: Any, threshold: Any, operator_symbol: str) -> bool:
     try:
         return comparator(float(value), float(threshold))
     except (TypeError, ValueError):
-        logger.warning(
-            "Comparison failed for value=%r threshold=%r operator=%s", value, threshold, operator_symbol
-        )
+        logger.warning("Comparison failed for value=%r threshold=%r operator=%s", value, threshold, operator_symbol)
         return False

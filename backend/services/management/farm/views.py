@@ -49,13 +49,12 @@ class FarmHierarchyView(APIView):
         barns_qs = Barn.objects.filter(is_active=True).select_related("farm").order_by("name")
         zones_qs = Zone.objects.filter(is_active=True).select_related("barn", "barn__farm").order_by("name")
 
-        sensors_qs = (
-            Sensor.objects.select_related("device__farm", "device__barn", "device__zone", "sensor_type")
-            .filter(
-                is_active=True,
-                device__is_active=True,
-                device__farm__is_active=True,
-            )
+        sensors_qs = Sensor.objects.select_related(
+            "device__farm", "device__barn", "device__zone", "sensor_type"
+        ).filter(
+            is_active=True,
+            device__is_active=True,
+            device__farm__is_active=True,
         )
 
         barns_by_farm = defaultdict(list)
@@ -135,8 +134,7 @@ class FarmHierarchyView(APIView):
                     "name": farm.name,
                     "code": farm.code,
                     "location": farm.location,
-                    "sensor_count": len(farm_level_sensors)
-                    + sum(barn["sensor_count"] for barn in barns_payload),
+                    "sensor_count": len(farm_level_sensors) + sum(barn["sensor_count"] for barn in barns_payload),
                     "sensors": farm_level_sensors,
                     "barns": barns_payload,
                 }

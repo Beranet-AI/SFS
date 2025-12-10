@@ -17,9 +17,15 @@ class Migration(migrations.Migration):
             name="Cow",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("lactation_stage", models.CharField(blank=True, help_text="Early, mid, late, or dry", max_length=50, null=True)),
+                (
+                    "lactation_stage",
+                    models.CharField(blank=True, help_text="Early, mid, late, or dry", max_length=50, null=True),
+                ),
                 ("parity", models.PositiveIntegerField(default=0, help_text="Number of calvings")),
-                ("days_in_milk", models.PositiveIntegerField(blank=True, help_text="Days since last calving", null=True)),
+                (
+                    "days_in_milk",
+                    models.PositiveIntegerField(blank=True, help_text="Days since last calving", null=True),
+                ),
                 ("last_calving_date", models.DateField(blank=True, null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -70,13 +76,21 @@ class Migration(migrations.Migration):
                 ("framework", models.CharField(help_text="sklearn, pytorch, tensorflow, onnx, etc.", max_length=50)),
                 ("artifact_path", models.CharField(help_text="URI to the serialized model artifact", max_length=500)),
                 ("input_schema", models.JSONField(help_text="List of expected features and shapes")),
-                ("metrics", models.JSONField(blank=True, help_text="Evaluation metrics for the specific version", null=True)),
-                ("is_active", models.BooleanField(default=True, help_text="Flag to indicate preferred version for inference")),
+                (
+                    "metrics",
+                    models.JSONField(blank=True, help_text="Evaluation metrics for the specific version", null=True),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(default=True, help_text="Flag to indicate preferred version for inference"),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "disease",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="models", to="health.disease"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="models", to="health.disease"
+                    ),
                 ),
             ],
             options={
@@ -152,7 +166,13 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "probability",
-                    models.DecimalField(blank=True, decimal_places=4, help_text="Probability or confidence score", max_digits=5, null=True),
+                    models.DecimalField(
+                        blank=True,
+                        decimal_places=4,
+                        help_text="Probability or confidence score",
+                        max_digits=5,
+                        null=True,
+                    ),
                 ),
                 ("predicted_at", models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
                 ("features", models.JSONField(help_text="Feature vector used for prediction")),
@@ -160,15 +180,21 @@ class Migration(migrations.Migration):
                 ("feature_window_end", models.DateTimeField(blank=True, null=True)),
                 (
                     "cow",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="predictions", to="health.cow"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="predictions", to="health.cow"
+                    ),
                 ),
                 (
                     "disease",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="predictions", to="health.disease"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="predictions", to="health.disease"
+                    ),
                 ),
                 (
                     "model",
-                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="predictions", to="health.mlmodel"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="predictions", to="health.mlmodel"
+                    ),
                 ),
             ],
             options={
@@ -195,11 +221,15 @@ class Migration(migrations.Migration):
                 ("notes", models.TextField(blank=True, null=True)),
                 (
                     "cow",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="disease_records", to="health.cow"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="disease_records", to="health.cow"
+                    ),
                 ),
                 (
                     "disease",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="records", to="health.disease"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="records", to="health.disease"
+                    ),
                 ),
                 (
                     "source_prediction",

@@ -60,4 +60,3 @@ async def ingest_reading(reading: SensorReadingIn) -> SensorReadingResponse:
         raise HTTPException(status_code=400, detail=str(exc))
 
     return SensorReadingResponse(reading_stored=True, django_response=django_response)
-

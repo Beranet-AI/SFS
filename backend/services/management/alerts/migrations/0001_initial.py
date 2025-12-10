@@ -27,7 +27,9 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "sensor",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="alert_rules", to="devices.sensor"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="alert_rules", to="devices.sensor"
+                    ),
                 ),
             ],
             options={
@@ -47,11 +49,15 @@ class Migration(migrations.Migration):
                 ("triggered_at", models.DateTimeField()),
                 (
                     "alert_rule",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="alerts.alertrule"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="alerts.alertrule"
+                    ),
                 ),
                 (
                     "sensor",
-                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="alert_logs", to="devices.sensor"),
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="alert_logs", to="devices.sensor"
+                    ),
                 ),
             ],
             options={

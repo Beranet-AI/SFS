@@ -6,6 +6,7 @@ from telemetry.serializers import SensorReadingSerializer
 from django.http import JsonResponse, Http404
 from devices.models import Sensor
 
+
 class SensorReadingView(APIView):
     def post(self, request):
         serializer = SensorReadingSerializer(data=request.data)

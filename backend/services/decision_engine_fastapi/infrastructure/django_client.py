@@ -107,8 +107,6 @@ def sensor_exists(sensor_id: int) -> bool:
             resp.status_code,
             resp.text,
         )
-        raise DjangoClientError(
-            f"Failed to verify sensor {sensor_id} existence: {resp.status_code}"
-        ) from exc
+        raise DjangoClientError(f"Failed to verify sensor {sensor_id} existence: {resp.status_code}") from exc
 
     return True

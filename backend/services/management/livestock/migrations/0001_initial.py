@@ -87,9 +87,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "species",
-                    models.CharField(
-                        help_text="گونه (مثلاً cow, sheep, poultry)", max_length=50
-                    ),
+                    models.CharField(help_text="گونه (مثلاً cow, sheep, poultry)", max_length=50),
                 ),
                 (
                     "breed",
@@ -182,9 +180,7 @@ class Migration(migrations.Migration):
                         fields=["farm", "barn", "current_zone"],
                         name="animals_farm_id_c23d15_idx",
                     ),
-                    models.Index(
-                        fields=["species", "status"], name="animals_species_23c577_idx"
-                    ),
+                    models.Index(fields=["species", "status"], name="animals_species_23c577_idx"),
                 ],
             },
         ),

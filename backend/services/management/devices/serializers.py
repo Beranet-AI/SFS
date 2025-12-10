@@ -35,9 +35,9 @@ class DeviceSerializer(serializers.ModelSerializer):
             "status",
             "last_seen_at",
             "is_active",
-            "farm",     # read-only detail
-            "barn",     # read-only detail
-            "zone",     # read-only detail
+            "farm",  # read-only detail
+            "barn",  # read-only detail
+            "zone",  # read-only detail
             "farm_id",  # write-only IDs
             "barn_id",
             "zone_id",

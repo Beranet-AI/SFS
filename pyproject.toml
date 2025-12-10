@@ -7,3 +7,7 @@ ignore = ["E203", "W503"]
 [tool.ruff.lint.isort]
 combine-as-imports = true
 known-first-party = ["backend", "app"]
+
+[tool.black]
+line-length = 120
+target-version = ['py311']

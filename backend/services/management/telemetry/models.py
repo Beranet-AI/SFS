@@ -17,19 +17,10 @@ class SensorReading(models.Model):
         on_delete=models.CASCADE,
         related_name="readings",
     )
-    ts = models.DateTimeField(
-        db_index=True,
-        help_text="زمان ثبت نمونه (timestamp)"
-    )
-    value = models.FloatField(
-        help_text="مقدار اندازه‌گیری شده"
-    )
+    ts = models.DateTimeField(db_index=True, help_text="زمان ثبت نمونه (timestamp)")
+    value = models.FloatField(help_text="مقدار اندازه‌گیری شده")
 
-    raw_payload = models.JSONField(
-        null=True,
-        blank=True,
-        help_text="داده خام دریافتی از سنسور/پروتکل (در صورت نیاز)"
-    )
+    raw_payload = models.JSONField(null=True, blank=True, help_text="داده خام دریافتی از سنسور/پروتکل (در صورت نیاز)")
 
     quality = models.CharField(
         max_length=10,
@@ -50,4 +41,3 @@ class SensorReading(models.Model):
 
     def __str__(self) -> str:
         return f"{self.sensor} @ {self.ts} = {self.value}"
-

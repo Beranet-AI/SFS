@@ -39,8 +39,7 @@ class LatestReadingsView(APIView):
 
         for sensor_type_id, code in sensor_types:
             latest_reading = (
-                SensorReading.objects
-                .select_related("sensor", "sensor__device", "sensor__sensor_type")
+                SensorReading.objects.select_related("sensor", "sensor__device", "sensor__sensor_type")
                 .filter(sensor__sensor_type_id=sensor_type_id)
                 .order_by("-ts")
                 .first()

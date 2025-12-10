@@ -1,7 +1,7 @@
-<<<<<<< HEAD
 from django.utils.deprecation import MiddlewareMixin
 from django.conf import settings
 from django.http import JsonResponse
+
 
 class ServiceTokenAuthMiddleware(MiddlewareMixin):
     """Allow service-to-service token auth without blocking browser users.
@@ -36,22 +36,12 @@ class ServiceTokenAuthMiddleware(MiddlewareMixin):
         # classes, so we simply return None.
         return None
 
+
 class AllowAllHostsMiddleware(MiddlewareMixin):
     """
     Middleware ساده برای اطمینان از اینکه HOST های ورودی رد نشوند.
     فقط در صورت نیاز خاص استفاده شود؛ در حالت معمولی ALLOWED_HOSTS کفایت می‌کند.
     """
+
     def process_request(self, request):
         return None
-=======
-"""Backwards-compatibility shim for middleware imports.
-
-Infrastructure middleware now lives under
-:mod:`management.infrastructure.middleware`. This module re-exports the
-classes so existing import paths keep working during the refactor.
-"""
-
-from management.infrastructure.middleware import AllowAllHostsMiddleware, ServiceTokenAuthMiddleware
-
-__all__ = ["AllowAllHostsMiddleware", "ServiceTokenAuthMiddleware"]
->>>>>>> e928450c31f6a2715453db0e3b4a646b6778af82

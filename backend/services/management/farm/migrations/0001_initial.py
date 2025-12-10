@@ -45,15 +45,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "latitude",
-                    models.DecimalField(
-                        blank=True, decimal_places=6, max_digits=9, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True),
                 ),
                 (
                     "longitude",
-                    models.DecimalField(
-                        blank=True, decimal_places=6, max_digits=9, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=6, max_digits=9, null=True),
                 ),
                 ("is_active", models.BooleanField(default=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),

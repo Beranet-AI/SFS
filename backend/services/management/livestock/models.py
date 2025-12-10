@@ -13,16 +13,9 @@ class RfidTag(models.Model):
     )
 
     farm = models.ForeignKey(
-        Farm,
-        on_delete=models.CASCADE,
-        related_name="rfid_tags",
-        help_text="این تگ در کدام مزرعه ثبت شده است"
+        Farm, on_delete=models.CASCADE, related_name="rfid_tags", help_text="این تگ در کدام مزرعه ثبت شده است"
     )
-    tag_code = models.CharField(
-        max_length=100,
-        unique=True,
-        help_text="کد RFID (UID کارت/گوشی/تگ)"
-    )
+    tag_code = models.CharField(max_length=100, unique=True, help_text="کد RFID (UID کارت/گوشی/تگ)")
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -30,10 +23,7 @@ class RfidTag(models.Model):
     )
 
     description = models.CharField(
-        max_length=200,
-        null=True,
-        blank=True,
-        help_text="توضیح اختیاری (مثلاً محل فیزیکی تگ زمانی که آزاد است)"
+        max_length=200, null=True, blank=True, help_text="توضیح اختیاری (مثلاً محل فیزیکی تگ زمانی که آزاد است)"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -84,24 +74,13 @@ class Animal(models.Model):
         null=True,
         blank=True,
         related_name="animal",
-        help_text="تگ RFID متصل به این دام (در صورت وجود)"
+        help_text="تگ RFID متصل به این دام (در صورت وجود)",
     )
 
-    species = models.CharField(
-        max_length=50,
-        help_text="گونه (مثلاً cow, sheep, poultry)"
-    )
-    breed = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        help_text="نژاد (در صورت نیاز)"
-    )
+    species = models.CharField(max_length=50, help_text="گونه (مثلاً cow, sheep, poultry)")
+    breed = models.CharField(max_length=100, null=True, blank=True, help_text="نژاد (در صورت نیاز)")
     external_id = models.CharField(
-        max_length=100,
-        null=True,
-        blank=True,
-        help_text="کد گوشواره، کد سیستم حسابداری یا هر شناسه‌ی خارجی"
+        max_length=100, null=True, blank=True, help_text="کد گوشواره، کد سیستم حسابداری یا هر شناسه‌ی خارجی"
     )
 
     birth_date = models.DateField(
@@ -114,11 +93,7 @@ class Animal(models.Model):
         default="alive",
     )
 
-    notes = models.TextField(
-        null=True,
-        blank=True,
-        help_text="توضیحات اضافی (وضعیت سلامتی، سوابق مهم، ...)"
-    )
+    notes = models.TextField(null=True, blank=True, help_text="توضیحات اضافی (وضعیت سلامتی، سوابق مهم، ...)")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

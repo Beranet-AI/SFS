@@ -13,9 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="device",
             name="name",
-            field=models.CharField(
-                help_text="نام منطقی دستگاه (مثلاً edge-01 یا node-02)", max_length=200
-            ),
+            field=models.CharField(help_text="نام منطقی دستگاه (مثلاً edge-01 یا node-02)", max_length=200),
         ),
         migrations.AlterField(
             model_name="sensor",
@@ -30,8 +28,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="sensor",
             name="name",
-            field=models.CharField(
-                help_text="نام منطقی سنسور (مثلاً Barn1-Temp-01)", max_length=200
-            ),
+            field=models.CharField(help_text="نام منطقی سنسور (مثلاً Barn1-Temp-01)", max_length=200),
         ),
     ]

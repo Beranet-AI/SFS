@@ -36,9 +36,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "description",
-                    models.TextField(
-                        blank=True, help_text="توضیح قانون هشدار", null=True
-                    ),
+                    models.TextField(blank=True, help_text="توضیح قانون هشدار", null=True),
                 ),
                 (
                     "scope",
@@ -229,9 +227,7 @@ class Migration(migrations.Migration):
                         fields=["farm", "severity", "status"],
                         name="alerts_farm_id_2cc86c_idx",
                     ),
-                    models.Index(
-                        fields=["sensor", "raised_at"], name="alerts_sensor__3bd523_idx"
-                    ),
+                    models.Index(fields=["sensor", "raised_at"], name="alerts_sensor__3bd523_idx"),
                 ],
             },
         ),

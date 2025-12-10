@@ -57,7 +57,7 @@ class AlertRuleSerializer(serializers.ModelSerializer):
         if not (sensor or sensor_type):
             raise serializers.ValidationError("حداقل یکی از سنسور یا نوع سنسور باید تنظیم شود.")
         return attrs
-        
+
 
 class AlertSerializer(serializers.ModelSerializer):
     farm_id = serializers.PrimaryKeyRelatedField(

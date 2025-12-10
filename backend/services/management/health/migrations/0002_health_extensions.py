@@ -22,7 +22,9 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="prediction",
             name="lead_time_hours",
-            field=models.FloatField(blank=True, help_text="Lead time between prediction and diagnosis window start", null=True),
+            field=models.FloatField(
+                blank=True, help_text="Lead time between prediction and diagnosis window start", null=True
+            ),
         ),
         migrations.AddField(
             model_name="sensordata",
@@ -32,20 +34,50 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="sensordata",
             name="sample_interval_seconds",
-            field=models.PositiveIntegerField(blank=True, help_text="Sampling interval used to compute the observation", null=True),
+            field=models.PositiveIntegerField(
+                blank=True, help_text="Sampling interval used to compute the observation", null=True
+            ),
         ),
         migrations.CreateModel(
             name="ClinicalEvent",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("event_type", models.CharField(choices=[("diagnosis", "Diagnosis"), ("observation", "Observation"), ("treatment", "Treatment"), ("lab", "Lab")], max_length=20)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[
+                            ("diagnosis", "Diagnosis"),
+                            ("observation", "Observation"),
+                            ("treatment", "Treatment"),
+                            ("lab", "Lab"),
+                        ],
+                        max_length=20,
+                    ),
+                ),
                 ("occurred_at", models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
                 ("notes", models.TextField(blank=True, null=True)),
-                ("symptom", models.CharField(blank=True, help_text="Primary symptom or observation", max_length=200, null=True)),
+                (
+                    "symptom",
+                    models.CharField(blank=True, help_text="Primary symptom or observation", max_length=200, null=True),
+                ),
                 ("severity", models.CharField(blank=True, max_length=50, null=True)),
                 ("source", models.CharField(default="manual", help_text="manual, vet, app, ingest", max_length=50)),
-                ("cow", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="clinical_events", to="health.cow")),
-                ("disease", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="clinical_events", to="health.disease")),
+                (
+                    "cow",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="clinical_events", to="health.cow"
+                    ),
+                ),
+                (
+                    "disease",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="clinical_events",
+                        to="health.disease",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Clinical Event",
@@ -63,9 +95,32 @@ class Migration(migrations.Migration):
                 ("result_at", models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
                 ("reference_range", models.CharField(blank=True, max_length=100, null=True)),
                 ("notes", models.TextField(blank=True, null=True)),
-                ("clinical_event", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="lab_results", to="health.clinicalevent")),
-                ("cow", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="lab_results", to="health.cow")),
-                ("disease", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="lab_results", to="health.disease")),
+                (
+                    "clinical_event",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="lab_results",
+                        to="health.clinicalevent",
+                    ),
+                ),
+                (
+                    "cow",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="lab_results", to="health.cow"
+                    ),
+                ),
+                (
+                    "disease",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="lab_results",
+                        to="health.disease",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Lab Result",
@@ -77,11 +132,32 @@ class Migration(migrations.Migration):
             name="ManagementEvent",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("event_type", models.CharField(choices=[("pen_move", "Pen Move"), ("diet_change", "Diet Change"), ("milking_schedule", "Milking Schedule"), ("seasonal", "Seasonal"), ("other", "Other")], max_length=50)),
+                (
+                    "event_type",
+                    models.CharField(
+                        choices=[
+                            ("pen_move", "Pen Move"),
+                            ("diet_change", "Diet Change"),
+                            ("milking_schedule", "Milking Schedule"),
+                            ("seasonal", "Seasonal"),
+                            ("other", "Other"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
                 ("description", models.TextField(blank=True, null=True)),
                 ("occurred_at", models.DateTimeField(db_index=True, default=django.utils.timezone.now)),
                 ("metadata", models.JSONField(blank=True, null=True)),
-                ("cow", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name="management_events", to="health.cow")),
+                (
+                    "cow",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="management_events",
+                        to="health.cow",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Management Event",
@@ -100,9 +176,32 @@ class Migration(migrations.Migration):
                 ("started_at", models.DateTimeField(default=django.utils.timezone.now)),
                 ("completed_at", models.DateTimeField(blank=True, null=True)),
                 ("notes", models.TextField(blank=True, null=True)),
-                ("clinical_event", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="treatments", to="health.clinicalevent")),
-                ("cow", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="treatments", to="health.cow")),
-                ("disease", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name="treatments", to="health.disease")),
+                (
+                    "clinical_event",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="treatments",
+                        to="health.clinicalevent",
+                    ),
+                ),
+                (
+                    "cow",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="treatments", to="health.cow"
+                    ),
+                ),
+                (
+                    "disease",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="treatments",
+                        to="health.disease",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Treatment Log",

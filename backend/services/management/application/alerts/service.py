@@ -22,9 +22,7 @@ _OPERATOR_FN: Dict[str, Callable[[float, float], bool]] = {
 def evaluate_alerts_for_reading(reading: SensorReading) -> None:
     """Evaluate alert rules for the given reading and log triggered alerts."""
 
-    rules = AlertRule.objects.select_related("sensor").filter(
-        sensor=reading.sensor, enabled=True
-    )
+    rules = AlertRule.objects.select_related("sensor").filter(sensor=reading.sensor, enabled=True)
     if not rules.exists():
         return
 

@@ -27,9 +27,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "ts",
-                    models.DateTimeField(
-                        db_index=True, help_text="زمان ثبت نمونه (timestamp)"
-                    ),
+                    models.DateTimeField(db_index=True, help_text="زمان ثبت نمونه (timestamp)"),
                 ),
                 ("value", models.FloatField(help_text="مقدار اندازه\u200cگیری شده")),
                 (
@@ -67,11 +65,7 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Sensor Readings",
                 "db_table": "sensor_readings",
                 "ordering": ["-ts"],
-                "indexes": [
-                    models.Index(
-                        fields=["sensor", "ts"], name="sensor_read_sensor__09bf74_idx"
-                    )
-                ],
+                "indexes": [models.Index(fields=["sensor", "ts"], name="sensor_read_sensor__09bf74_idx")],
             },
         ),
     ]

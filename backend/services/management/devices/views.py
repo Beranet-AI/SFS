@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from api.permissions import IsAuthenticatedOrService
+
 # Create your views here.
 
 from rest_framework import viewsets, permissions
@@ -26,4 +27,3 @@ class SensorViewSet(viewsets.ModelViewSet):
     serializer_class = SensorSerializer
     permission_classes = [permissions.IsAuthenticated]
     permission_classes = [IsAuthenticatedOrService]
-

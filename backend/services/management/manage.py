@@ -8,8 +8,6 @@ if __name__ == "__main__":
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
-        raise ImportError(
-            "Django is not installed. Activate your virtualenv or check requirements.txt."
-        ) from exc
+        raise ImportError("Django is not installed. Activate your virtualenv or check requirements.txt.") from exc
 
     execute_from_command_line(sys.argv)

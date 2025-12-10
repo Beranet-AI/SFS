@@ -11,8 +11,10 @@ sys.path.append(str(BASE_DIR.parent))
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
 
+
 def _split_env_list(var_name: str, default: str):
     return [host.strip() for host in os.getenv(var_name, default).split(",") if host.strip()]
+
 
 ALLOWED_HOSTS = _split_env_list(
     "DJANGO_ALLOWED_HOSTS",
@@ -121,9 +123,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 CORS_ALLOWED_ORIGINS = _split_env_list(

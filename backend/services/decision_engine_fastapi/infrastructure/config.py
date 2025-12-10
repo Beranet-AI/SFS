@@ -18,9 +18,7 @@ class Settings(BaseSettings):
 
     django_api_base_url: AnyUrl = Field(..., alias="DJANGO_API_BASE_URL")
     django_service_token: SecretStr = Field(..., alias="DJANGO_SERVICE_TOKEN")
-    django_auth_username: str = Field(
-        "fastapi_service", alias="DJANGO_AUTH_USERNAME", min_length=1
-    )
+    django_auth_username: str = Field("fastapi_service", alias="DJANGO_AUTH_USERNAME", min_length=1)
 
     @property
     def api_base_url(self) -> str:

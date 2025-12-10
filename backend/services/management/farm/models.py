@@ -2,33 +2,15 @@ from django.db import models
 
 # Create your models here.
 
+
 class Farm(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(
-        max_length=50,
-        unique=True,
-        null=True,
-        blank=True,
-        help_text="کد داخلی/سازمانی مزرعه (اختیاری)"
+        max_length=50, unique=True, null=True, blank=True, help_text="کد داخلی/سازمانی مزرعه (اختیاری)"
     )
-    location = models.CharField(
-        max_length=500,
-        null=True,
-        blank=True,
-        help_text="آدرس یا توضیح موقعیت مزرعه"
-    )
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True
-    )
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        null=True,
-        blank=True
-    )
+    location = models.CharField(max_length=500, null=True, blank=True, help_text="آدرس یا توضیح موقعیت مزرعه")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,18 +27,9 @@ class Farm(models.Model):
 
 
 class Barn(models.Model):
-    farm = models.ForeignKey(
-        Farm,
-        on_delete=models.CASCADE,
-        related_name="barns"
-    )
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="barns")
     name = models.CharField(max_length=200)
-    code = models.CharField(
-        max_length=50,
-        null=True,
-        blank=True,
-        help_text="مثلاً Barn-A1 یا Shed-3"
-    )
+    code = models.CharField(max_length=50, null=True, blank=True, help_text="مثلاً Barn-A1 یا Shed-3")
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
@@ -74,11 +47,7 @@ class Barn(models.Model):
 
 
 class Zone(models.Model):
-    barn = models.ForeignKey(
-        Barn,
-        on_delete=models.CASCADE,
-        related_name="zones"
-    )
+    barn = models.ForeignKey(Barn, on_delete=models.CASCADE, related_name="zones")
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=50, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

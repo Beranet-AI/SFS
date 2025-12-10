@@ -147,9 +147,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "name",
-                    models.CharField(
-                        help_text="نام منطقی سنسور (مثلا Barn1-Temp-01)", max_length=200
-                    ),
+                    models.CharField(help_text="نام منطقی سنسور (مثلا Barn1-Temp-01)", max_length=200),
                 ),
                 (
                     "hardware_address",
@@ -188,20 +186,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="device",
-            index=models.Index(
-                fields=["farm", "barn", "zone"], name="devices_farm_id_05e217_idx"
-            ),
+            index=models.Index(fields=["farm", "barn", "zone"], name="devices_farm_id_05e217_idx"),
         ),
         migrations.AddIndex(
             model_name="device",
-            index=models.Index(
-                fields=["type", "status"], name="devices_type_795f6d_idx"
-            ),
+            index=models.Index(fields=["type", "status"], name="devices_type_795f6d_idx"),
         ),
         migrations.AddIndex(
             model_name="sensor",
-            index=models.Index(
-                fields=["device", "sensor_type"], name="sensors_device__b44469_idx"
-            ),
+            index=models.Index(fields=["device", "sensor_type"], name="sensors_device__b44469_idx"),
         ),
     ]

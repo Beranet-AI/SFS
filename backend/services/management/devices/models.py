@@ -88,16 +88,9 @@ class Device(models.Model):
 
 
 class SensorType(models.Model):
-    code = models.CharField(
-        max_length=50,
-        unique=True,
-        help_text="temperature, humidity, ammonia, rfid, camera, ..."
-    )
+    code = models.CharField(max_length=50, unique=True, help_text="temperature, humidity, ammonia, rfid, camera, ...")
     name = models.CharField(max_length=100)
-    unit = models.CharField(
-        max_length=20,
-        help_text="°C, %, ppm, ..."
-    )
+    unit = models.CharField(max_length=20, help_text="°C, %, ppm, ...")
     min_value = models.FloatField(null=True, blank=True)
     max_value = models.FloatField(null=True, blank=True)
 

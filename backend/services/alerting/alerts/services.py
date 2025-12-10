@@ -28,9 +28,7 @@ def evaluate_alerts_for_reading(reading: SensorReading) -> Iterable[Alert]:
     sensor_type = sensor.sensor_type
     device = sensor.device
 
-    rules = AlertRule.objects.filter(is_active=True).filter(
-        models.Q(sensor=sensor) | models.Q(sensor_type=sensor_type)
-    )
+    rules = AlertRule.objects.filter(is_active=True).filter(models.Q(sensor=sensor) | models.Q(sensor_type=sensor_type))
 
     triggered: list[Alert] = []
 

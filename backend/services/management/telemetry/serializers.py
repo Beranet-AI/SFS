@@ -1,21 +1,15 @@
 from typing import Any, Dict
 from django.utils import timezone
 from rest_framework import serializers
-<<<<<<< HEAD
 from alerts.services import evaluate_alerts_for_reading
-=======
-
-from management.application.alerts.service import evaluate_alerts_for_reading
->>>>>>> e928450c31f6a2715453db0e3b4a646b6778af82
 from devices.models import Sensor
 from telemetry.models import SensorReading
+
 
 class SensorReadingSerializer(serializers.ModelSerializer):
     # sensor_id را به فیلد FK مدل sensor نگاشت می‌کنیم
     sensor_id = serializers.PrimaryKeyRelatedField(
-        source="sensor",              # توی مدل، فیلد sensor پر می‌شود
-        queryset=Sensor.objects.all(),
-        write_only=True
+        source="sensor", queryset=Sensor.objects.all(), write_only=True  # توی مدل، فیلد sensor پر می‌شود
     )
 
     # مهم: ts دیگر required نیست
@@ -25,8 +19,8 @@ class SensorReadingSerializer(serializers.ModelSerializer):
         model = SensorReading
         fields = [
             "id",
-            "sensor",      # فقط برای خروجی (read-only)
-            "sensor_id",   # فقط برای ورودی (write-only)
+            "sensor",  # فقط برای خروجی (read-only)
+            "sensor_id",  # فقط برای ورودی (write-only)
             "ts",
             "value",
             "raw_payload",
