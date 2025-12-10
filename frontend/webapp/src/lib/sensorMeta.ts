@@ -1,10 +1,10 @@
 // sensorMeta.ts
 export type SensorMeta = {
-  name: string             // English name, e.g., "Temperature"
-  faLabel?: string         // فارسی: مثلاً "دما"
-  unit?: string            // مثلاً "°C"
-  color?: string           // رنگ اصلی برای نمودار یا نمایش کارت
-  icon?: string            // آیکون اختیاری (مثلاً emoji یا نام کلاس)
+  name: string // English name, e.g., "Temperature"
+  faLabel?: string // فارسی: مثلاً "دما"
+  unit?: string // مثلاً "°C"
+  color?: string // رنگ اصلی برای نمودار یا نمایش کارت
+  icon?: string // آیکون اختیاری (مثلاً emoji یا نام کلاس)
 }
 
 export const sensorMetaMap: Record<string, SensorMeta> = {
