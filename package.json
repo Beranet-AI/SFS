@@ -1,0 +1,40 @@
+{
+  "name": "sfs",
+  "version": "1.0.0",
+  "description": "For detailed architecture, conventions, and environment configuration:",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Beranet-AI/SFS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Beranet-AI/SFS/issues"
+  },
+  "homepage": "https://github.com/Beranet-AI/SFS#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+  "frontend/webapp/**/*.{js,jsx,ts,tsx}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "frontend/webapp/**/*.{css,json,md}": [
+    "prettier --write"
+  ]
+}
+
+}

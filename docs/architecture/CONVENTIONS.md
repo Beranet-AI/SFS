@@ -362,3 +362,256 @@ Summary by One Sentence Each
 5. Controllers/Vews
 
     Views/controllers must be thin and delegate all logic to services or use cases.
+
+
+    
+1. هدف پروژه (Project Intent)
+
+این پروژه یک Dashboard Frontend است که به چند سرویس Backend (Django / FastAPI) متصل می‌شود و:
+
+منبع حقیقت داده نیست
+
+منطق کسب‌وکار اصلی ندارد
+
+مسئول نمایش هوشمند، aggregation نمایشی و UX logic است
+
+تمام تصمیم‌های بیزنسی و ذخیره‌سازی داده در Backend انجام می‌شود.
+
+2. اصول معماری (Architectural Principles)
+2.1 Frontend ≠ Domain Owner
+
+Frontend مالک domain نیست
+
+Frontend domain را بازسازی نمی‌کند
+
+Frontend فقط قرارداد داده را مصرف می‌کند
+
+2.2 UI Logic باید متمرکز باشد
+
+هیچ if / else نمایشی داخل Component نباید باشد
+
+تصمیم‌های UX باید در policies/ قرار بگیرند
+
+2.3 Componentها باید لاغر بمانند
+
+Component:
+
+داده می‌گیرد
+
+render می‌کند
+
+تصمیم نمی‌گیرد
+
+3. ساختار فولدرها (Folder Structure)
+src/
+ ┣ app/              # Routing & Layout (Next.js App Router)
+ ┣ infrastructure/   # IO (HTTP, Storage, Env)
+ ┣ types/            # Backend ↔ Frontend Contracts (DTO)
+ ┣ policies/         # UX Decisions (pure functions)
+ ┣ mappers/          # DTO → ViewModel
+ ┣ view-models/      # UI Models
+ ┣ ui/               # Components & Hooks
+ ┣ lib/              # Pure utilities (no domain, no UI)
+ ┗ styles/           # Global styles
+
+4. قوانین لایه‌ها (Layer Rules)
+4.1 types/ (DTO / Contracts)
+
+فقط interface / type
+
+بدون logic
+
+بدون UI concern
+
+منبع حقیقت: Backend
+
+❌ ممنوع:
+
+format date
+
+label
+
+status mapping
+
+4.2 view-models/
+
+مدل داده‌ای مخصوص UI
+
+دقیقاً مطابق نیاز Component
+
+ممکن است از چند DTO مشتق شود
+
+❌ ممنوع:
+
+fetch
+
+hook
+
+policy logic
+
+JSX
+
+4.3 policies/
+
+تمام تصمیم‌های نمایشی (UX rules)
+
+pure function
+
+بدون side-effect
+
+مثال:
+
+labelها
+
+رنگ‌ها
+
+permissionهای UI
+
+thresholdهای نمایشی
+
+4.4 mappers/
+
+تنها محل تبدیل DTO → ViewModel
+
+policyها فقط از اینجا صدا زده می‌شوند
+
+Component هرگز DTO را مستقیم مصرف نمی‌کند
+
+4.5 ui/
+
+فقط:
+
+Components
+
+Hooks
+
+هیچ decision
+
+هیچ data shaping
+
+Hookها:
+
+orchestration انجام می‌دهند
+
+mapper را صدا می‌زنند
+
+state UI را نگه می‌دارند
+
+4.6 infrastructure/
+
+ارتباط با بیرون:
+
+HTTP
+
+LocalStorage
+
+Env
+
+بدون UI
+
+بدون ViewModel
+
+4.7 lib/
+
+utilهای خالص:
+
+date
+
+math
+
+helper
+
+بدون تصمیم
+
+بدون domain
+
+5. Naming Conventions
+5.1 فایل‌ها
+
+ViewModel: PascalCase + VM
+
+DeviceVM.ts
+
+EventRowVM.ts
+
+Mapper: camelCase + Mapper
+
+deviceMapper.ts
+
+Policy: camelCase + Policy
+
+eventDisplayPolicy.ts
+
+Hook: useXxxVM.ts اگر خروجی VM است
+
+5.2 ممنوعیت‌های نام‌گذاری
+
+❌ utils.ts
+❌ helpers.ts
+❌ common.ts
+
+هر فایل باید مسئولیت مشخص داشته باشد.
+
+6. جریان داده (Data Flow)
+Backend DTO
+   ↓
+types/
+   ↓
+policies/   (decisions)
+   ↓
+mappers/
+   ↓
+view-models/
+   ↓
+ui/hooks
+   ↓
+ui/components
+
+
+Component هرگز مستقیماً به types/ دسترسی ندارد.
+
+7. قوانین Import
+
+import از پایین به بالا ممنوع است
+
+policies نباید از ui import کند
+
+ui می‌تواند از همه لایه‌های پایین‌تر import کند
+
+circular dependency خط قرمز است
+
+8. تست‌پذیری
+
+policyها باید قابل تست واحد باشند
+
+mapperها تست‌پذیر باشند
+
+componentها سبک بمانند
+
+9. تصمیم‌های آگاهانه (Non-Goals)
+
+این پروژه:
+
+❌ Offline-first نیست
+
+❌ Domain-driven frontend نیست
+
+❌ Business-rule owner نیست
+
+اگر یکی از این‌ها تغییر کرد، معماری باید بازنگری شود.
+
+10. قانون طلایی (Golden Rule)
+
+اگر نمی‌دانی یک کد کجا برود،
+یعنی هنوز مسئولیتش را درست نفهمیده‌ای.
+
+اول مسئولیت را مشخص کن، بعد فولدر خودش را پیدا می‌کند.
+
+پایان
+
+این Convention.md قانون است، نه پیشنهاد.
+هر تغییر معماری باید یا:
+
+با این سند هم‌راستا باشد
+
+یا این سند را به‌روزرسانی کند
