@@ -18,9 +18,9 @@ export function userRoleCapabilities(role: UserRole) {
   return {
     canViewDashboard: true,
     canViewLivestock: role !== 'viewer',
-    canViewEvents: role !== 'viewer',
+    canViewIncidents: role !== 'viewer',
 
-    canAcknowledgeAlerts: role === 'admin' || role === 'operator',
-    canResolveEvents: role === 'admin',
+    canAcknowledgeIncidents: role === 'admin' || role === 'operator',
+    canResolveIncidents: role === 'admin',
   }
 }

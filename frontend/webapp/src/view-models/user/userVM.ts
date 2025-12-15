@@ -8,8 +8,8 @@ export interface userVM {
   /** UI capabilities (NOT security) */
   canViewDashboard: boolean
   canViewLivestock: boolean
-  canViewEvents: boolean
+  canViewIncidents: boolean
 
-  canAcknowledgeAlerts: boolean
-  canResolveEvents: boolean
+  canAcknowledgeIncidents: boolean
+  canResolveIncidents: boolean
 }

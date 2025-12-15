@@ -1,3 +1,3 @@
 // types/index.ts
-export * from './Alert.dto'
-export * from './Event.dto'
+export * from './liveStatusDto'
+export * from './incidentDto'

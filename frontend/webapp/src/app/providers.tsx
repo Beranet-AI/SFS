@@ -1,7 +1,7 @@
 'use client'
 
-import { AlertProvider } from '@/ui/alert/components/AlertProvider'
+import { LiveStatusProvider } from '@/ui/live-status/components/liveStatusProvider'
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <AlertProvider>{children}</AlertProvider>
+  return <LiveStatusProvider>{children}</LiveStatusProvider>
 }

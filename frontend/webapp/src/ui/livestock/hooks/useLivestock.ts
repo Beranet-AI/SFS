@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 import { mapLivestockToVM } from '@/mappers/livestock/livestockMapper'
 import { useDevices } from '@/ui/device/hooks/useDevices'
-import { useEvents } from '@/ui/event/hooks/useEvents'
+import { useIncidents } from '@/ui/incident/hooks/useIncidents'
 
 export function useLivestock() {
   const { devices } = useDevices()
-  const { events } = useEvents()
+  const { incidents } = useIncidents()
 
   const livestock = useMemo(
-    () => mapLivestockToVM({ devices, events }),
-    [devices, events],
+    () => mapLivestockToVM({ devices, events: incidents }),
+    [devices, incidents],
   )
 
   return {
