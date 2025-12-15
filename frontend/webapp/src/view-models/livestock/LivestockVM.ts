@@ -12,9 +12,9 @@ export interface LivestockVM {
   primaryMetricLabel?: string
   primaryMetricValue?: string
 
-  /** Alerts */
-  hasActiveAlert: boolean
-  highestAlertSeverity?: 'warning' | 'critical'
+  /** Live Status */
+  hasActiveLiveStatus: boolean
+  highestLiveStatusSeverity?: 'warning' | 'critical'
 
   /** Activity */
   lastSeenLabel: string

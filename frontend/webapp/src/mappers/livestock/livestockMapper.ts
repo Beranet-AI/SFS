@@ -10,8 +10,8 @@ interface livestockAggregateInput {
   primaryMetricLabel?: string
   primaryMetricValue?: string
 
-  hasActiveAlert: boolean
-  highestAlertSeverity?: 'warning' | 'critical'
+  hasActiveLiveStatus: boolean
+  highestLiveStatusSeverity?: 'warning' | 'critical'
 
   lastSeenAt?: string
 }
@@ -31,8 +31,8 @@ export function mapLivestockToVM(data: livestockAggregateInput): livestockVM {
     primaryMetricLabel: data.primaryMetricLabel,
     primaryMetricValue: data.primaryMetricValue,
 
-    hasActiveAlert: data.hasActiveAlert,
-    highestAlertSeverity: data.highestAlertSeverity,
+    hasActiveLiveStatus: data.hasActiveAlert,
+    highestLiveStatusSeverity: data.highestAlertSeverity,
 
     lastSeenLabel,
   }
