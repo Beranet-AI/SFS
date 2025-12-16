@@ -26,3 +26,7 @@ class EventResolveView(APIView):
         service = EventService()
         event = service.resolve(event_id)
         return Response(EventSerializer.from_entity(event))
+
+from rest_framework.generics import RetrieveAPIView
+
+

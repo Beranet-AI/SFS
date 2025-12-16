@@ -22,3 +22,4 @@ class EventModel(models.Model):
     class Meta:
         db_table = "events"
         ordering = ["-created_at"]
+        app_label = "events"

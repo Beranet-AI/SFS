@@ -1,34 +1,52 @@
 // src/ui/incident/hooks/useIncidents.ts
+'use client';
 
-'use client'
+import { useEffect, useState } from 'react';
+import { incidentsApi } from '@/infrastructure/http/management/incidentsApi';
+import { mapIncidentToVM } from '@/mappers/incident/incidentMapper';
+import type { IncidentVM } from '@/view-models/incident/IncidentVM';
 
-import { useEffect, useState } from 'react'
-import { incidentsApi } from '@/infrastructure/http/management/incidentsApi'
-import { mapIncidentToViewModel } from '@/mappers/incident/incidentMapper'
-import type { IncidentVM } from '@/view-models/incident/IncidentVM'
-
+/**
+ * Hook responsible for:
+ * - fetching incidents from Management
+ * - mapping DTO -> VM
+ *
+ * NO domain logic
+ * NO cross-service data
+ */
 export function useIncidents() {
-  const [incidents, setIncidents] = useState<IncidentVM[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [incidents, setIncidents] = useState<IncidentVM[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    incidentsApi
-      .list()
-      .then((data) => {
-        setIncidents(data.map(mapIncidentToViewModel))
-      })
-      .catch((err) => {
-        setError(err as Error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-  }, [])
+    let active = true;
+
+    async function load() {
+      try {
+        setLoading(true);
+        const dtos = await incidentsApi.list();
+        if (!active) return;
+
+        setIncidents(dtos.map(mapIncidentToVM));
+      } catch (err: any) {
+        if (!active) return;
+        setError(err?.message ?? 'Failed to load incidents');
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return {
     incidents,
     loading,
     error,
-  }
+  };
 }

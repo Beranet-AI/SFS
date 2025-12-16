@@ -1,25 +1,43 @@
-import { IncidentSeverity, IncidentStatus } from '@/types/Incident.dto'
+// src/policies/incident/incidentDisplayPolicy.ts
 
-export function incidentSeverityDisplay(severity: IncidentSeverity) {
-  switch (severity) {
-    case 'critical':
-      return { label: 'Critical', color: 'red' }
-    case 'warning':
-      return { label: 'Warning', color: 'yellow' }
-    case 'info':
+import type { IncidentVM } from '@/view-models/incident/IncidentVM';
+
+/**
+ * UI display helpers for Incident
+ * No domain logic allowed here
+ */
+
+export function getIncidentSeverityColor(vm: IncidentVM): string {
+  switch (vm.severity) {
+    case 'CRITICAL':
+      return 'red';
+    case 'HIGH':
+      return 'orange';
+    case 'MEDIUM':
+      return 'yellow';
     default:
-      return { label: 'Info', color: 'blue' }
+      return 'gray';
   }
 }
 
-export function incidentStatusLabel(status: IncidentStatus): string {
-  switch (status) {
-    case 'ack':
-      return 'Acknowledged'
-    case 'resolved':
-      return 'Resolved'
-    case 'raised':
+export function getIncidentStatusLabel(vm: IncidentVM): string {
+  switch (vm.status) {
+    case 'OPEN':
+      return 'Open';
+    case 'ACK':
+    case 'ACKNOWLEDGED':
+      return 'Acknowledged';
+    case 'RESOLVED':
+      return 'Resolved';
     default:
-      return 'Raised'
+      return vm.status;
   }
+}
+
+export function formatIncidentMetric(vm: IncidentVM): string | null {
+  if (!vm.metric || vm.value === null || vm.value === undefined) {
+    return null;
+  }
+
+  return `${vm.metric}: ${vm.value}`;
 }

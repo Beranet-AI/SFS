@@ -1,8 +1,14 @@
+from django.contrib import admin
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+# router.register(...)  # بقیه resource ها
+
 urlpatterns = [
-    path("api/v1/events/", include("apps.events.api.urls")),
-    path("api/v1/telemetry/", include("apps.telemetry.api.urls")),
-    path("api/v1/livestock/", include("apps.livestock.api.urls")),
-    path("api/v1/farms/", include("apps.farms.api.urls")),
-    path("api/v1/users/", include("apps.users.api.urls")),
-    
+    # 🔥 custom APIs FIRST
+    path("api/v1/incidents/", include("apps.events.api.urls")),
+
+    # router-based APIs LAST
+    path("api/v1/", include(router.urls)),
 ]

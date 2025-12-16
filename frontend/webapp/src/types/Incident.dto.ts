@@ -1,26 +1,30 @@
-import { UUID, ISODateString } from './Core.types'
-import { SensorMetric } from './Device.dto'
+// src/types/Incident.dto.ts
 
-export type IncidentSeverity = 'info' | 'warning' | 'critical'
-export type IncidentStatus = 'raised' | 'ack' | 'resolved'
+/**
+ * Mirror of backend EventSerializer (Management owned)
+ * This is a pure API contract DTO.
+ * NO UI fields
+ * NO derived fields
+ */
+export interface IncidentDTO {
+  id: string
 
-export interface Incident {
-  id: UUID
-
-  severity: IncidentSeverity
-  status: IncidentStatus
-
-  metric?: SensorMetric
-  value?: number
+  severity: string // as provided by backend
+  status: string // lifecycle state (OPEN, ACK, RESOLVED, ...)
 
   title: string
   message: string
 
-  farmId: UUID
-  barnId?: UUID
-  zoneId?: UUID
-  deviceId?: UUID
+  // contextual references (read-only)
+  farm_id: string | null
+  barn_id: string | null
+  zone_id: string | null
+  device_id: string | null
 
-  createdAt: ISODateString
-  updatedAt?: ISODateString
+  // snapshot context coming from management
+  metric: string | null
+  value: number | string | null
+
+  created_at: string // ISO datetime
+  updated_at: string // ISO datetime
 }

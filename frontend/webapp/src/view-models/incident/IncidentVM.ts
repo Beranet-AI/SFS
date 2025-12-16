@@ -1,21 +1,24 @@
+// src/view-models/incident/IncidentVM.ts
+
 export interface IncidentVM {
-  id: string
+  id: string;
 
-  /** Main display */
-  title: string
-  message: string
+  severity: string;
+  status: string;
 
-  /** Severity & status */
-  severity: 'info' | 'warning' | 'critical'
-  severityLabel: string
-  severityColor: 'blue' | 'yellow' | 'red'
+  title: string;
+  message: string;
 
-  status: 'raised' | 'ack' | 'resolved'
-  statusLabel: string
+  context: {
+    farmId: string | null;
+    barnId: string | null;
+    zoneId: string | null;
+    deviceId: string | null;
+  };
 
-  /** Source */
-  sourceLabel: string
+  metric: string | null;
+  value: number | string | null;
 
-  /** Time */
-  timestamp: string
+  createdAt: Date;
+  updatedAt: Date;
 }

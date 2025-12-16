@@ -1,28 +1,37 @@
 // src/mappers/incident/incidentMapper.ts
 
-import type { IncidentDto } from '@/types'
-import type { IncidentViewModel } from '@/view-models/incident/IncidentViewModel'
+import type { IncidentDTO } from '@/types/Incident.dto'
+import type { IncidentVM } from '@/view-models/incident/IncidentVM'
 
-function severityToColor(severity: IncidentDto['severity']): string {
-  switch (severity) {
-    case 'CRITICAL':
-      return 'red'
-    case 'HIGH':
-      return 'orange'
-    case 'MEDIUM':
-      return 'yellow'
-    default:
-      return 'gray'
-  }
-}
-
-export function mapIncidentToViewModel(dto: IncidentDto): IncidentViewModel {
+/**
+ * Translates IncidentDTO (API contract)
+ * into IncidentVM (UI-friendly shape).
+ *
+ * No domain logic
+ * No inference
+ * No cross-service data
+ */
+export function mapIncidentToVM(dto: IncidentDTO): IncidentVM {
   return {
     id: dto.id,
-    title: dto.title ?? 'Incident',
-    state: dto.state,
+
     severity: dto.severity,
-    color: severityToColor(dto.severity),
-    isActionable: dto.state !== 'RESOLVED',
+    status: dto.status,
+
+    title: dto.title,
+    message: dto.message,
+
+    context: {
+      farmId: dto.farm_id,
+      barnId: dto.barn_id,
+      zoneId: dto.zone_id,
+      deviceId: dto.device_id,
+    },
+
+    metric: dto.metric,
+    value: dto.value,
+
+    createdAt: new Date(dto.created_at),
+    updatedAt: new Date(dto.updated_at),
   }
 }

@@ -26,7 +26,8 @@ if DEBUG:
 
 USE_X_FORWARDED_HOST = True
 
-INSTALLED_APPS = [
+'''
+   INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -42,6 +43,22 @@ INSTALLED_APPS = [
     "livestock",
     "health",
     "alerts",
+]
+'''
+INSTALLED_APPS = [
+    # Django apps
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    # Third-party
+    "rest_framework",
+
+    # Local apps
+    "apps.events.apps.EventsConfig",
 ]
 
 MIDDLEWARE = [
