@@ -12,7 +12,7 @@ This repository is organized to match the proposed layered architecture for the 
 - `backend/services/decision_engine_fastapi/` – FastAPI decision/ingestion gateway that forwards readings to Django.
 - `backend/services/data_ingestion/` – Ingestion scaffold; `logs/` reserved for broker/ingestion logs.
 - `backend/services/device_controller/` – Device control service scaffold.
-- `backend/services/alerting/` – Alerting service scope (FastAPI scaffold + Django alert app/code).
+- `backend/services/monitoring/` – Monitoring service scope (FastAPI scaffold + Django live-status app/code).
 - `backend/services/ai_service/` – AI/analytics microservice (aligns with the planned `ai_decision` role); `models/` and `notebooks/` capture ML assets.
 - `backend/services/api_gateway/` – API gateway façade (current implementation lives here; a mirror directory `backend/api_gateway/` is provided for tooling that expects the top-level path).
 
@@ -46,6 +46,5 @@ This repository is organized to match the proposed layered architecture for the 
 ## Notes
 - Empty directories contain `.gitkeep` to keep the structure visible in Git until assets are added.
 
-- Existing service code has **not** been relocated to avoid breaking imports; use the aliases above when adding new modules to stay consistent with the proposed architecture. The alerting app has been moved into `backend/services/alerting/` to better match the service boundary.
-
+- Existing service code has **not** been relocated to avoid breaking imports; use the aliases above when adding new modules to stay consistent with the proposed architecture. The monitoring app has been moved into `backend/services/monitoring/` to better match the service boundary.
 

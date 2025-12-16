@@ -8,12 +8,12 @@ This repository is organized to match the proposed layered architecture for the 
 - `edge/logs/` – Runtime logs captured from edge gateways (.gitkeep placeholder).
 
 ## Backend services
-- `backend/alerting/` - other service
+- `backend/monitoring/` - other service
 - `backend/services/management/` – Django stack (farms, barns, zones, sensors).
 - `backend/services/decision_engine_fastapi/` – FastAPI decision/ingestion gateway that forwards readings to Django.
 - `backend/services/data_ingestion/` – Ingestion scaffold; `logs/` reserved for broker/ingestion logs.
 - `backend/services/device_controller/` – Device control service scaffold.
-- `backend/services/alerting/` – Alerting service scope (FastAPI scaffold + Django alert app/code).
+- `backend/services/monitoring/` – Monitoring service scope (FastAPI scaffold + Django live-status app/code).
 - `backend/services/ai_service/` – AI/analytics microservice (aligns with the planned `ai_decision` role); `models/` and `notebooks/` capture ML assets.
 - `backend/services/api_gateway/` – API gateway façade (current implementation lives here; a mirror directory `backend/api_gateway/` is provided for tooling that expects the top-level path).
 
@@ -47,7 +47,7 @@ This repository is organized to match the proposed layered architecture for the 
 ## Notes
 - Empty directories contain `.gitkeep` to keep the structure visible in Git until assets are added.
 
-- Existing service code has **not** been relocated to avoid breaking imports; use the aliases above when adding new modules to stay consistent with the proposed architecture. The alerting app has been moved into `backend/services/alerting/` to better match the service boundary.
+- Existing service code has **not** been relocated to avoid breaking imports; use the aliases above when adding new modules to stay consistent with the proposed architecture. The monitoring app has been moved into `backend/services/monitoring/` to better match the service boundary.
 
 
 ## 2. Current Folder Structure (High-Level)
@@ -55,8 +55,8 @@ This repository is organized to match the proposed layered architecture for the 
 ```text
 root/
   backend/
-    alerting/
-        alerts/
+    monitoring/
+        live_status/
     api_gateway/
     domain/
         entities/
@@ -69,7 +69,7 @@ root/
             infrastructure/
             models/
             notebooks/
-        alerting/
+        monitoring/
             alerts/
                 migrations/
             api/
@@ -354,13 +354,13 @@ Frontend Layer (frontend/webapp)
 
     ---
 
-    ## 5. Alerting & Notification System
-    - **Service:** `alerting` (FastAPI)
+    ## 5. Monitoring & Notification System
+    - **Service:** `monitoring` (FastAPI)
     - **Responsibilities:**
-    - Manage AlertRules and thresholds
-    - Trigger alerts when new data violates thresholds
-    - Maintain list of active alerts
-    - Log alerts and optionally notify UI / logging service
+    - Manage live-status rules and thresholds
+    - Trigger live status updates when new data violates thresholds
+    - Maintain list of active live signals
+    - Log live status changes and optionally notify UI / logging service
 
     ---
 

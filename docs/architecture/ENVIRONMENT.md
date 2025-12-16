@@ -32,8 +32,8 @@ Environment variables should never be hard-coded directly in the codebase.
         ├── .env.docker
         └── .env.example
 
-    FastAPI – Alerting:
-        backend/services/alerting/
+    FastAPI – Monitoring:
+        backend/services/monitoring/
         ├── .env
         ├── .env.docker
         └── .env.example
@@ -69,13 +69,13 @@ Environment variables should never be hard-coded directly in the codebase.
         | `DJANGO_SERVICE_PASSWORD` | `securepassword`                | Password for service authentication    |
         | `SERVICE_AUTH_TOKEN`      | `internal-token-value`          | Internal token for FastAPI→Django auth |
 
-    FastAPI (alerting)
+    FastAPI (monitoring)
 
-        | Variable Name          | Example                   | Description                                     |
-        | ---------------------- | ------------------------- | ----------------------------------------------- |
-        | `ALERT_RULES_PATH`     | `./data/alert_rules.yaml` | Path to the alert rules configuration file      |
-        | `NOTIFICATION_ENABLED` | `True`                    | Whether notifications are enabled               |
-        | `LOG_ALERTS`           | `True`                    | Whether to log triggered alerts to console/logs |
+        | Variable Name          | Example                     | Description                                        |
+        | ---------------------- | --------------------------- | -------------------------------------------------- |
+        | `ALERT_RULES_PATH`     | `./data/alert_rules.yaml`   | Path to live-status rule configuration (if used)   |
+        | `NOTIFICATION_ENABLED` | `True`                      | Whether notifications are enabled                  |
+        | `LOG_ALERTS`           | `True`                      | Whether to log triggered live status to console    |
 
     FastAPI (ai_decision)
 
@@ -141,10 +141,10 @@ backend:
             context: ./backend/services/ai_decision
             env_file: ./backend/services/ai_decision/.env.docker
 
-        alerting:
+        monitoring:
             build:
-            context: ./backend/services/alerting
-            env_file: ./backend/services/alerting/.env.docker
+            context: ./backend/services/monitoring
+            env_file: ./backend/services/monitoring/.env.docker
 
 edge:
     edge_controller:

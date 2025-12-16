@@ -1,0 +1,5 @@
+service:
+  name: monitoring
+logging:
+  level: INFO
+  file: logs/monitoring.log

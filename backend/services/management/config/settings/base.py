@@ -5,7 +5,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Add the services root (backend/services) to PYTHONPATH so shared apps like
-# alerting can be imported even when they live outside the Django project
+# monitoring can be imported even when they live outside the Django project
 sys.path.append(str(BASE_DIR.parent))
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
@@ -58,7 +58,8 @@ INSTALLED_APPS = [
     "rest_framework",
 
     # Local apps
-    "apps.events.apps.EventsConfig",
+    "apps.incidents.apps.IncidentsConfig",
+    "apps.monitoring.apps.MonitoringConfig",
 ]
 
 MIDDLEWARE = [
