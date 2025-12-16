@@ -5,7 +5,7 @@ This review captures current issues observed in the SmartFarm monorepo and propo
 ## Detected issues (high level)
 - **Domain leakage & missing boundaries:** Domain dataclasses were co-located with service code without an explicit domain package, increasing coupling across services.
 - **Inconsistent layering:** Service folders mix framework layers (Django/FastAPI app modules) with domain contracts in the same namespace, which breaks Clean Architecture boundaries.
-- **Microservice overlap:** The `decision_engine_fastapi`, `data_ingestion`, and `alerting` scopes overlap on ingestion/alert flows and lack clear message contracts.
+- **Microservice overlap:** The `decision_engine_fastapi`, `data_ingestion`, and `monitoring` scopes overlap on ingestion/alert flows and lack clear message contracts.
 - **Container concerns:** The current Compose stack exposes multiple services on the backend network without an ingress/proxy boundary and uses shared `.env` files without separation per environment.
 - **Security/ops gaps:** No automated SAST/DAST/image scanning or secret scanning is configured; no rotation process for service-to-service credentials.
 

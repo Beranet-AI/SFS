@@ -30,12 +30,12 @@
   - Container name: `sfs-data_ingestion`
   - Image: `sfs-data_ingestion:latest`
 
-### alerting
-- Keeps the official name `alerting`:
-  - Folder: `backend/services/alerting/`
-  - Docker service: `sfs-alerting`
-  - Container name: `sfs-alerting`
-  - Image: `sfs-alerting:latest`
+### monitoring
+- Keeps the official name `monitoring`:
+  - Folder: `backend/services/monitoring/`
+  - Docker service: `sfs-monitoring`
+  - Container name: `sfs-monitoring`
+  - Image: `sfs-monitoring:latest`
 
 ### frontend/webapp
 - Official folder:
@@ -60,8 +60,8 @@
 
 ### REMOVED SERVICES (must be deleted completely)
 
-- `alerting`
-  - Folder to delete: `backend/alerting/`
+- `monitoring`
+  - Legacy folder to delete: `backend/alerting/`
 
 - `api_gateway`
   - Folder to delete: `backend/api_gateway/`
@@ -128,7 +128,7 @@ backend/services/<snake_case_name>/
 
 backend/services/data_ingestion/
 backend/services/ai_decision/
-backend/services/alerting/
+backend/services/monitoring/
 backend/services/management/
 
 
@@ -259,7 +259,7 @@ Environment exposed to client (only):
 
     Same logic as web. Must consume APIs only via HTTPS.
     Requires login using management service tokens.
-    Push notifications only through alerting.
+    Push notifications only through monitoring.
 
 12. Logging Rules
 
@@ -303,7 +303,7 @@ Summary by One Sentence Each
     ai_decision → analytical brain
     edge_controller → actuator and device bridge
     management → authentication and authorization
-    alerting → notifications for humans
+    monitoring → notifications for humans
     frontend/webapp → full dashboard
     frontend/mobileapp → field interaction UI
 

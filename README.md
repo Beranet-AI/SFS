@@ -130,10 +130,10 @@ Edge --> Ingestion
 Ingestion --> Management
 Management --> DB
 AI --> Management
-AI --> Alerting
-Alerting --> Events
+AI --> Monitoring
+Monitoring --> Incidents
 Frontend --> Management
-Frontend --> Events
+Frontend --> Incidents
 
 # SmartFarm Architecture — IoT + Edge + Microservices + AI
 
@@ -149,9 +149,9 @@ Backend Services
 | Service                 | Purpose                                      |
 | ----------------------- | -------------------------------------------- |
 | **data_ingestion**      | Entry point for sensor data                  |
-| **management (Django)** | Users, Devices, Telemetry, Livestock, Events |
+| **management (Django)** | Users, Devices, Telemetry, Livestock, Incidents |
 | **ai_decision**         | ML-based anomaly detection                   |
-| **alerting**            | Real-time alert engine                       |
+| **monitoring**          | Real-time live-status/alert stream           |
 
 Frontend
 
@@ -174,4 +174,3 @@ Displays telemetry, alerts, events, and livestock status
   },
   "required": ["sensor_id", "sensor_type", "value", "timestamp"]
 }
-

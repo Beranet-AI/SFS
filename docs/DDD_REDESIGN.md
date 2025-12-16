@@ -11,7 +11,7 @@ This document refines the microservices architecture using Domain-Driven Design 
 - **Identity & Access:** Django `api/permissions.py`, middleware, auth settings in `backend/services/management`.
 - **Farm Registry:** Django apps `farm`, `livestock`, `devices` storing farms, barns, livestock, devices, tags.
 - **Telemetry Ingestion:** FastAPI services `data_ingestion`, `decision_engine_fastapi` handling sensor inputs and pipeline hand-off.
-- **Rule Engine & Alerts:** FastAPI `alerting`, decision logic in `decision_engine_fastapi` for evaluating conditions and emitting alerts.
+- **Rule Engine & Alerts:** FastAPI `monitoring`, decision logic in `decision_engine_fastapi` for evaluating conditions and emitting alerts.
 - **Device Control:** FastAPI `device_controller` coordinating commands to edge devices.
 - **Analytics/AI:** `ai_service` notebooks/models consuming curated data.
 - **Gateway:** `backend/services/api_gateway` providing facade.
@@ -21,7 +21,7 @@ This document refines the microservices architecture using Domain-Driven Design 
 - **Farm Management BC:** Farm/barn/zone/animal/tag registries; owns lifecycle and IDs. Supplies references to other contexts (upstream supplier; others are conformist). Implemented by Django farm/livestock/apps.
 - **Device Registry BC:** Device + sensor inventory and status. Depends on Farm Management for farm/barn/zone identities. Consumed by Ingestion and Device Control. Implemented by Django `devices` app (future dedicated service).
 - **Telemetry Ingestion BC:** Receives raw sensor/device payloads, validates against Device Registry, publishes canonical `telemetry.reading.ingested` events. Downstream consumers: Decision & Alerts, Analytics. Implemented by FastAPI `data_ingestion`.
-- **Decision & Alerts BC:** Maintains alert rules, evaluates telemetry, raises/resolves alerts, publishes `alert.raised`/`alert.resolved` events, requests actuation. Implemented by FastAPI `alerting` + `decision_engine_fastapi` (to merge).
+- **Decision & Alerts BC:** Maintains alert rules, evaluates telemetry, raises/resolves alerts, publishes `alert.raised`/`alert.resolved` events, requests actuation. Implemented by FastAPI `monitoring` + `decision_engine_fastapi` (to merge).
 - **Device Control BC:** Executes actuation commands; subscribes to decision events/commands; tracks command outcomes. Implemented by FastAPI `device_controller`.
 - **Analytics/AI BC:** Consumes curated telemetry/alerts for insight and models; exposes inference jobs/APIs. Implemented by `ai_service`.
 - **API Gateway BC:** Public entrypoint; routes to internal services; enforces authN/Z and rate limits. Implemented by FastAPI gateway.
@@ -41,7 +41,7 @@ This document refines the microservices architecture using Domain-Driven Design 
 | Farm Management | Farms, barns, zones, animals, tags | management/farm & livestock apps (→ future farm service) | Postgres `farm_mgmt` | Identity |
 | Device Registry | Devices, sensors, status, assignments | management/devices (→ future device service) | Postgres `device_registry` | Farm Management, Identity |
 | Telemetry Ingestion | Device enrollment, telemetry intake, schema validation | data_ingestion (FastAPI) | Time-series/queue + Postgres `ingestion` | Device Registry |
-| Decision & Alerts | Rules, thresholds, alert lifecycle | alerting + decision_engine_fastapi (merge) | Postgres `alerts` | Telemetry events, Farm/Device references |
+| Decision & Alerts | Rules, thresholds, alert lifecycle | monitoring + decision_engine_fastapi (merge) | Postgres `alerts` | Telemetry events, Farm/Device references |
 | Device Control | Actuation commands, feedback | device_controller | Postgres `device_control` | Decision & Alerts, Device Registry |
 | Analytics/AI | Feature pipelines, inference endpoints | ai_service | Object store + Postgres `ai` | Telemetry, Alerts |
 | API Gateway | Routing, auth, rate-limits, observability | api_gateway | N/A (config only) | Identity |
@@ -150,8 +150,8 @@ tests/
 | `backend/services/management/livestock/` | `services/farm-service/interfaces/api/rest/` | Animal lifecycle and tagging. |
 | `backend/services/management/devices/` | `services/device-registry-service/interfaces/api/rest/` | Device/sensor registry APIs. |
 | `backend/services/data_ingestion/` | `services/ingestion-service/` | Telemetry intake HTTP/MQTT adapters. |
-| `backend/services/decision_engine_fastapi/` | `services/decision-alerts-service/` | Merge with alerting for rule evaluation. |
-| `backend/services/alerting/` | `services/decision-alerts-service/` | Alert lifecycle (raise/ack/resolve). |
+| `backend/services/decision_engine_fastapi/` | `services/decision-alerts-service/` | Merge with monitoring for rule evaluation. |
+| `backend/services/monitoring/` | `services/decision-alerts-service/` | Live status stream (derived telemetry). |
 | `backend/services/device_controller/` | `services/device-control-service/` | Actuation commands + results. |
 | `backend/services/api_gateway/` | `services/api-gateway/` | Public ingress and routing. |
 | `backend/services/ai_service/` | `services/analytics-service/` | Model training/inference endpoints. |
@@ -171,7 +171,7 @@ tests/
 - `backend/services/management/farm/*` → `services/farm-service/interfaces/api/rest/`
 - `backend/services/management/livestock/*` → `services/farm-service/interfaces/api/rest/`
 - `backend/services/management/devices/*` → `services/device-registry-service/interfaces/api/rest/`
-- `backend/services/alerting/*` + `backend/services/decision_engine_fastapi/*` → `services/decision-alerts-service/`
+- `backend/services/monitoring/*` + `backend/services/decision_engine_fastapi/*` → `services/decision-alerts-service/`
 - `backend/services/device_controller/*` → `services/device-control-service/`
 - `backend/services/data_ingestion/*` → `services/ingestion-service/`
 - `backend/services/api_gateway/*` → `services/api-gateway/`
@@ -206,7 +206,7 @@ tests/
 - Move Django `api`, `farm`, `livestock`, `devices` into separate `identity-service`, `farm-service`, `device-registry-service` apps; update settings and URLs; adjust db migrations to new schemas. Risk: migrations divergence; mitigate with feature toggles and dual-write if needed. Tests: Django migrations, auth flows, CRUD APIs.
 
 **Phase 3 – Ingestion & Alerts consolidation**
-- Merge `alerting` and `decision_engine_fastapi` into `decision-alerts-service`; refactor ingestion endpoints to publish events to bus; adjust consumers. Risk: event schema drift; mitigate with schema registry and consumer contracts. Tests: integration tests for telemetry-to-alert path.
+- Merge `monitoring` and `decision_engine_fastapi` into `decision-alerts-service`; refactor ingestion endpoints to publish events to bus; adjust consumers. Risk: event schema drift; mitigate with schema registry and consumer contracts. Tests: integration tests for telemetry-to-alert path.
 
 **Phase 4 – Device Control & Analytics isolation**
 - Isolate actuation logic in device-control-service; move AI notebooks/models to analytics-service with APIs. Risk: model dependency size; mitigate with build caching and artifact storage. Tests: command execution mocks, model inference smoke tests.

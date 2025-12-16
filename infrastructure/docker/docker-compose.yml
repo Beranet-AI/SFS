@@ -57,11 +57,11 @@ services:
       - backend
       - iot
 
-  alerting:
-    build: ../../backend/services/alerting
+  monitoring:
+    build: ../../backend/services/monitoring
     env_file:
       - ../../infrastructure/.env.example
-      - ../../backend/services/alerting/.env.example
+      - ../../backend/services/monitoring/.env.example
     depends_on:
       - management
     networks:

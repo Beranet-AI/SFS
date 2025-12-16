@@ -1,4 +1,4 @@
-"""Dependency injection wiring for the alerting API layer."""
+"""Dependency injection wiring for the monitoring API layer."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from ..services.health_service import HealthService, HealthServiceProtocol
 
 
 def get_health_service() -> HealthServiceProtocol:
-    """Provide the health service implementation for alerting endpoints."""
+    """Provide the health service implementation for monitoring endpoints."""
 
     return HealthService()
 

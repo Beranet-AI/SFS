@@ -7,7 +7,8 @@ router = DefaultRouter()
 
 urlpatterns = [
     # 🔥 custom APIs FIRST
-    path("api/v1/incidents/", include("apps.events.api.urls")),
+    path("api/v1/incidents/", include("apps.incidents.api.urls")),
+    path("api/v1/monitoring/", include("apps.monitoring.api.urls")),
 
     # router-based APIs LAST
     path("api/v1/", include(router.urls)),

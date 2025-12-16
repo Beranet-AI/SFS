@@ -1,4 +1,4 @@
-"""Application entrypoint for the alerting service."""
+"""Application entrypoint for the monitoring service."""
 
 from __future__ import annotations
 
