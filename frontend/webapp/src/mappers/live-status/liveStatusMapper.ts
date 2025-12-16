@@ -1,4 +1,4 @@
-import { LiveStatus } from '@/types/liveStatusDto'
+import { LiveStatus } from '@/types/LiveStatus.dto'
 import { LiveStatusVM } from '@/view-models/live-status/liveStatusVM'
 import { liveStatusPolicy } from '@/policies/live-status/liveStatusPolicy'
 

@@ -1,4 +1,4 @@
-import { UUID } from './core.types'
+import { UUID } from './Core.types'
 
 export type UserRole = 'admin' | 'vet' | 'operator' | 'viewer'
 

@@ -1,5 +1,5 @@
-import { UUID, ISODateString } from './core.types'
-import { SensorMetric } from './device.dto'
+import { UUID, ISODateString } from './Core.types'
+import { SensorMetric } from './Device.dto'
 
 export interface Telemetry {
   id: UUID

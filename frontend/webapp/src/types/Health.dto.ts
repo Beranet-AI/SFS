@@ -1,4 +1,4 @@
-import { ISODateString } from './core.types'
+import { ISODateString } from './Core.types'
 
 export interface HealthStatus {
   service: string

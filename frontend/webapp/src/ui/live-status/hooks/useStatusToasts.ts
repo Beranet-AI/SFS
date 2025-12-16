@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import type { LiveStatus } from '@/types/liveStatusDto'
+import type { LiveStatus } from '@/types/LiveStatus.dto'
 
 export function useStatusToasts(statuses: LiveStatus[]) {
   const shownRef = useRef<Set<string>>(new Set())

@@ -1,4 +1,4 @@
-import { UUID, ISODateString } from './core.types'
+import { UUID, ISODateString } from './Core.types'
 
 /**
  * Livestock (Animal) Data Transfer Object

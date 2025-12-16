@@ -1,47 +1,34 @@
+// src/ui/incident/hooks/useIncidents.ts
+
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-
-import { fetchIncidents } from '@/infrastructure/http/management/incidentsApi'
-import { mapIncidentToVM } from '@/mappers/incident/incidentMapper'
-
-import type { Incident } from '@/types/incidentDto'
+import { useEffect, useState } from 'react'
+import { incidentsApi } from '@/infrastructure/http/management/incidentsApi'
+import { mapIncidentToViewModel } from '@/mappers/incident/incidentMapper'
 import type { IncidentVM } from '@/view-models/incident/IncidentVM'
 
-export function useIncidents(): {
-  incidents: IncidentVM[]
-  loading: boolean
-} {
-  const [data, setData] = useState<Incident[]>([])
-  const [loading, setLoading] = useState(false)
+export function useIncidents() {
+  const [incidents, setIncidents] = useState<IncidentVM[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    let mounted = true
-
-    async function load() {
-      setLoading(true)
-      try {
-        const result = await fetchIncidents()
-        if (mounted) {
-          setData(result)
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    load()
-
-    return () => {
-      mounted = false
-    }
+    incidentsApi
+      .list()
+      .then((data) => {
+        setIncidents(data.map(mapIncidentToViewModel))
+      })
+      .catch((err) => {
+        setError(err as Error)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [])
 
-  const incidents = useMemo(() => {
-    return data.map(mapIncidentToVM)
-  }, [data])
-
-  return { incidents, loading }
+  return {
+    incidents,
+    loading,
+    error,
+  }
 }

@@ -1,4 +1,4 @@
-import { UUID, ISODateString } from './core.types'
+import { UUID, ISODateString } from './Core.types'
 
 export type DeviceKind =
   | 'sensor'

@@ -1,16 +1,22 @@
-import type { Incident } from '@/types/incidentDto'
-import { http } from '../event'
+// src/infrastructure/http/management/incidentsApi.ts
 
-const BASE = process.env.NEXT_PUBLIC_MANAGEMENT_API!
+import { httpClient } from '..//httpClient' // یا هر client مرکزی که داری
+import type { Incident } from '@/types/Incident.dto' // یا مسیر دقیق DTOها
 
-/**
- * Fetch active incidents (management domain)
- */
-export async function fetchIncidents(): Promise<Incident[]> {
-  try {
-    return await http<Incident[]>(`${BASE}/api/v1/alerts/active/`)
-  } catch (err) {
-    console.error('fetchIncidents failed:', err)
-    return []
-  }
+export const incidentsApi = {
+  list(): Promise<Incident[]> {
+    return httpClient.get('/api/management/incidents')
+  },
+
+  getById(id: string): Promise<Incident> {
+    return httpClient.get(`/api/management/incidents/${id}`)
+  },
+
+  acknowledge(id: string): Promise<void> {
+    return httpClient.post(`/api/management/incidents/${id}/acknowledge`)
+  },
+
+  resolve(id: string): Promise<void> {
+    return httpClient.post(`/api/management/incidents/${id}/resolve`)
+  },
 }

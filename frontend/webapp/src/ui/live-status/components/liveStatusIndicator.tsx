@@ -1,6 +1,6 @@
 'use client'
 
-import type { LiveStatus } from '@/types/liveStatusDto'
+import type { LiveStatus } from '@/types/LiveStatus.dto'
 import { mapLiveStatusToVM } from '@/mappers/live-status/liveStatusMapper'
 
 interface Props {

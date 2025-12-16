@@ -1,5 +1,5 @@
 import { UUID, ISODateString } from './Core.types'
-import { IncidentSeverity } from './incidentDto'
+import { IncidentSeverity } from './Incident.dto'
 
 export interface LiveStatus {
   id: UUID

@@ -1,6 +1,6 @@
 'use client'
 
-import { LiveStatus } from '@/types/liveStatusDto'
+import { LiveStatus } from '@/types/LiveStatus.dto'
 
 export function LiveStatusToast({ status }: { status: LiveStatus }) {
   const color =

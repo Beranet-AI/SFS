@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useMemo } from 'react'
 
-import type { LiveStatus } from '@/types/liveStatusDto'
-import type { Incident } from '@/types/incidentDto'
+import type { LiveStatus } from '@/types/LiveStatus.dto'
+import type { Incident } from '@/types/Incident.dto'
 import {
   incidentToLiveStatus,
   liveStatusPolicy,

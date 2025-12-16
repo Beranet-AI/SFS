@@ -1,4 +1,4 @@
-import type { LiveStatus } from '@/types/liveStatusDto'
+import type { LiveStatus } from '@/types/LiveStatus.dto'
 import { http } from '../device'
 
 const BASE = process.env.NEXT_PUBLIC_MANAGEMENT_API!

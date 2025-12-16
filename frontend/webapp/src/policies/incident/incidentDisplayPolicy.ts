@@ -1,4 +1,4 @@
-import { IncidentSeverity, IncidentStatus } from '@/types/incidentDto'
+import { IncidentSeverity, IncidentStatus } from '@/types/Incident.dto'
 
 export function incidentSeverityDisplay(severity: IncidentSeverity) {
   switch (severity) {

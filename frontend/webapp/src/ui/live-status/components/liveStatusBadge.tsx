@@ -1,4 +1,4 @@
-import { IncidentSeverity } from '@/types/incidentDto'
+import { IncidentSeverity } from '@/types/Incident.dto'
 
 export function LiveStatusBadge({ severity }: { severity: IncidentSeverity }) {
   const color =
