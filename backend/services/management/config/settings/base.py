@@ -136,12 +136,24 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# TEMPORARY: DEV ONLY – SECURITY WILL BE RE-ENABLED
+# TODO: Set ``DJANGO_DEV_AUTH_BYPASS`` to "false" (or remove this flag) to restore
+#       DRF authentication classes and the ``IsAuthenticated`` permission globally.
+DEV_AUTH_BYPASS_ENABLED = os.getenv("DJANGO_DEV_AUTH_BYPASS", "true").lower() == "true"
+
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    # NOTE: Authentication/permission enforcement is centrally bypassed for DEV-only
+    #       endpoint wiring and contract validation. Remove the bypass flag above to
+    #       reinstate Basic/Session auth + IsAuthenticated.
+    "DEFAULT_AUTHENTICATION_CLASSES": ()
+    if DEV_AUTH_BYPASS_ENABLED
+    else (
         "rest_framework.authentication.BasicAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.AllowAny",)
+    if DEV_AUTH_BYPASS_ENABLED
+    else ("rest_framework.permissions.IsAuthenticated",),
 }
 
 CORS_ALLOWED_ORIGINS = _split_env_list(
