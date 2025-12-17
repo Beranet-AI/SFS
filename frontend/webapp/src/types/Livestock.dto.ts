@@ -1,10 +1,10 @@
-import { UUID, ISODateString } from './Core.types'
+import { UUID, ISODateString } from './core.types'
 
 /**
  * Livestock (Animal) Data Transfer Object
  * Source of truth: Backend
  */
-export interface Livestock {
+export interface LivestockDTO {
   id: UUID
 
   /** Identity */

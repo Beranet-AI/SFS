@@ -1,0 +1,5 @@
+service:
+  name: ai_decision
+logging:
+  level: INFO
+  file: logs/ai_decisionon.log

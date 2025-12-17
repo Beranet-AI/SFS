@@ -1,7 +1,7 @@
-import { UUID, ISODateString } from './Core.types'
-import { IncidentSeverity } from './Incident.dto'
+import { UUID, ISODateString } from './core.types'
+import { IncidentSeverity } from './incident.dto'
 
-export interface LiveStatus {
+export interface LiveStatusDTO {
   id: UUID
 
   severity: IncidentSeverity

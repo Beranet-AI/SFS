@@ -1,8 +1,8 @@
-import { UUID } from './Core.types'
+import { UUID } from './core.types'
 
 export type UserRole = 'admin' | 'vet' | 'operator' | 'viewer'
 
-export interface CurrentUser {
+export interface CurrentUserDTO {
   id: UUID
   role: UserRole
 }

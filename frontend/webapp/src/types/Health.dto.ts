@@ -1,6 +1,6 @@
-import { ISODateString } from './Core.types'
+import { ISODateString } from './core.types'
 
-export interface HealthStatus {
+export interface HealthStatusDTO {
   service: string
   status: 'ok' | 'degraded' | 'down'
   timestamp: ISODateString

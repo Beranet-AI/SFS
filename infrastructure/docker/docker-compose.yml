@@ -22,7 +22,7 @@ services:
   management:
     build: ../../backend/services/management
     env_file:
-      - ../../infrastructure/.env.example
+      - ../../infrastructure/env/.env.example
       - ../../backend/services/management/.env.example
     depends_on:
       - db
@@ -36,7 +36,7 @@ services:
   data_ingestion:
     build: ../../backend/services/data_ingestion
     env_file:
-      - ../../infrastructure/.env.example
+      - ../../infrastructure/env/.env.example
       - ../../backend/services/data_ingestion/.env.example
     depends_on:
       - mqtt
@@ -46,10 +46,10 @@ services:
       - iot
 
   device_controller:
-    build: ../../backend/services/device_controller
+    build: ../../backend/services/edge_controller
     env_file:
-      - ../../infrastructure/.env.example
-      - ../../backend/services/device_controller/.env.example
+      - ../../infrastructure/env/.env.example
+      - ../../backend/services/edge_controller/.env.example
     depends_on:
       - mqtt
       - management
@@ -60,29 +60,18 @@ services:
   monitoring:
     build: ../../backend/services/monitoring
     env_file:
-      - ../../infrastructure/.env.example
+      - ../../infrastructure/env/.env.example
       - ../../backend/services/monitoring/.env.example
     depends_on:
       - management
     networks:
       - backend
 
-  api_gateway:
-    build: ../../backend/services/api_gateway
+  ai_decision:
+    build: ../../backend/services/ai_decision
     env_file:
-      - ../../infrastructure/.env.example
-      - ../../backend/services/api_gateway/.env.example
-    depends_on:
-      - management
-      - data_ingestion
-    networks:
-      - backend
-
-  ai_service:
-    build: ../../backend/services/ai_service
-    env_file:
-      - ../../infrastructure/.env.example
-      - ../../backend/services/ai_service/.env.example
+      - ../../infrastructure/env/.env.example
+      - ../../backend/services/ai_decision/.env.example
     networks:
       - backend
 

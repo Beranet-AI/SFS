@@ -174,3 +174,29 @@ Displays telemetry, alerts, events, and livestock status
   },
   "required": ["sensor_id", "sensor_type", "value", "timestamp"]
 }
+
+
+SFS/
+│
+├── backend/
+│   ├── services/
+│   │   ├── management/        # Django (هسته مرکزی)
+│   │   ├── edge_controller/   # FastAPI (Edge)
+│   │   ├── data_ingestion/    # FastAPI
+│   │   ├── ai_decision/       # AI / ML
+│   │   └── monitoring/        # FastAPI (Reporting)
+│   │
+│   └── shared/                # Shared Kernel (محدود و کنترل‌شده)
+│
+├── frontend/
+│   ├── webapp/                # Next.js
+│   └── mobileapp/             # (آینده)
+│
+├── infrastructure/
+│   ├── docker/
+│   │   └── docker-compose.yml
+│   └── env/
+│       ├── .env.example
+│       └── .env.prod
+│
+└── README.md

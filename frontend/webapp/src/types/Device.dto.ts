@@ -1,4 +1,4 @@
-import { UUID, ISODateString } from './Core.types'
+import { UUID, ISODateString } from './core.types'
 
 export type DeviceKind =
   | 'sensor'
@@ -17,7 +17,7 @@ export type SensorMetric =
   | 'weight'
   | 'milk_yield'
 
-export interface Device {
+export interface DeviceDTO {
   id: UUID
 
   farmId: UUID

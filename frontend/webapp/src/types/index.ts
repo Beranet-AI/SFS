@@ -1,3 +1,3 @@
 // types/index.ts
-export * from './LiveStatus.dto'
+export * from './livestatus.dto'
 export * from './Incident.dto'
