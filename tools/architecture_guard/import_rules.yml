@@ -1,0 +1,46 @@
+rules:
+  - name: domain_purity
+    paths:
+      - "**/domain/**/*.py"
+    forbidden_imports:
+      - django
+      - fastapi
+      - sqlalchemy
+      - requests
+
+  - name: no_orm_in_fastapi
+    paths:
+      - "backend/services/data_ingestion/**/*.py"
+      - "backend/services/monitoring/**/*.py"
+      - "backend/services/ai_decision/**/*.py"
+      - "backend/services/edge_controller/**/*.py"
+    forbidden_imports:
+      - django
+      - django.db
+      - models
+      - migrations
+
+  - name: shared_kernel_minimal
+    paths:
+      - "backend/shared/**/*.py"
+    forbidden_imports:
+      - django
+      - sqlalchemy
+      - fastapi
+      - models
+
+  - name: api_no_domain_logic
+    paths:
+      - "**/api/**/*.py"
+    forbidden_imports:
+      - ".domain"
+      - "domain."
+
+  - name: frontend_isolation
+    paths:
+      - "frontend/**/*.ts"
+      - "frontend/**/*.tsx"
+    forbidden_imports:
+      - "backend/"
+      - "django"
+      - "fastapi"

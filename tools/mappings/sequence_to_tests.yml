@@ -1,0 +1,15 @@
+telemetry_ingestion:
+  doc: docs/06_interactions/sequence_diagrams/telemetry_ingestion.md
+  tests:
+    - tests/architecture/test_sequence_telemetry_flow.py
+
+incident_detection:
+  doc: docs/06_interactions/sequence_diagrams/incident_detection.md
+  tests:
+    - backend/services/management/tests/integration/test_telemetry_to_rule.py
+    - backend/services/management/tests/application/test_create_incident.py
+
+ai_health_prediction:
+  doc: docs/06_interactions/sequence_diagrams/ai_health_prediction.md
+  tests:
+    - backend/services/ai_decision/tests/integration/test_ai_prediction_creates_incident.py

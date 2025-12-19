@@ -1,0 +1,7 @@
+ADR-001-architecture-style.md:
+  must_reference:
+    - docs/03_architecture/architecture_overview.md
+
+ADR-003-event-vs-request.md:
+  must_reference:
+    - docs/06_interactions/event_flows.md

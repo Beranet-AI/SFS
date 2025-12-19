@@ -1,0 +1,15 @@
+management:
+  incidents:
+    doc: docs/05_api/management/incidents_api.md
+    routes:
+      - backend/services/management/apps/incidents/api/urls.py
+    tests:
+      - backend/services/management/tests/api/test_incident_api.py
+
+ingestion:
+  telemetry:
+    doc: docs/05_api/ingestion/telemetry_api.md
+    routes:
+      - backend/services/data_ingestion/api/routes.py
+    tests:
+      - backend/services/data_ingestion/tests/api/test_ingest_endpoint.py
