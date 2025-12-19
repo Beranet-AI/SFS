@@ -1,13 +1,30 @@
 [tool.ruff]
-line-length = 100
 target-version = "py311"
-select = ["E", "F", "I", "B", "UP", "DTZ"]
-ignore = ["E203", "W503"]
+line-length = 120
+
+# مجموعه قوانین متعادل و مدرن
+select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # bugbear
+  "UP",  # pyupgrade
+]
+
+ignore = [
+  "E203", # whitespace before ':'
+  "E501", # line length (handled by formatter/editor)
+]
+
+exclude = [
+  "__pycache__",
+  ".venv",
+  "venv",
+  "migrations",
+  "node_modules",
+  "frontend",
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
 known-first-party = ["backend", "app"]
-
-[tool.black]
-line-length = 120
-target-version = ['py311']

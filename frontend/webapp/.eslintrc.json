@@ -1,8 +1,0 @@
-{
-  "extends": ["next", "next/core-web-vitals", "plugin:prettier/recommended"],
-  "plugins": ["import"],
-  "rules": {
-    "import/no-unresolved": "error",
-    "import/no-duplicates": "error"
-  }
-}

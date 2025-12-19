@@ -24,17 +24,15 @@
   },
   "homepage": "https://github.com/Beranet-AI/SFS#readme",
   "devDependencies": {
-    "husky": "^9.1.7",
     "lint-staged": "^16.2.7"
   },
   "lint-staged": {
-  "frontend/webapp/**/*.{js,jsx,ts,tsx}": [
-    "eslint --fix",
-    "prettier --write"
-  ],
-  "frontend/webapp/**/*.{css,json,md}": [
-    "prettier --write"
-  ]
-}
-
+    "frontend/webapp/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "frontend/webapp/**/*.{css,json,md}": [
+      "prettier --write"
+    ]
+  }
 }
