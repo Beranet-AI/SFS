@@ -1,22 +1,24 @@
 "use client";
 
 import { useLivestock } from "@/ui/hooks/useLivestock";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export function LivestockTable() {
   const { data, loading } = useLivestock();
+  const { t } = useTranslation();
 
-  if (loading) return <div>Loading livestock...</div>;
+  if (loading) return <div>{t("livestock.loading")}</div>;
 
   return (
     <section>
-      <h2>Livestock</h2>
+      <h2>{t("livestock.title")}</h2>
       <table border={1} cellPadding={6} style={{ width: "100%" }}>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Tag</th>
-            <th>Location</th>
-            <th>Health</th>
+            <th>{t("livestock.id")}</th>
+            <th>{t("livestock.tag")}</th>
+            <th>{t("livestock.location")}</th>
+            <th>{t("livestock.health")}</th>
           </tr>
         </thead>
         <tbody>
