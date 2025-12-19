@@ -1,44 +1,40 @@
 apps/telemetry/
+├── __init__.py
+├── apps.py
+├── admin.py
+│
 ├── domain/
-│   ├── entities.py
-│   │   └── TelemetrySnapshot
-│   │       - device_id
-│   │       - metric
-│   │       - value
-│   │       - recorded_at
+│   ├── __init__.py
+│   ├── records/
+│   │   ├── __init__.py
+│   │   └── telemetry_record.py
 │   │
-│   ├── value_objects.py
-│   │   ├── Metric
-│   │   ├── Unit
-│   │   └── Timestamp
-│   │
-│   └── rules.py
-│       ├── is_fresh()
-│       └── can_update_snapshot()
+│   └── repositories/
+│       ├── __init__.py
+│       └── telemetry_repo.py
 │
 ├── application/
-│   ├── services.py
-│   │   └── TelemetryService
-│   │       - update_snapshot()
-│   │       - get_latest_for_device()
-│   │
-│   └── use_cases.py
-│       ├── UpdateTelemetrySnapshot
-│       └── GetLatestTelemetry
+│   ├── __init__.py
+│   └── services/
+│       ├── __init__.py
+│       └── ingest_telemetry.py
 │
 ├── infrastructure/
-│   ├── models.py
-│   │   └── TelemetrySnapshotModel
+│   ├── __init__.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── telemetry_model.py
 │   │
-│   ├── repositories.py
-│   │   └── TelemetryRepository
+│   ├── repositories/
+│   │   ├── __init__.py
+│   │   └── telemetry_repo_impl.py
 │   │
 │   └── migrations/
+│       ├── __init__.py
+│       └── 0001_initial.py
 │
-├── api/
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-│
-├── admin.py
-└── apps.py
+└── api/
+    ├── __init__.py
+    ├── serializers.py
+    ├── views.py
+    └── urls.py

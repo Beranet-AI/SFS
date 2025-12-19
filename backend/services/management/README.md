@@ -1,107 +1,158 @@
 backend/services/management/
 ├── manage.py
 ├── config/
-│   ├── settings/
-│   │   ├── base.py
-│   │   ├── dev.py
-│   │   └── prod.py
+│   ├── __init__.py
 │   ├── urls.py
-│   └── wsgi.py
+│   ├── wsgi.py
+│   └── settings/
+│       ├── __init__.py
+│       ├── base.py
+│       ├── dev.py
+│       └── prod.py
 │
 └── apps/
+    ├── __init__.py
+    │
     ├── users/
+    │   ├── __init__.py
+    │   ├── apps.py
+    │   ├── admin.py
     │   ├── domain/
-    │   │   ├── entities.py        # User, Role (domain meaning)
-    │   │   ├── value_objects.py   # Email, Phone, PasswordPolicy
-    │   │   └── rules.py           # permission rules (domain-level)
+    │   │   ├── __init__.py
+    │   │   ├── entities/
+    │   │   │   ├── __init__.py
+    │   │   │   └── user.py
+    │   │   ├── enums/
+    │   │   │   ├── __init__.py
+    │   │   │   └── role.py
+    │   │   └── repositories/
+    │   │       ├── __init__.py
+    │   │       └── user_repo.py
     │   ├── application/
-    │   │   ├── services.py        # UserService (create/assign roles)
-    │   │   └── use_cases.py       # CreateUser, AssignRole
+    │   │   ├── __init__.py
+    │   │   └── use_cases/
+    │   │       ├── __init__.py
+    │   │       └── create_user.py
     │   ├── infrastructure/
-    │   │   ├── models.py          # Django User/Role tables
-    │   │   ├── repositories.py
+    │   │   ├── __init__.py
+    │   │   ├── models/
+    │   │   │   ├── __init__.py
+    │   │   │   └── user_model.py
+    │   │   ├── repositories/
+    │   │   │   ├── __init__.py
+    │   │   │   └── user_repo_impl.py
     │   │   └── migrations/
-    │   ├── api/
-    │   │   ├── serializers.py
-    │   │   ├── views.py
-    │   │   └── urls.py
-    │   └── admin.py
+    │   │       ├── __init__.py
+    │   │       └── 0001_initial.py
+    │   └── api/
+    │       ├── __init__.py
+    │       ├── serializers.py
+    │       ├── views.py
+    │       └── urls.py
     │
     ├── farms/
+    │   ├── __init__.py
+    │   ├── apps.py
+    │   ├── admin.py
     │   ├── domain/
-    │   │   ├── entities.py        # Farm, Barn, Greenhouse (as aggregates)
-    │   │   ├── value_objects.py   # GeoPoint, Area, Capacity
-    │   │   └── rules.py
+    │   │   ├── __init__.py
+    │   │   ├── entities/
+    │   │   │   ├── __init__.py
+    │   │   │   └── farm.py
+    │   │   └── repositories/
+    │   │       ├── __init__.py
+    │   │       └── farm_repo.py
     │   ├── application/
-    │   │   ├── services.py
-    │   │   └── use_cases.py
+    │   │   ├── __init__.py
+    │   │   └── use_cases/
+    │   │       ├── __init__.py
+    │   │       └── create_farm.py
     │   ├── infrastructure/
-    │   │   ├── models.py
-    │   │   ├── repositories.py
+    │   │   ├── __init__.py
+    │   │   ├── models/
+    │   │   │   ├── __init__.py
+    │   │   │   └── farm_model.py
+    │   │   ├── repositories/
+    │   │   │   ├── __init__.py
+    │   │   │   └── farm_repo_impl.py
     │   │   └── migrations/
-    │   ├── api/
-    │   │   ├── serializers.py
-    │   │   ├── views.py
-    │   │   └── urls.py
-    │   └── admin.py
+    │   │       ├── __init__.py
+    │   │       └── 0001_initial.py
+    │   └── api/
+    │       ├── __init__.py
+    │       ├── serializers.py
+    │       ├── views.py
+    │       └── urls.py
+    │
+    ├── livestock/
+    │   ├── __init__.py
+    │   ├── apps.py
+    │   ├── admin.py
+    │   ├── domain/
+    │   │   ├── __init__.py
+    │   │   ├── entities/
+    │   │   │   ├── __init__.py
+    │   │   │   └── livestock.py
+    │   │   ├── value_objects/
+    │   │   │   ├── __init__.py
+    │   │   │   └── health_status.py
+    │   │   ├── rules/
+    │   │   │   ├── __init__.py
+    │   │   │   └── health_rules.py
+    │   │   └── repositories/
+    │   │       ├── __init__.py
+    │   │       └── livestock_repo.py
+    │   ├── application/
+    │   │   ├── __init__.py
+    │   │   └── use_cases/
+    │   │       ├── __init__.py
+    │   │       └── update_health.py
+    │   ├── infrastructure/
+    │   │   ├── __init__.py
+    │   │   ├── models/
+    │   │   │   ├── __init__.py
+    │   │   │   └── livestock_model.py
+    │   │   ├── repositories/
+    │   │   │   ├── __init__.py
+    │   │   │   └── livestock_repo_impl.py
+    │   │   └── migrations/
+    │   │       ├── __init__.py
+    │   │       └── 0001_initial.py
+    │   └── api/
+    │       ├── __init__.py
+    │       ├── serializers.py
+    │       ├── views.py
+    │       └── urls.py
     │
     ├── devices/
-    │   ├── domain/
-    │   │   ├── entities.py        # Device, SensorProfile, ActuatorProfile
-    │   │   ├── value_objects.py   # DeviceId, DeviceKey, Endpoint
-    │   │   ├── rules.py           # "pending cannot send commands" etc.
-    │   │   └── events.py          # DeviceApproved, DeviceRevoked
-    │   ├── application/
-    │   │   ├── services.py        # DeviceService
-    │   │   ├── discovery.py       # ApproveDiscovery, RejectDiscovery
-    │   │   └── use_cases.py
-    │   ├── infrastructure/
-    │   │   ├── models.py          # Device + DiscoveryCandidate tables
-    │   │   ├── repositories.py
-    │   │   └── migrations/
-    │   ├── api/
-    │   │   ├── serializers.py
-    │   │   ├── views.py
-    │   │   └── urls.py
-    │   └── admin.py
-    │
+    │   └── ... (همان الگو: domain/application/infrastructure/api)
     ├── rules/
+    │   ├── __init__.py
+    │   ├── apps.py
+    │   ├── admin.py
     │   ├── domain/
-    │   │   ├── entities.py        # ThresholdRule, WindowRule
-    │   │   ├── value_objects.py   # Metric, Comparator, WindowSize
-    │   │   └── rules.py
-    │   ├── application/
-    │   │   ├── services.py
-    │   │   └── use_cases.py
-    │   ├── infrastructure/
-    │   │   ├── models.py
-    │   │   └── repositories.py
+    │   │   ├── __init__.py
+    │   │   ├── rules_catalog.py
+    │   │   └── policy_engine.py
     │   └── api/
-    │       ├── serializers.py
-    │       ├── views.py
+    │       ├── __init__.py
     │       └── urls.py
-    │
+    ├── telemetry/
+    │   └── ... (ingest/query قرارداد + مدل ذخیره)
+    ├── health/
+    │   └── ... (medical_record entity + model + api)
     ├── incidents/
-    │   ├── domain/
-    │   │   ├── entities.py        # Incident (status lifecycle)
-    │   │   ├── value_objects.py   # Severity, Status
-    │   │   └── rules.py           # resolve requires ack? (policy)
-    │   ├── application/
-    │   │   ├── services.py        # IncidentService
-    │   │   └── use_cases.py       # Create, Ack, Resolve
-    │   ├── infrastructure/
-    │   │   ├── models.py
-    │   │   └── repositories.py
-    │   └── api/
-    │       ├── serializers.py
-    │       ├── views.py
-    │       └── urls.py
-    │
+    │   └── ... (incident entity + model + api)
     └── integrations/
+        ├── __init__.py
+        ├── apps.py
         ├── application/
+        │   ├── __init__.py
         │   └── health_checks.py
         └── infrastructure/
+            ├── __init__.py
             ├── clients/
+            │   ├── __init__.py
             │   ├── ingestion_client.py
             │   ├── monitoring_client.py
             │   ├── edge_client.py

@@ -39,3 +39,75 @@ Alerting is responsible for real-time alert signaling and durable event emission
 The Dashboard consumes alerts as derived state from the Events read-model, while optionally receiving live UI signals for immediate feedback
 
 DTO → Mapper → ViewModel → Policy → Component
+
+
+
+frontend/webapp/
+├── next.config.js
+├── package.json
+├── tsconfig.json
+├── .env.example
+│
+└── src/
+    ├── app/
+    │   ├── layout.tsx
+    │   ├── page.tsx
+    │   └── dashboard/
+    │       └── page.tsx
+    │
+    ├── shared/                         # mirror of backend/shared (frontend contracts)
+    │   ├── ids/
+    │   │   ├── index.ts
+    │   │   ├── BaseId.ts
+    │   │   ├── DeviceId.ts
+    │   │   ├── LivestockId.ts
+    │   │   ├── FarmId.ts
+    │   │   └── IncidentId.ts
+    │   │
+    │   ├── enums/
+    │   │   ├── index.ts
+    │   │   ├── HealthState.ts
+    │   │   ├── DeviceType.ts
+    │   │   ├── IncidentSeverity.ts
+    │   │   └── IncidentStatus.ts
+    │   │
+    │   ├── value_objects/
+    │   │   ├── index.ts
+    │   │   └── LivestockLocation.ts
+    │   │
+    │   └── dto/
+    │       ├── index.ts
+    │       ├── LivestockDTO.ts
+    │       ├── HealthStatusDTO.ts
+    │       ├── IncidentDTO.ts
+    │       └── LiveStatusDTO.ts
+    │
+    ├── infrastructure/
+    │   └── http/
+    │       ├── httpClient.ts
+    │       ├── managementApi.ts
+    │       ├── monitoringApi.ts
+    │       ├── ingestionApi.ts
+    │       └── aiDecisionApi.ts
+    │
+    ├── domain/
+    │   ├── models/
+    │   │   ├── Livestock.ts
+    │   │   ├── Incident.ts
+    │   │   └── LiveStatus.ts
+    │   └── mappers/
+    │       ├── livestockMapper.ts
+    │       ├── incidentMapper.ts
+    │       └── livestatusMapper.ts
+    │
+    └── ui/
+        ├── hooks/
+        │   ├── useLivestock.ts
+        │   ├── useIncidents.ts
+        │   ├── useLiveStatus.ts
+        │   └── useHealthDecision.ts
+        │
+        └── components/
+            ├── LivestockTable.tsx
+            ├── IncidentsTable.tsx
+            └── LiveStatusPanel.tsx

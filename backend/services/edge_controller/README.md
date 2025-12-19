@@ -1,27 +1,35 @@
 backend/services/edge_controller/
-└── app/
-    ├── domain/
-    │   ├── entities.py          # DiscoveredDevice, SensorReading
-    │   ├── value_objects.py     # MacAddress, IpAddress, DeviceFingerprint
-    │   └── rules.py             # "same fingerprint => same candidate"
-    │
-    ├── application/
-    │   ├── discovery_service.py # scan_network(), build_report()
-    │   ├── enrollment_service.py# send_report(), apply_config()
-    │   └── telemetry_service.py # publish telemetry to ingestion
-    │
-    ├── infrastructure/
-    │   ├── scanners/
-    │   │   ├── mdns_scanner.py
-    │   │   ├── modbus_scanner.py
-    │   │   └── http_scanner.py
-    │   ├── clients/
-    │   │   └── management_client.py  # /devices/discovery/
-    │   ├── mqtt_client.py
-    │   └── local_store.py            # optional sqlite/redis (buffer)
-    │
-    ├── api/
-    │   ├── routes.py             # local endpoints for ops
-    │   └── schemas.py
-    │
-    └── main.py
+├── __init__.py
+├── main.py
+│
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   └── lifespan.py
+│
+├── domain/
+│   ├── __init__.py
+│   ├── edge_node.py
+│   └── discovery_event.py
+│
+├── application/
+│   ├── __init__.py
+│   └── services/
+│       ├── __init__.py
+│       ├── discovery_service.py
+│       └── forward_service.py
+│
+├── infrastructure/
+│   ├── __init__.py
+│   ├── registry/
+│   │   ├── __init__.py
+│   │   └── edge_registry.py
+│   │
+│   └── clients/
+│       ├── __init__.py
+│       └── ingestion_client.py
+│
+└── api/
+    ├── __init__.py
+    ├── schemas.py
+    └── routes.py

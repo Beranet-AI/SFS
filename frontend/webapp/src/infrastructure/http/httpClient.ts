@@ -1,48 +1,20 @@
-// src/infrastructure/http/httpClient.ts
-
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE'
-
-async function request<T>(
-  method: HttpMethod,
+export async function http<T>(
   url: string,
-  body?: unknown,
+  init?: RequestInit
 ): Promise<T> {
-  const response = await fetch(url, {
-    method,
+  const res = await fetch(url, {
+    ...init,
     headers: {
-      'Content-Type': 'application/json',
-      // بعداً اینجا token اضافه می‌شود
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
     },
-    body: body ? JSON.stringify(body) : undefined,
-  })
+    cache: "no-store",
+  });
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(errorText || 'HTTP request failed')
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
   }
 
-  // اگر response body نداشت (مثلاً acknowledge)
-  if (response.status === 204) {
-    return undefined as T
-  }
-
-  return response.json() as Promise<T>
-}
-
-export const httpClient = {
-  get<T>(url: string) {
-    return request<T>('GET', url)
-  },
-
-  post<T>(url: string, body?: unknown) {
-    return request<T>('POST', url, body)
-  },
-
-  put<T>(url: string, body?: unknown) {
-    return request<T>('PUT', url, body)
-  },
-
-  delete<T>(url: string) {
-    return request<T>('DELETE', url)
-  },
+  return res.json() as Promise<T>;
 }

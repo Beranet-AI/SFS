@@ -1,35 +1,30 @@
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from apps.incidents.infrastructure.models.incident_model import IncidentModel
+from apps.incidents.infrastructure.repositories.incident_repo_impl import DjangoIncidentRepository
+from apps.incidents.application.use_cases.acknowledge_incident import AcknowledgeIncidentUseCase
+from apps.incidents.application.use_cases.resolve_incident import ResolveIncidentUseCase
 
-from apps.incidents.application.services import IncidentService
-from .serializers import IncidentCreateSerializer, IncidentSerializer
-
-
-class IncidentListView(APIView):
+class IncidentsView(APIView):
     def get(self, request):
-        service = IncidentService()
-        incidents = service.list_incidents()
-        data = [IncidentSerializer.from_entity(e) for e in incidents]
-        return Response(data)
+        qs = IncidentModel.objects.all().values(
+            "id","livestock_id","severity","status","source",
+            "description","created_at","acknowledged_at","resolved_at"
+        )
+        return Response(list(qs))
 
-    def post(self, request):
-        payload_serializer = IncidentCreateSerializer(data=request.data)
-        payload_serializer.is_valid(raise_exception=True)
-        service = IncidentService()
-        incident = service.create(payload_serializer.validated_data)
-        return Response(IncidentSerializer.from_entity(incident), status=status.HTTP_201_CREATED)
+class IncidentAcknowledgeView(APIView):
+    repo = DjangoIncidentRepository()
 
-
-class IncidentAckView(APIView):
     def post(self, request, incident_id: str):
-        service = IncidentService()
-        incident = service.acknowledge(incident_id)
-        return Response(IncidentSerializer.from_entity(incident))
-
+        uc = AcknowledgeIncidentUseCase(self.repo)
+        incident = uc.execute(incident_id)
+        return Response({"id": incident.id, "status": incident.status.value})
 
 class IncidentResolveView(APIView):
+    repo = DjangoIncidentRepository()
+
     def post(self, request, incident_id: str):
-        service = IncidentService()
-        incident = service.resolve(incident_id)
-        return Response(IncidentSerializer.from_entity(incident))
+        uc = ResolveIncidentUseCase(self.repo)
+        incident = uc.execute(incident_id)
+        return Response({"id": incident.id, "status": incident.status.value})

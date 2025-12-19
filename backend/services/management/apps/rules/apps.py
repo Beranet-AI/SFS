@@ -1,7 +1,5 @@
 from django.apps import AppConfig
 
-
-class IncidentsConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "apps.incidents"
-    label = "incidents"
+class RulesConfig(AppConfig):
+    name = "apps.rules"
+    verbose_name = "Rules"

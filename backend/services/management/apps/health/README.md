@@ -1,46 +1,49 @@
 apps/health/
+├── __init__.py
+├── apps.py
+├── admin.py
+│
 ├── domain/
-│   ├── entities.py
-│   │   └── HealthRecord
-│   │       - subject_type (animal / greenhouse)
-│   │       - subject_id
-│   │       - health_score
-│   │       - status
-│   │       - assessed_at
+│   ├── __init__.py
+│   ├── value_objects/
+│   │   ├── __init__.py
+│   │   └── health_status.py
 │   │
-│   ├── value_objects.py
-│   │   ├── HealthScore
-│   │   ├── HealthStatus
-│   │   └── AssessmentSource (AI / RULE / MANUAL)
+│   ├── entities/
+│   │   ├── __init__.py
+│   │   └── medical_record.py
 │   │
-│   └── rules.py
-│       ├── is_critical()
-│       └── requires_incident()
+│   ├── enums/
+│   │   ├── __init__.py
+│   │   └── diagnosis_type.py
+│   │
+│   └── repositories/
+│       ├── __init__.py
+│       └── medical_record_repo.py
 │
 ├── application/
-│   ├── services.py
-│   │   └── HealthService
-│   │       - update_health()
-│   │       - evaluate_health_status()
-│   │
-│   └── use_cases.py
-│       ├── UpdateHealthFromAI
-│       ├── UpdateHealthFromRule
-│       └── GetHealthHistory
+│   ├── __init__.py
+│   └── services/
+│       ├── __init__.py
+│       ├── record_diagnosis.py
+│       └── update_health_status.py
 │
 ├── infrastructure/
-│   ├── models.py
-│   │   └── HealthRecordModel
+│   ├── __init__.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── medical_record_model.py
 │   │
-│   ├── repositories.py
-│   │   └── HealthRepository
+│   ├── repositories/
+│   │   ├── __init__.py
+│   │   └── medical_record_repo_impl.py
 │   │
 │   └── migrations/
+│       ├── __init__.py
+│       └── 0001_initial.py
 │
-├── api/
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-│
-├── admin.py
-└── apps.py
+└── api/
+    ├── __init__.py
+    ├── serializers.py
+    ├── views.py
+    └── urls.py

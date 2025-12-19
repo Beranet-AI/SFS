@@ -1,29 +1,36 @@
 backend/services/data_ingestion/
-└── app/
-    ├── domain/
-    │   ├── entities.py          # TelemetryPoint
-    │   ├── value_objects.py     # MetricKind, Unit, Timestamp
-    │   ├── rules.py             # validation rules
-    │   └── policies.py          # threshold evaluation policies
-    │
-    ├── application/
-    │   ├── ingest_use_case.py   # receive -> validate -> store
-    │   ├── evaluate_rules.py    # check threshold/window rules
-    │   └── emit_incident.py     # call management incidents API
-    │
-    ├── infrastructure/
-    │   ├── tsdb/
-    │   │   ├── writer.py        # write telemetry
-    │   │   └── reader.py
-    │   ├── cache/
-    │   │   └── redis_cache.py   # optional live aggregation
-    │   ├── clients/
-    │   │   ├── management_client.py  # rules + incident create
-    │   │   └── edge_client.py
-    │   └── settings.py
-    │
-    ├── api/
-    │   ├── routes.py            # /telemetry/ingest
-    │   └── schemas.py
-    │
-    └── main.py
+├── __init__.py
+├── main.py
+│
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   └── lifespan.py
+│
+├── domain/
+│   ├── __init__.py
+│   └── telemetry_event.py
+│
+├── application/
+│   ├── __init__.py
+│   └── services/
+│       ├── __init__.py
+│       ├── ingest_service.py
+│       └── rule_dispatcher.py
+│
+├── infrastructure/
+│   ├── __init__.py
+│   ├── clients/
+│   │   ├── __init__.py
+│   │   ├── management_client.py
+│   │   ├── monitoring_client.py
+│   │   └── rules_client.py
+│   │
+│   └── adapters/
+│       ├── __init__.py
+│       └── mqtt_adapter.py
+│
+└── api/
+    ├── __init__.py
+    ├── schemas.py
+    └── routes.py

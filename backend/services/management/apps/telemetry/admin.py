@@ -1,13 +1,14 @@
 from django.contrib import admin
+from .infrastructure.models.telemetry_model import TelemetryModel
 
-# Register your models here.
-
-from .models import SensorReading
-
-
-@admin.register(SensorReading)
-class SensorReadingAdmin(admin.ModelAdmin):
-    list_display = ("id", "sensor", "ts", "value", "quality")
-    list_filter = ("quality", "sensor__sensor_type", "sensor__device__farm")
-    search_fields = ("sensor__name",)
-    date_hierarchy = "ts"
+@admin.register(TelemetryModel)
+class TelemetryAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "device_id",
+        "livestock_id",
+        "metric",
+        "value",
+        "recorded_at",
+    )
+    list_filter = ("metric",)

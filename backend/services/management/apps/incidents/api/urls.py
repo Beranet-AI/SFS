@@ -1,10 +1,8 @@
-
 from django.urls import path
-
-from .views import IncidentAckView, IncidentListView, IncidentResolveView
+from .views import IncidentsView, IncidentAcknowledgeView, IncidentResolveView
 
 urlpatterns = [
-    path("", IncidentListView.as_view(), name="incident-list"),
-    path("<uuid:incident_id>/ack/", IncidentAckView.as_view(), name="incident-ack"),
-    path("<uuid:incident_id>/resolve/", IncidentResolveView.as_view(), name="incident-resolve"),
+    path("", IncidentsView.as_view()),
+    path("<str:incident_id>/ack/", IncidentAcknowledgeView.as_view()),
+    path("<str:incident_id>/resolve/", IncidentResolveView.as_view()),
 ]

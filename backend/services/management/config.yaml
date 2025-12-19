@@ -1,6 +1,0 @@
-# Django management service config
-logging:
-  level: INFO
-  file: logs/management.log
-service:
-  name: management

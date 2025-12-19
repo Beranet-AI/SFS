@@ -1,5 +1,0 @@
-service:
-  name: data_ingestion
-logging:
-  level: INFO
-  file: logs/data_ingestion.log

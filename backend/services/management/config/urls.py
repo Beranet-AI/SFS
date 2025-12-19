@@ -1,15 +1,18 @@
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
-# router.register(...)  # بقیه resource ها
 
 urlpatterns = [
-    # 🔥 custom APIs FIRST
-    path("api/v1/incidents/", include("apps.incidents.api.urls")),
-    path("api/v1/monitoring/", include("apps.monitoring.api.urls")),
+    path("admin/", admin.site.urls),
 
-    # router-based APIs LAST
-    path("api/v1/", include(router.urls)),
+    path("api/v1/", include([
+        path("users/", include("apps.users.api.urls")),
+        path("farms/", include("apps.farms.api.urls")),
+        path("livestock/", include("apps.livestock.api.urls")),
+        path("devices/", include("apps.devices.api.urls")),
+        path("telemetry/", include("apps.telemetry.api.urls")),
+        path("health/", include("apps.health.api.urls")),
+        path("incidents/", include("apps.incidents.api.urls")),
+        path("rules/", include("apps.rules.api.urls")),
+        path("integrations/", include("apps.integrations.api.urls")),
+    ])),
 ]

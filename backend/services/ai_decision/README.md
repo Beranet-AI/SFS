@@ -1,33 +1,41 @@
 backend/services/ai_decision/
-├── app/
-│   ├── domain/
-│   │   ├── entities.py            # Prediction, FeatureVector
-│   │   ├── value_objects.py       # ModelVersion, Confidence
-│   │   └── rules.py               # "no prediction without min features"
-│   │
-│   ├── application/
-│   │   ├── predict_use_case.py    # load model -> infer -> save result
-│   │   ├── train_pipeline.py      # optional training jobs
-│   │   └── feature_builder.py     # build features from telemetry
-│   │
-│   ├── infrastructure/
-│   │   ├── model_registry.py      # انتخاب مدل فعال + نسخه
-│   │   ├── data_loader.py         # گرفتن داده از TSDB/Management
-│   │   ├── storage.py             # ذخیره predictionها (management یا db جدا)
-│   │   └── clients/
-│   │       ├── management_client.py
-│   │       └── tsdb_client.py
-│   │
-│   ├── api/
-│   │   ├── routes.py              # /predict
-│   │   └── schemas.py
-│   │
-│   └── main.py
+├── __init__.py
+├── main.py
 │
-└── models/
-    ├── mastitis/
-    │   ├── v1/
-    │   │   ├── model.onnx
-    │   │   └── manifest.json
-    │   └── v2/
-    └── registry.json              # کدام مدل active است
+├── core/
+│   ├── __init__.py
+│   ├── config.py
+│   └── lifespan.py
+│
+├── domain/
+│   ├── __init__.py
+│   ├── inputs/
+│   │   ├── __init__.py
+│   │   └── telemetry_window.py
+│   │
+│   └── outputs/
+│       ├── __init__.py
+│       └── health_prediction.py
+│
+├── application/
+│   ├── __init__.py
+│   └── services/
+│       ├── __init__.py
+│       ├── prediction_service.py
+│       └── decision_pipeline.py
+│
+├── infrastructure/
+│   ├── __init__.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   └── simple_health_model.py
+│   │
+│   └── clients/
+│       ├── __init__.py
+│       ├── management_client.py
+│       └── telemetry_client.py
+│
+└── api/
+    ├── __init__.py
+    ├── schemas.py
+    └── routes.py
