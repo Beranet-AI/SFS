@@ -19,6 +19,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 COPY backend/services/monitoring /app/monitoring
+COPY backend/shared /app/shared
 
 ENV PYTHONPATH=/app
 
