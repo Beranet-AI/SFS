@@ -1,5 +1,7 @@
 "use client";
 
+import '../globals.css'; 
+
 import { LiveStatusPanel } from "@/ui/components/LiveStatusPanel";
 import { IncidentsTable } from "@/ui/components/IncidentsTable";
 import { LivestockTable } from "@/ui/components/LivestockTable";

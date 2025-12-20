@@ -1,12 +1,17 @@
+
 FROM python:3.11-slim
 
+# مسیر کاری
 WORKDIR /app
 
-COPY backend/services/ai_decision /app
+# کپی فقط سورس این سرویس
+COPY backend/services/ai_decision /app/ai_decision
 COPY backend/shared /app/shared
 
+# نصب وابستگی‌ها
 RUN pip install --no-cache-dir fastapi uvicorn requests
 
+# PYTHONPATH برای shared
 ENV PYTHONPATH=/app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8004"]
+CMD ["uvicorn", "ai_decision.main:app"]

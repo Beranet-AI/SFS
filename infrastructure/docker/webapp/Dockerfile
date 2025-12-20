@@ -1,36 +1,26 @@
 # =========================
-# Stage 1 — Build Next.js
+# مرحله Build
 # =========================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first (better cache)
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm install --no-audit --no-fund
 
-
-# Copy the rest of the source code (including src/, public/, next.config.js, etc.)
 COPY . .
-
-# Build Next.js (production build)
 RUN npm run build
 
-
 # =========================
-# Stage 2 — Nginx Runtime
+# مرحله Runtime
 # =========================
-FROM nginx:1.25-alpine
+FROM node:20-alpine
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy custom nginx config (from webapp source tree)
-COPY src/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app ./
 
-# Copy Next.js build artifacts for static serving
-COPY --from=builder /app/.next /usr/share/nginx/html/.next
+ENV NODE_ENV=production
+EXPOSE 3000
 
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]

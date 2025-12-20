@@ -1,30 +1,35 @@
+
 #FROM python:3.11-slim
 
 #WORKDIR /app
 
-# کپی کل سرویس
-#COPY backend/services/monitoring /app
+#COPY backend/services/monitoring /app/monitoring
+#COPY backend/shared /app/shared
 
-# مهم: پایتون باید /app را بشناسد
 #ENV PYTHONPATH=/app
 
-#RUN pip install --no-cache-dir fastapi uvicorn
+#WORKDIR /app/monitoring
 
-#CMD ["uvicorn", "monitoring.main:app", "--host", "0.0.0.0", "--port", "8002"]
+#RUN pip install --no-cache-dir fastapi uvicorn requests
+
+#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+
 
 
 
 FROM python:3.11-slim
 
+# مسیر کاری
 WORKDIR /app
 
+# کپی فقط سورس این سرویس
 COPY backend/services/monitoring /app/monitoring
 COPY backend/shared /app/shared
 
+# نصب وابستگی‌ها
+RUN pip install --no-cache-dir fastapi uvicorn requests
+
+# PYTHONPATH برای shared
 ENV PYTHONPATH=/app
 
-WORKDIR /app/monitoring
-
-RUN pip install --no-cache-dir fastapi uvicorn
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "monitoring.main:app"]

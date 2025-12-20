@@ -1,6 +1,10 @@
 from pathlib import Path
 import os
 
+
+# ... existing code ...
+
+
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
@@ -14,9 +18,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_extensions',
+    'rest_framework',
 
     # Project apps
     "apps.users",
+    "apps.users.apps.UsersConfig",
     "apps.farms",
     "apps.livestock",
     "apps.devices",
@@ -29,8 +36,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -64,4 +73,30 @@ DATABASES = {
 }
 
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise storage (کم‌کد و استاندارد)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# URL configuration
+ROOT_URLCONF = "config.urls"
+
+# Application entrypoints
+WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+
+
+USE_I18N = True
+USE_TZ = True
+LANGUAGE_CODE = os.getenv("DJANGO_LANGUAGE_CODE", "fa")
+TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "Asia/Tehran")
+
+LANGUAGES = [
+    ("fa", "Persian"),
+    ("en", "English"),
+]
+
+LOCALE_PATHS = [BASE_DIR / "locale"]

@@ -1,12 +1,17 @@
+
 FROM python:3.11-slim
 
+# مسیر کاری
 WORKDIR /app
 
-COPY backend/services/data_ingestion /app
+# کپی فقط سورس این سرویس
+COPY backend/services/data_ingestion /app/data_ingestion
 COPY backend/shared /app/shared
 
-RUN pip install --no-cache-dir fastapi uvicorn requests paho-mqtt
+# نصب وابستگی‌ها
+RUN pip install --no-cache-dir fastapi uvicorn requests
 
+# PYTHONPATH برای shared
 ENV PYTHONPATH=/app
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "data_ingestion.main:app"]
