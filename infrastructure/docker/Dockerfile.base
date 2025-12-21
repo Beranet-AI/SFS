@@ -9,6 +9,6 @@ COPY backend/shared /app/backend/shared
 
 # Make backend modules (including shared/) importable
 #ENV PYTHONPATH=/app/backend
-ENV PYTHONPATH=/app/backend/services
-
+#ENV PYTHONPATH=/app/backend/services
+ENV PYTHONPATH=/app/backend
 # (Optional) common system deps or python deps can go here

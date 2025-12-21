@@ -4,17 +4,19 @@
 ARG BASE_IMAGE=sfs_base
 FROM ${BASE_IMAGE}:latest
 
+ENV PYTHONPATH=/app/backend
+
 # Stable working directory
 WORKDIR /app/backend/services/management
 
 # Copy Django service source
-COPY backend/services/management /app/backend/services/management
+COPY backend/services/management .
 
 # Install service-specific dependencies
 RUN pip install --no-cache-dir \
     django \
     djangorestframework \
-    psycopg2-binary \
+    psycopg2-binary \                       
     django-extensions \
     requests
 

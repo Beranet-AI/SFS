@@ -4,6 +4,8 @@
 ARG BASE_IMAGE=sfs_base
 FROM ${BASE_IMAGE}:latest
 
+ENV PYTHONPATH=/app/backend/services
+
 # Keep a stable application root so shared/ and service code resolve cleanly
 WORKDIR /app/backend/services/monitoring
 
@@ -14,4 +16,4 @@ COPY backend/services/monitoring /app/backend/services/monitoring
 RUN pip install --no-cache-dir fastapi uvicorn requests
 
 # Start service
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
+CMD ["uvicorn", "monitoring.main:app", "--host", "0.0.0.0", "--port", "8003"]
