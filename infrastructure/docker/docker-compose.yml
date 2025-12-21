@@ -1,7 +1,6 @@
-# NOTE:
-# - `version` حذف شده (Docker Compose v2 نیازی ندارد)
-# - build.context برای همه سرویس‌ها ریشه پروژه است (../../)
-# - Dockerfile هر سرویس صراحتاً مشخص شده
+# =========================
+# Global definitions
+# =========================
 
 networks:
   sfs_net:
@@ -9,8 +8,12 @@ networks:
 volumes:
   postgres_data:
 
+# =========================
+# Services
+# =========================
 services:
 
+  # ---------- DATABASE
   postgres:
     image: postgres:15
     container_name: sfs-postgres
@@ -22,45 +25,51 @@ services:
     networks:
       - sfs_net
 
+  # ---------- MANAGEMENT (Django)
   management:
     container_name: sfs-management
-    command: >
-      sh -c "
-        python -m django collectstatic --noinput &&
-        gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
-      "
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../
+      context: ../..
       dockerfile: infrastructure/docker/management/Dockerfile
+      args:
+        BASE_IMAGE: sfs_base
     env_file:
       - ../env/management.env
     depends_on:
       - postgres
     ports:
       - "8000:8000"
-    networks:
-      - sfs_net
 
+  # ---------- MONITORING
   monitoring:
     container_name: sfs-monitoring
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../
+      context: ../..
       dockerfile: infrastructure/docker/monitoring/Dockerfile
+      args:
+        BASE_IMAGE: sfs_base
     env_file:
       - ../env/monitoring.env
     ports:
       - "8002:8002"
-    networks:
-      - sfs_net
 
+  # ---------- DATA INGESTION
   data_ingestion:
     container_name: sfs-data-ingestion
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../
+      context: ../..
       dockerfile: infrastructure/docker/data_ingestion/Dockerfile
+      args:
+        BASE_IMAGE: sfs_base
     env_file:
       - ../env/data_ingestion.env
     depends_on:
@@ -68,52 +77,57 @@ services:
       - monitoring
     ports:
       - "8001:8001"
-    networks:
-      - sfs_net
 
+  # ---------- EDGE CONTROLLER
   edge_controller:
     container_name: sfs-edge-controller
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../
+      context: ../..
       dockerfile: infrastructure/docker/edge_controller/Dockerfile
+      args:
+        BASE_IMAGE: sfs_base
     env_file:
       - ../env/edge_controller.env
     depends_on:
       - data_ingestion
     ports:
       - "8003:8003"
-    networks:
-      - sfs_net
 
+  # ---------- AI DECISION
   ai_decision:
     container_name: sfs-ai-decision
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../
+      context: ../..
       dockerfile: infrastructure/docker/ai_decision/Dockerfile
+      args:
+        BASE_IMAGE: sfs_base
     env_file:
       - ../env/ai_decision.env
     depends_on:
       - management
     ports:
       - "8004:8004"
-    networks:
-      - sfs_net
 
+  # ---------- FRONTEND
   webapp:
     container_name: sfs-webapp
     restart: always
+    networks:
+      - sfs_net
     build:
-      context: ../../frontend/webapp
-      dockerfile: ../../infrastructure/docker/webapp/Dockerfile
+      context: ../..
+      dockerfile: infrastructure/docker/webapp/Dockerfile
     env_file:
       - ../env/webapp.env
-    ports:
-      - "3000:3000"
     depends_on:
       - management
       - monitoring
       - ai_decision
-    networks:
-      - sfs_net
+    ports:
+      - "3000:3000"

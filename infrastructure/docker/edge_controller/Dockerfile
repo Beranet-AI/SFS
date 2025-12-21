@@ -1,17 +1,17 @@
+# =========================
+# Base image (injected by docker-compose)
+# =========================
+ARG BASE_IMAGE=sfs_base
+FROM ${BASE_IMAGE}:latest
 
-FROM python:3.11-slim
+# Keep a stable application root so shared/ and service code resolve cleanly
+WORKDIR /app/backend/services/edge_controller
 
-# مسیر کاری
-WORKDIR /app
+# Copy service source code
+COPY backend/services/edge_controller /app/backend/services/edge_controller
 
-# کپی فقط سورس این سرویس
-COPY backend/services/edge_controller /app/edge_controller
-COPY backend/shared /app/shared
-
-# نصب وابستگی‌ها
+# Install service-specific dependencies
 RUN pip install --no-cache-dir fastapi uvicorn requests
 
-# PYTHONPATH برای shared
-ENV PYTHONPATH=/app
-
-CMD ["uvicorn", "edge_controller.main:app"]
+# Start service
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]

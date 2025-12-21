@@ -1,17 +1,17 @@
+# =========================
+# Base image (injected by docker-compose)
+# =========================
+ARG BASE_IMAGE=sfs_base
+FROM ${BASE_IMAGE}:latest
 
-FROM python:3.11-slim
+# Keep a stable application root so shared/ and service code resolve cleanly
+WORKDIR /app/backend/services/data_ingestion
 
-# مسیر کاری
-WORKDIR /app
+# Copy service source code
+COPY backend/services/data_ingestion /app/backend/services/data_ingestion
 
-# کپی فقط سورس این سرویس
-COPY backend/services/data_ingestion /app/data_ingestion
-COPY backend/shared /app/shared
-
-# نصب وابستگی‌ها
+# Install service-specific dependencies
 RUN pip install --no-cache-dir fastapi uvicorn requests
 
-# PYTHONPATH برای shared
-ENV PYTHONPATH=/app
-
-CMD ["uvicorn", "data_ingestion.main:app"]
+# Start service
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]

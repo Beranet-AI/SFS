@@ -1,17 +1,17 @@
+# =========================
+# Base image (injected by docker-compose)
+# =========================
+ARG BASE_IMAGE=sfs_base
+FROM ${BASE_IMAGE}:latest
 
-FROM python:3.11-slim
+# Keep a stable application root so shared/ and service code resolve cleanly
+WORKDIR /app/backend/services/ai_decision
 
-# مسیر کاری
-WORKDIR /app
+# Copy service source code
+COPY backend/services/ai_decision /app/backend/services/ai_decision
 
-# کپی فقط سورس این سرویس
-COPY backend/services/ai_decision /app/ai_decision
-COPY backend/shared /app/shared
-
-# نصب وابستگی‌ها
+# Install service-specific dependencies
 RUN pip install --no-cache-dir fastapi uvicorn requests
 
-# PYTHONPATH برای shared
-ENV PYTHONPATH=/app
-
-CMD ["uvicorn", "ai_decision.main:app"]
+# Start service
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]

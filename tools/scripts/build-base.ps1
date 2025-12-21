@@ -1,0 +1,1 @@
+docker build -t sfs_base:latest -f infrastructure/docker/Dockerfile.base .

@@ -1,18 +1,20 @@
 # =========================
-# مرحله Build
+# Build stage
 # =========================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# Install dependencies (cache-friendly)
+COPY frontend/webapp/package*.json ./
 RUN npm install --no-audit --no-fund
 
-COPY . .
+# Copy source and build
+COPY frontend/webapp .
 RUN npm run build
 
 # =========================
-# مرحله Runtime
+# Runtime stage
 # =========================
 FROM node:20-alpine
 

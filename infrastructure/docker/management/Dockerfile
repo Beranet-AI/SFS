@@ -1,46 +1,22 @@
-#FROM python:3.11-slim
+# =========================
+# Base image (injected by docker-compose)
+# =========================
+ARG BASE_IMAGE=sfs_base
+FROM ${BASE_IMAGE}:latest
 
-# 1. مسیر کاری = ریشه پروژه Django
-#WORKDIR /app/management
+# Stable working directory
+WORKDIR /app/backend/services/management
 
-# 2. کپی سورس‌ها
-#COPY backend/services/management /app/management
-#COPY backend/shared /app/shared
+# Copy Django service source
+COPY backend/services/management /app/backend/services/management
 
-# 3. نصب وابستگی‌ها
-#RUN pip install --no-cache-dir \
-#    django \
-#    djangorestframework \
-#    django-extensions \
-#    uvicorn \
-#    psycopg2-binary \
-#    requests
-
-# 4. معرفی shared و management به Python
-#ENV PYTHONPATH=/app
-
-# 5. اجرای Django با ASGI صحیح
-#CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0"]
-
-
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY backend/services/management /app
-COPY backend/shared /app/shared
-
+# Install service-specific dependencies
 RUN pip install --no-cache-dir \
     django \
     djangorestframework \
-    django-extensions \
     psycopg2-binary \
-    uvicorn \
-    requests \
-    gunicorn \
-    whitenoise
+    django-extensions \
+    requests
 
-ENV PYTHONPATH=/app
-ENV DJANGO_SETTINGS_MODULE=config.settings.dev
-
-CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+# Run Django development server
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

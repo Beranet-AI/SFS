@@ -23,7 +23,6 @@ INSTALLED_APPS = [
 
     # Project apps
     "apps.users",
-    "apps.users.apps.UsersConfig",
     "apps.farms",
     "apps.livestock",
     "apps.devices",
@@ -36,7 +35,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -72,22 +70,7 @@ DATABASES = {
     }
 }
 
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# WhiteNoise storage (کم‌کد و استاندارد)
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# URL configuration
-ROOT_URLCONF = "config.urls"
-
-# Application entrypoints
-WSGI_APPLICATION = "config.wsgi.application"
-ASGI_APPLICATION = "config.asgi.application"
-
 
 USE_I18N = True
 USE_TZ = True
@@ -100,3 +83,5 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
+

@@ -1,0 +1,14 @@
+# Dockerfile.base
+FROM python:3.11-slim
+
+# Set a stable application root
+WORKDIR /app
+
+# Copy shared kernel so it can be imported by all services
+COPY backend/shared /app/backend/shared
+
+# Make backend modules (including shared/) importable
+#ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app/backend/services
+
+# (Optional) common system deps or python deps can go here
