@@ -42,7 +42,6 @@ services:
       # اگر env_file داری، می‌تونی این‌ها رو ببری آنجا
       DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgres://sfs:sfs@postgres:5432/sfs
-      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8000:8000"
     networks:
@@ -57,8 +56,6 @@ services:
     depends_on:
       - base
       - postgres
-    environment:
-      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8001:8001"
     networks:
@@ -73,8 +70,6 @@ services:
     depends_on:
       - base
       - postgres
-    environment:
-      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8002:8002"
     networks:
@@ -89,8 +84,6 @@ services:
     depends_on:
       - base
       - postgres
-    environment:
-      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8003:8003"
     networks:
@@ -105,8 +98,6 @@ services:
     depends_on:
       - base
       - postgres
-    environment:
-      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8004:8004"
     networks:
