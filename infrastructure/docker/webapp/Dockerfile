@@ -1,28 +1,14 @@
-# =========================
-# Build stage
-# =========================
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Install dependencies (cache-friendly)
-COPY frontend/webapp/package*.json ./
-RUN npm install --no-audit --no-fund
-
-# Copy source and build
-COPY frontend/webapp .
-RUN npm run build
-
-# =========================
-# Runtime stage
-# =========================
 FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app ./
+COPY frontend/webapp/package*.json ./
+RUN npm ci
 
-ENV NODE_ENV=production
+COPY frontend/webapp ./
+
+# Build
+RUN npm run build
+
 EXPOSE 3000
-
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]

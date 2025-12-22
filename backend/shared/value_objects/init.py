@@ -1,0 +1,1 @@
+from .livestock_location import LivestockLocation

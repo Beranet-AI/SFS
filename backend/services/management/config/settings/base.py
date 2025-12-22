@@ -1,10 +1,6 @@
 from pathlib import Path
 import os
 
-
-# ... existing code ...
-
-
 BASE_DIR = Path(__file__).resolve().parents[3]
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
@@ -20,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'django_extensions',
     'rest_framework',
+
 
     # Project apps
     "apps.users",
@@ -70,7 +67,10 @@ DATABASES = {
     }
 }
 
+STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
 
 USE_I18N = True
 USE_TZ = True
@@ -83,5 +83,3 @@ LANGUAGES = [
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
-
-

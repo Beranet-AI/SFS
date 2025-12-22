@@ -1,133 +1,128 @@
-# =========================
-# Global definitions
-# =========================
-
 networks:
   sfs_net:
 
 volumes:
   postgres_data:
 
-# =========================
-# Services
-# =========================
 services:
+  # --- Base image (single source of truth) ---
+  base:
+    image: sfs_base:latest
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/Dockerfile.base
+    networks:
+      - sfs_net
 
-  # ---------- DATABASE
   postgres:
     image: postgres:15
     container_name: sfs-postgres
     restart: always
-    env_file:
-      - ../env/postgres.env
+    environment:
+      POSTGRES_DB: sfs
+      POSTGRES_USER: sfs
+      POSTGRES_PASSWORD: sfs
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - sfs_net
 
-  # ---------- MANAGEMENT (Django)
   management:
     container_name: sfs-management
     restart: always
-    networks:
-      - sfs_net
     build:
       context: ../..
       dockerfile: infrastructure/docker/management/Dockerfile
-      args:
-        BASE_IMAGE: sfs_base
-    env_file:
-      - ../env/management.env
     depends_on:
+      - base
       - postgres
+    environment:
+      # اگر env_file داری، می‌تونی این‌ها رو ببری آنجا
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DATABASE_URL: postgres://sfs:sfs@postgres:5432/sfs
+      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8000:8000"
-
-  # ---------- MONITORING
-  monitoring:
-    container_name: sfs-monitoring
-    restart: always
     networks:
       - sfs_net
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/monitoring/Dockerfile
-      args:
-        BASE_IMAGE: sfs_base
-    env_file:
-      - ../env/monitoring.env
-    ports:
-      - "8002:8002"
 
-  # ---------- DATA INGESTION
   data_ingestion:
     container_name: sfs-data-ingestion
     restart: always
-    networks:
-      - sfs_net
     build:
       context: ../..
       dockerfile: infrastructure/docker/data_ingestion/Dockerfile
-      args:
-        BASE_IMAGE: sfs_base
-    env_file:
-      - ../env/data_ingestion.env
     depends_on:
-      - management
-      - monitoring
+      - base
+      - postgres
+    environment:
+      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8001:8001"
+    networks:
+      - sfs_net
 
-  # ---------- EDGE CONTROLLER
+  monitoring:
+    container_name: sfs-monitoring
+    restart: always
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/monitoring/Dockerfile
+    depends_on:
+      - base
+      - postgres
+    environment:
+      PYTHONPATH: /app/backend:/app/backend/services
+    ports:
+      - "8002:8002"
+    networks:
+      - sfs_net
+
   edge_controller:
     container_name: sfs-edge-controller
     restart: always
-    networks:
-      - sfs_net
     build:
       context: ../..
       dockerfile: infrastructure/docker/edge_controller/Dockerfile
-      args:
-        BASE_IMAGE: sfs_base
-    env_file:
-      - ../env/edge_controller.env
     depends_on:
-      - data_ingestion
+      - base
+      - postgres
+    environment:
+      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8003:8003"
+    networks:
+      - sfs_net
 
-  # ---------- AI DECISION
   ai_decision:
     container_name: sfs-ai-decision
     restart: always
-    networks:
-      - sfs_net
     build:
       context: ../..
       dockerfile: infrastructure/docker/ai_decision/Dockerfile
-      args:
-        BASE_IMAGE: sfs_base
-    env_file:
-      - ../env/ai_decision.env
     depends_on:
-      - management
+      - base
+      - postgres
+    environment:
+      PYTHONPATH: /app/backend:/app/backend/services
     ports:
       - "8004:8004"
+    networks:
+      - sfs_net
 
-  # ---------- FRONTEND
   webapp:
     container_name: sfs-webapp
     restart: always
-    networks:
-      - sfs_net
     build:
       context: ../..
       dockerfile: infrastructure/docker/webapp/Dockerfile
-    env_file:
-      - ../env/webapp.env
     depends_on:
       - management
       - monitoring
       - ai_decision
     ports:
       - "3000:3000"
+    networks:
+      - sfs_net

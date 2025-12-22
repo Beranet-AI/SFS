@@ -1,24 +1,25 @@
-# =========================
-# Base image (injected by docker-compose)
-# =========================
-ARG BASE_IMAGE=sfs_base
-FROM ${BASE_IMAGE}:latest
+ARG BASE_IMAGE=sfs_base:latest
+FROM ${BASE_IMAGE}
 
-ENV PYTHONPATH=/app/backend
-
-# Stable working directory
 WORKDIR /app/backend/services/management
 
-# Copy Django service source
-COPY backend/services/management .
+# کپی سورس سرویس
+COPY backend/services/management /app/backend/services/management
 
-# Install service-specific dependencies
+# وابستگی‌های این سرویس
 RUN pip install --no-cache-dir \
     django \
     djangorestframework \
-    psycopg2-binary \                       
     django-extensions \
-    requests
+    psycopg2-binary \
+    requests \
+    gunicorn \
+    uvicorn
 
-# Run Django development server
+# پیش‌فرض تنظیمات (اگر env_file گذاشتی، همان override می‌کند)
+ENV DJANGO_SETTINGS_MODULE=config.settings.dev
+
+EXPOSE 8000
+
+# حالت DEV:
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

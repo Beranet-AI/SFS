@@ -1,14 +1,25 @@
-# Dockerfile.base
 FROM python:3.11-slim
 
-# Set a stable application root
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# پکیج‌های سیستمی لازم (برای psycopg2 و...)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy shared kernel so it can be imported by all services
+# ---- Shared Kernel ----
+# shared باید همیشه در همه سرویس‌ها importable باشد
 COPY backend/shared /app/backend/shared
 
-# Make backend modules (including shared/) importable
-#ENV PYTHONPATH=/app/backend
-#ENV PYTHONPATH=/app/backend/services
-ENV PYTHONPATH=/app/backend
-# (Optional) common system deps or python deps can go here
+# مهم‌ترین بخش برای حل "No module named shared" و "No module named edge_controller"
+# - shared از /app/backend/shared می‌آید
+# - سرویس‌ها از /app/backend/services/<service> می‌آیند
+ENV PYTHONPATH=/app/backend:/app/backend/services
+
+# pip upgrade (اختیاری ولی کمک‌کننده برای جلوگیری از خراب شدن pip)
+RUN python -m pip install --upgrade pip setuptools wheel
