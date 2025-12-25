@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
+from apps.monitoring.application.services.device_health_service import DeviceHealthService
 
 
 class DeviceKind(models.TextChoices):
@@ -14,7 +15,9 @@ class DeviceStatus(models.TextChoices):
     ACTIVE = "active", "Active"
     INACTIVE = "inactive", "Inactive"
     DISABLED = "disabled", "Disabled"
-
+    ONLINE = "online"
+    OFFLINE = "offline"
+    UNKNOWN = "unknown"
 
 class DeviceProtocol(models.TextChoices):
     HTTP_JSON = "http_json", "HTTP JSON"
@@ -49,6 +52,7 @@ class DeviceModel(models.Model):
     display_name = models.CharField(max_length=200, blank=True, default="")
 
     status = models.CharField(max_length=32, choices=DeviceStatus.choices, default=DeviceStatus.PENDING)
+
     approval_status = models.CharField(max_length=32, choices=ApprovalStatus.choices, default=ApprovalStatus.PENDING)
 
     # assignment (you said it connects to farm/barn/zone + sometimes livestock)

@@ -33,3 +33,19 @@ def stream(request: Request, livestock_id: Optional[str] = None):
             "Connection": "keep-alive",
         },
     )
+
+
+health = DeviceHealthService()
+
+
+@router.post("/health/heartbeat")
+async def heartbeat(payload: dict):
+    """
+    payload:
+    {
+      "device_serial": "SENSOR-123",
+      "ts": "2025-01-01T12:00:00Z"
+    }
+    """
+    await health.on_heartbeat(payload)
+    return {"ok": True}
