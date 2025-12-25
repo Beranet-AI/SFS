@@ -1,4 +1,7 @@
-from .base_id import BaseId
+from dataclasses import dataclass
 
-class LivestockId(BaseId):
-    pass
+@dataclass(frozen=True)
+class LivestockId:
+    value: str
+    def __str__(self) -> str:
+        return self.value

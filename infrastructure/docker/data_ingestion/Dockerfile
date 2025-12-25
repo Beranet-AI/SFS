@@ -1,10 +1,13 @@
-ARG BASE_IMAGE=sfs_base:latest
-FROM ${BASE_IMAGE}
+FROM sfs_base:latest
 
-WORKDIR /app/backend/services/data_ingestion
-COPY backend/services/data_ingestion /app/backend/services/data_ingestion
+# ریشه اجرای سرویس
+WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn requests
+# کپی کل پکیج سرویس با نام خودش
+COPY backend/services/data_ingestion /app/data_ingestion
 
-EXPOSE 8001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+# نصب وابستگی‌های runtime
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# اجرای سرویس
+CMD ["uvicorn", "data_ingestion.main:app", "--host", "0.0.0.0", "--port", "8001"]

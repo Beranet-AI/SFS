@@ -1,21 +1,13 @@
-from datetime import datetime
-from edge_controller.domain.edge_node import EdgeNode
+from typing import Dict, Any
+from edge_controller.core.config import settings
+from edge_controller.infrastructure.clients.management_client import ManagementClient
+
 
 class DiscoveryService:
-    def __init__(self, registry):
-        self.registry = registry
+    def __init__(self, mgmt: ManagementClient):
+        self.mgmt = mgmt
 
-    def heartbeat(self, node_id: str, name: str, ip: str):
-        node = EdgeNode(
-            node_id=node_id,
-            name=name,
-            ip=ip,
-            last_seen=datetime.utcnow(),
-            is_online=True,
-        )
-        self.registry.upsert(node)
-        return node
-
-    def report_discovery(self, event):
-        self.registry.record_discovery(event)
-        return {"ok": True, "node_id": event.node_id, "count": len(event.discovered_devices)}
+    def on_seen(self, device: Dict[str, Any]) -> None:
+        if not settings.ENABLE_DEVICE_DISCOVERY:
+            return
+        self.mgmt.upsert_discovery(device)

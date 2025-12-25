@@ -1,10 +1,13 @@
-ARG BASE_IMAGE=sfs_base:latest
-FROM ${BASE_IMAGE}
+FROM sfs_base:latest
 
-WORKDIR /app/backend/services/monitoring
-COPY backend/services/monitoring /app/backend/services/monitoring
+# ریشه اجرای سرویس
+WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn requests
+# کپی کل پکیج سرویس با نام خودش
+COPY backend/services/monitoring /app/monitoring
 
-EXPOSE 8002
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]
+# نصب وابستگی‌های runtime
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# اجرای سرویس
+CMD ["uvicorn", "monitoring.main:app", "--host", "0.0.0.0", "--port", "8001"]

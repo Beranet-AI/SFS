@@ -1,26 +1,25 @@
-from datetime import datetime
-from shared.ids.incident_id import IncidentId
-from shared.ids.livestock_id import LivestockId
-from shared.enums.incident_severity import IncidentSeverity
-from shared.enums.incident_status import IncidentStatus
+from __future__ import annotations
 
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+from datetime import datetime
+
+
+@dataclass(frozen=True)
 class IncidentDTO:
     """
-    Incident contract shared between backend and frontend.
+    Incident created when a rule/policy is violated or device is unhealthy.
     """
+    code: str                 # e.g. TEMP_TOO_HIGH, DEVICE_OFFLINE, FAN_FAILURE
+    severity: str             # low | medium | high | critical
+    title: str
+    description: str
 
-    def __init__(
-        self,
-        id: IncidentId,
-        livestock_id: LivestockId,
-        severity: IncidentSeverity,
-        status: IncidentStatus,
-        created_at: datetime,
-        description: str
-    ):
-        self.id = id
-        self.livestock_id = livestock_id
-        self.severity = severity
-        self.status = status
-        self.created_at = created_at
-        self.description = description
+    device_serial: Optional[str] = None
+    livestock_id: Optional[str] = None
+    farm_id: Optional[str] = None
+    barn_id: Optional[str] = None
+    zone_id: Optional[str] = None
+
+    ts: datetime = field(default_factory=datetime.utcnow)
+    evidence: Dict[str, Any] = field(default_factory=dict)

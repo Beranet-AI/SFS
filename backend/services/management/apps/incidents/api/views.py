@@ -1,30 +1,20 @@
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+
 from apps.incidents.infrastructure.models.incident_model import IncidentModel
-from apps.incidents.infrastructure.repositories.incident_repo_impl import DjangoIncidentRepository
-from apps.incidents.application.use_cases.acknowledge_incident import AcknowledgeIncidentUseCase
-from apps.incidents.application.use_cases.resolve_incident import ResolveIncidentUseCase
+from .serializers import IncidentSerializer
 
-class IncidentsView(APIView):
-    def get(self, request):
-        qs = IncidentModel.objects.all().values(
-            "id","livestock_id","severity","status","source",
-            "description","created_at","acknowledged_at","resolved_at"
-        )
-        return Response(list(qs))
 
-class IncidentAcknowledgeView(APIView):
-    repo = DjangoIncidentRepository()
+@api_view(["GET"])
+def list_incidents(request):
+    qs = IncidentModel.objects.all().order_by("-ts")
+    return Response(IncidentSerializer(qs, many=True).data)
 
-    def post(self, request, incident_id: str):
-        uc = AcknowledgeIncidentUseCase(self.repo)
-        incident = uc.execute(incident_id)
-        return Response({"id": incident.id, "status": incident.status.value})
 
-class IncidentResolveView(APIView):
-    repo = DjangoIncidentRepository()
-
-    def post(self, request, incident_id: str):
-        uc = ResolveIncidentUseCase(self.repo)
-        incident = uc.execute(incident_id)
-        return Response({"id": incident.id, "status": incident.status.value})
+@api_view(["POST"])
+def create_incident(request):
+    ser = IncidentSerializer(data=request.data)
+    ser.is_valid(raise_exception=True)
+    obj = ser.save()
+    return Response(IncidentSerializer(obj).data, status=status.HTTP_201_CREATED)

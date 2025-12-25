@@ -1,21 +1,18 @@
 "use client";
 
-import '../globals.css'; 
-
-import { LiveStatusPanel } from "@/ui/components/LiveStatusPanel";
-import { IncidentsTable } from "@/ui/components/IncidentsTable";
-import { LivestockTable } from "@/ui/components/LivestockTable";
-import { useTranslation } from "@/i18n/useTranslation";
+import { useLiveStatus } from "@/hooks/useLiveStatus";
 
 export default function DashboardPage() {
-  const { t } = useTranslation();
+  const { data, loading } = useLiveStatus(undefined); // یا livestockId مشخص
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <main style={{ display: "grid", gap: 16 }}>
-      <h1>{t("dashboard.title")}</h1>
-      <LiveStatusPanel />
-      <IncidentsTable />
-      <LivestockTable />
-    </main>
+    <div style={{ padding: 16 }}>
+      <h2>LiveStatus (SSE)</h2>
+      <pre style={{ background: "#111", color: "#0f0", padding: 12 }}>
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    </div>
   );
 }

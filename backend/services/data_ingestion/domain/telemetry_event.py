@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from shared.ids.device_id import DeviceId
-from shared.ids.livestock_id import LivestockId
+from typing import Any, Optional
 
-@dataclass(frozen=True)
+@dataclass
 class TelemetryEvent:
-    """
-    Incoming telemetry event (validated).
-    """
-    device_id: DeviceId
-    livestock_id: LivestockId
+    device_external_id: str
+    device_type: str
     metric: str
-    value: float
-    recorded_at: datetime
+    value: Any
+    ts: datetime
+    farm_id: Optional[str] = None
+    barn_id: Optional[str] = None
+    zone_id: Optional[str] = None
+    livestock_id: Optional[str] = None

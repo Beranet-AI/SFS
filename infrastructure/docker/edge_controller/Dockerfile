@@ -1,10 +1,13 @@
-ARG BASE_IMAGE=sfs_base:latest
-FROM ${BASE_IMAGE}
+FROM sfs_base:latest
 
-WORKDIR /app/backend/services/edge_controller
-COPY backend/services/edge_controller /app/backend/services/edge_controller
+# ریشه اجرای سرویس
+WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn requests
+# کپی کل پکیج سرویس با نام خودش
+COPY backend/services/edge_controller /app/edge_controller
 
-EXPOSE 8003
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
+# نصب وابستگی‌های runtime
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# اجرای سرویس
+CMD ["uvicorn", "edge_controller.main:app", "--host", "0.0.0.0", "--port", "8001"]

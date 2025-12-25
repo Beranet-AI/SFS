@@ -1,21 +1,11 @@
-from data_ingestion.domain.telemetry_event import TelemetryEvent
+from typing import Dict, Any
+from data_ingestion.core.config import settings
+import requests
+
 
 class IngestService:
-    """
-    Coordinates telemetry ingestion.
-    """
-
-    def __init__(self, management_client, monitoring_client, rule_dispatcher):
-        self.management_client = management_client
-        self.monitoring_client = monitoring_client
-        self.rule_dispatcher = rule_dispatcher
-
-    def ingest(self, event: TelemetryEvent):
-        # 1) persist raw telemetry (management / telemetry app)
-        self.management_client.push_telemetry(event)
-
-        # 2) update livestatus (monitoring)
-        self.monitoring_client.push_livestatus(event)
-
-        # 3) trigger rules
-        self.rule_dispatcher.dispatch(event)
+    def push_livestatus(self, telemetry: Dict[str, Any]) -> None:
+        if not settings.ENABLE_LIVESTATUS_PUSH:
+            return
+        url = f"{settings.MONITORING_BASE_URL}/monitoring/livestatus/push"
+        requests.post(url, json=telemetry, timeout=3)

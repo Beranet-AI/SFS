@@ -1,23 +1,14 @@
+from dataclasses import dataclass
 from datetime import datetime
-from shared.ids.device_id import DeviceId
-from shared.ids.livestock_id import LivestockId
+from typing import Any, Optional, Dict
 
+@dataclass
 class LiveStatusDTO:
-    """
-    Operational live status (event/livestatus).
-    Read-only snapshot.
-    """
-
-    def __init__(
-        self,
-        device_id: DeviceId,
-        livestock_id: LivestockId,
-        metric: str,
-        value: float,
-        recorded_at: datetime
-    ):
-        self.device_id = device_id
-        self.livestock_id = livestock_id
-        self.metric = metric
-        self.value = value
-        self.recorded_at = recorded_at
+    ts: datetime
+    device_id: str
+    device_type: str
+    farm_id: Optional[str]
+    barn_id: Optional[str]
+    zone_id: Optional[str]
+    livestock_id: Optional[str]
+    metrics: Dict[str, Any]  # مثل {"temperature": 23.1, "ammonia": 15}

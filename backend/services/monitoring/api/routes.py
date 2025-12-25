@@ -1,35 +1,35 @@
-from fastapi import APIRouter
-from monitoring.api.schemas import LiveStatusSchema
-from monitoring.application.services.livestatus_service import LiveStatusService
-from monitoring.infrastructure.cache.livestatus_store import LiveStatusStore
-from monitoring.domain.livestatus import LiveStatus
+from fastapi import APIRouter, Request
+from fastapi.responses import StreamingResponse
+from typing import Dict, Any, Optional
 
-router = APIRouter()
-store = LiveStatusStore()
-service = LiveStatusService(store)
+from apps.monitoring.application.services.livestatus_service import LiveStatusService
+from apps.monitoring.application.streams.livestatus_event_stream import LiveStatusEventStream
 
-@router.post("/livestatus/")
-def push_livestatus(payload: LiveStatusSchema):
-    status = LiveStatus(
-        device_id=payload.device_id,
-        livestock_id=payload.livestock_id,
-        metric=payload.metric,
-        value=payload.value,
-        recorded_at=payload.recorded_at,
-    )
-    service.update(status)
+router = APIRouter(prefix="/monitoring", tags=["monitoring"])
+
+_live = LiveStatusService()
+_stream = LiveStatusEventStream()
+
+
+@router.post("/livestatus/push")
+async def push_livestatus(payload: Dict[str, Any]):
+    _live.add(payload)
+    await _stream.publish(payload)
     return {"ok": True}
 
-@router.get("/livestatus/{livestock_id}")
-def get_livestatus(livestock_id: str):
-    statuses = service.get_by_livestock(livestock_id)
-    return [
-        {
-            "device_id": s.device_id,
-            "livestock_id": s.livestock_id,
-            "metric": s.metric,
-            "value": s.value,
-            "recorded_at": s.recorded_at,
-        }
-        for s in statuses
-    ]
+
+@router.get("/livestatus/recent")
+def recent(livestock_id: Optional[str] = None, device_serial: Optional[str] = None):
+    return _live.get_recent(livestock_id=livestock_id, device_serial=device_serial)
+
+
+@router.get("/livestatus/stream")
+def stream(request: Request, livestock_id: Optional[str] = None):
+    return StreamingResponse(
+        _stream.subscribe(request, livestock_id=livestock_id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    )

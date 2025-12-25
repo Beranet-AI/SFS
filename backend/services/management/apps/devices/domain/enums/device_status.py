@@ -4,4 +4,6 @@ class DeviceStatus(str, Enum):
     ACTIVE = "active"
     INACTIVE = "inactive"
     MAINTENANCE = "maintenance"
-    LOST = "lost"
+    ERROR = "error"
+
+

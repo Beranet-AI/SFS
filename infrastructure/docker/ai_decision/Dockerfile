@@ -1,10 +1,13 @@
-ARG BASE_IMAGE=sfs_base:latest
-FROM ${BASE_IMAGE}
+FROM sfs_base:latest
 
-WORKDIR /app/backend/services/ai_decision
-COPY backend/services/ai_decision /app/backend/services/ai_decision
+# ریشه اجرای سرویس
+WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn requests
+# کپی کل پکیج سرویس با نام خودش
+COPY backend/services/ai_decision /app/ai_decision
 
-EXPOSE 8004
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8004"]
+# نصب وابستگی‌های runtime
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# اجرای سرویس
+CMD ["uvicorn", "ai_decision.main:app", "--host", "0.0.0.0", "--port", "8001"]

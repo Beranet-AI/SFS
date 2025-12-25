@@ -38,10 +38,8 @@ services:
     depends_on:
       - base
       - postgres
-    environment:
-      # اگر env_file داری، می‌تونی این‌ها رو ببری آنجا
-      DJANGO_SETTINGS_MODULE: config.settings.dev
-      DATABASE_URL: postgres://sfs:sfs@postgres:5432/sfs
+    env_file:
+      - ../env/management.env
     ports:
       - "8000:8000"
     networks:
@@ -56,6 +54,8 @@ services:
     depends_on:
       - base
       - postgres
+    env_file:
+      - ../env/data_ingestion.env
     ports:
       - "8001:8001"
     networks:
@@ -70,6 +70,8 @@ services:
     depends_on:
       - base
       - postgres
+    env_file:
+      - ../env/monitoring.env
     ports:
       - "8002:8002"
     networks:
@@ -84,6 +86,8 @@ services:
     depends_on:
       - base
       - postgres
+    env_file:
+      - ../env/edge_controller.env
     ports:
       - "8003:8003"
     networks:
@@ -98,6 +102,8 @@ services:
     depends_on:
       - base
       - postgres
+    env_file:
+      - ../env/ai_decision.env
     ports:
       - "8004:8004"
     networks:

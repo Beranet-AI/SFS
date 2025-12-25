@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .infrastructure.models.user_model import UserModel
+from .models import UserModel
+
 
 @admin.register(UserModel)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ("id", "email", "role", "is_active")
+    list_display = ("email", "is_staff", "is_active")
+    search_fields = ("email",)

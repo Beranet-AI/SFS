@@ -1,5 +1,5 @@
 from apps.users.domain.entities.user import User
-from apps.users.infrastructure.models.user_model import UserModel
+from apps.users.models import UserModel
 from apps.users.domain.enums.role import Role
 
 class DjangoUserRepository:

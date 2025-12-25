@@ -1,9 +1,12 @@
+from pydantic import BaseModel
 import os
 
-SERVICE_NAME = "monitoring"
+class Settings(BaseModel):
+    SERVICE_NAME: str = os.getenv("SERVICE_NAME", "monitoring")
+    HOST: str = os.getenv("HOST", "0.0.0.0")
+    PORT: int = int(os.getenv("PORT", "8002"))
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-TELEMETRY_SERVICE_BASE = os.getenv(
-    "TELEMETRY_SERVICE_BASE",
-    "http://data_ingestion:8001",
-)
+    ENABLE_SSE: bool = os.getenv("ENABLE_SSE", "true").lower() == "true"
+    SSE_HEARTBEAT_SECONDS: int = int(os.getenv("SSE_HEARTBEAT_SECONDS", "10"))
+
+settings = Settings()

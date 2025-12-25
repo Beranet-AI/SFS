@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from ai_decision.api.routes import router
 from ai_decision.core.lifespan import lifespan
@@ -9,3 +10,14 @@ app = FastAPI(
 )
 
 app.include_router(router, prefix="/api/v1")
+
+
+'''
+from fastapi import FastAPI
+from data_ingestion.api.routes import router
+
+app = FastAPI(title="Data Ingestion Service")
+
+app.include_router(router)
+
+'''

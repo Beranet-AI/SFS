@@ -1,17 +1,16 @@
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# System dependencies (for psycopg2 and similar)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    curl \
-  && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Install shared kernel once for all service images
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# نصب ابزار runtime مشترک
+RUN pip install --no-cache-dir \
+    uvicorn \
+    requests
+
+# کپی shared kernel
 COPY backend/shared /app/backend/shared
-RUN pip install --no-cache-dir --editable /app/backend/shared
+
+# نصب shared kernel به‌صورت پکیج
+RUN pip install -e /app/backend/shared

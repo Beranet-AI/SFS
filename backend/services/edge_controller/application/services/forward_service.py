@@ -1,11 +1,13 @@
+from typing import Dict, Any
+from edge_controller.core.config import settings
+from edge_controller.infrastructure.clients.ingestion_client import IngestionClient
+
+
 class ForwardService:
-    """
-    Forwards telemetry payloads from edge -> data_ingestion.
-    """
+    def __init__(self, ingest: IngestionClient):
+        self.ingest = ingest
 
-    def __init__(self, ingestion_client):
-        self.ingestion_client = ingestion_client
-
-    def forward_telemetry(self, payload: dict):
-        self.ingestion_client.push_telemetry(payload)
-        return {"ok": True}
+    def forward_telemetry(self, telemetry: Dict[str, Any]) -> None:
+        if not settings.ENABLE_TELEMETRY_FORWARD:
+            return
+        self.ingest.forward_telemetry(telemetry)
