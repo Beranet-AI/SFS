@@ -1,5 +1,5 @@
-from ai_decision.domain.outputs.health_prediction import HealthPrediction
-from ai_decision.infrastructure.models.simple_health_model import SimpleHealthModel
+from backend.services.ai_decision.domain.outputs.health_prediction import HealthPrediction
+from backend.services.ai_decision.infrastructure.models.simple_health_model import SimpleHealthModel
 from datetime import datetime
 
 class PredictionService:

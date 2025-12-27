@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-src/sfs_shared_kernel.egg-info/PKG-INFO
-src/sfs_shared_kernel.egg-info/SOURCES.txt
-src/sfs_shared_kernel.egg-info/dependency_links.txt
-src/sfs_shared_kernel.egg-info/top_level.txt
-src/shared/__init__.py

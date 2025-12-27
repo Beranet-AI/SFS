@@ -1,5 +1,9 @@
 from rest_framework import serializers
+from apps.farms.models import FarmModel
 
-class FarmSerializer(serializers.Serializer):
-    id = serializers.CharField(read_only=True)
-    name = serializers.CharField()
+
+class FarmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FarmModel
+        fields = ("id", "name", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")

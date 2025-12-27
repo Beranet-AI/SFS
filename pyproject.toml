@@ -1,8 +1,26 @@
+[project]
+name = "sfs"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = []
+
+# -----------------------
+# Ruff (lint + isort)
+# -----------------------
 [tool.ruff]
 target-version = "py311"
 line-length = 120
 
-# مجموعه قوانین متعادل و مدرن
+exclude = [
+  ".venv",
+  "venv",
+  "__pycache__",
+  "node_modules",
+  "frontend",
+  "backend/services/**/migrations",
+]
+
+[tool.ruff.lint]
 select = [
   "E",   # pycodestyle
   "F",   # pyflakes
@@ -10,21 +28,29 @@ select = [
   "B",   # bugbear
   "UP",  # pyupgrade
 ]
-
 ignore = [
-  "E203", # whitespace before ':'
-  "E501", # line length (handled by formatter/editor)
-]
-
-exclude = [
-  "__pycache__",
-  ".venv",
-  "venv",
-  "migrations",
-  "node_modules",
-  "frontend",
+  "E203",
+  "E501",
 ]
 
 [tool.ruff.lint.isort]
+known-first-party = ["backend"]
 combine-as-imports = true
-known-first-party = ["backend", "app"]
+
+# -----------------------
+# Pytest
+# -----------------------
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend"]
+
+# -----------------------
+# Mypy
+# -----------------------
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "backend"
+namespace_packages = true
+ignore_missing_imports = true
+disallow_untyped_defs = false
+check_untyped_defs = true

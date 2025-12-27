@@ -1,29 +1,38 @@
+from __future__ import annotations
+
 import asyncio
-import json
-from typing import AsyncGenerator, Dict, Any, Optional
-from fastapi import Request
+from typing import AsyncIterator
+
+from backend.shared.dto.livestatus_dto import LiveStatusEventDTO
 
 
 class LiveStatusEventStream:
     """
-    SSE stream: yields 'data: <json>\\n\\n'
+    In-process pub/sub stream for SSE consumers.
+    Later we can switch this to Redis Streams / NATS / Kafka.
     """
-    def __init__(self):
-        self._queue: asyncio.Queue[Dict[str, Any]] = asyncio.Queue(maxsize=2000)
 
-    async def publish(self, evt: Dict[str, Any]) -> None:
-        # avoid blocking if slow clients
+    def __init__(self) -> None:
+        self._subscribers: set[asyncio.Queue] = set()
+        self._lock = asyncio.Lock()
+
+    async def publish(self, event: LiveStatusEventDTO) -> None:
+        async with self._lock:
+            for q in list(self._subscribers):
+                # non-blocking best effort
+                if q.full():
+                    continue
+                q.put_nowait(event.model_dump())
+
+    async def subscribe(self) -> AsyncIterator[dict]:
+        q: asyncio.Queue = asyncio.Queue(maxsize=200)
+        async with self._lock:
+            self._subscribers.add(q)
+
         try:
-            self._queue.put_nowait(evt)
-        except asyncio.QueueFull:
-            # drop oldest behavior could be implemented; here we just drop
-            pass
-
-    async def subscribe(self, request: Request, livestock_id: Optional[str] = None) -> AsyncGenerator[str, None]:
-        while True:
-            if await request.is_disconnected():
-                break
-            evt = await self._queue.get()
-            if livestock_id and evt.get("livestock_id") != livestock_id:
-                continue
-            yield f"data: {json.dumps(evt, ensure_ascii=False)}\n\n"
+            while True:
+                item = await q.get()
+                yield item
+        finally:
+            async with self._lock:
+                self._subscribers.discard(q)

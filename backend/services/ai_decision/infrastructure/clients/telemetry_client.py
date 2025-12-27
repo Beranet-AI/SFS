@@ -1,6 +1,6 @@
 import requests
-from ai_decision.core.config import TELEMETRY_BASE
-from ai_decision.domain.inputs.telemetry_window import TelemetryWindow, TelemetryPoint
+from backend.services.ai_decision.core.config import TELEMETRY_BASE
+from backend.services.ai_decision.domain.inputs.telemetry_window import TelemetryWindow, TelemetryPoint
 from datetime import datetime
 
 class TelemetryClient:

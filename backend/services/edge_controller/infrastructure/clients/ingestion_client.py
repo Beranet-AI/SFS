@@ -1,6 +1,6 @@
 import requests
 from typing import Dict, Any
-from edge_controller.core.config import settings
+from backend.services.edge_controller.core.config import settings
 
 
 class IngestionClient:

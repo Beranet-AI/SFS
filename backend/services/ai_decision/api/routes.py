@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from ai_decision.api.schemas import DecisionRequest
-from ai_decision.application.services.decision_pipeline import DecisionPipeline
-from ai_decision.application.services.prediction_service import PredictionService
-from ai_decision.infrastructure.clients.telemetry_client import TelemetryClient
-from ai_decision.infrastructure.clients.management_client import ManagementClient
-from ai_decision.infrastructure.models.simple_health_model import SimpleHealthModel
+from backend.services.ai_decision.api.schemas import DecisionRequest
+from backend.services.ai_decision.application.services.decision_pipeline import DecisionPipeline
+from backend.services.ai_decision.application.services.prediction_service import PredictionService
+from backend.services.ai_decision.infrastructure.clients.telemetry_client import TelemetryClient
+from backend.services.ai_decision.infrastructure.clients.management_client import ManagementClient
+from backend.services.ai_decision.infrastructure.models.simple_health_model import SimpleHealthModel
 
 router = APIRouter()
 

@@ -1,6 +1,8 @@
 from django.contrib import admin
-from .infrastructure.models.farm_model import FarmModel
+from .models import FarmModel
+
 
 @admin.register(FarmModel)
 class FarmAdmin(admin.ModelAdmin):
-    list_display = ("id", "name")
+    list_display = ("id", "name", "created_at")
+    search_fields = ("name",)

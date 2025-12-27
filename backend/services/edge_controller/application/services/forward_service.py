@@ -1,6 +1,6 @@
 from typing import Dict, Any
-from edge_controller.core.config import settings
-from edge_controller.infrastructure.clients.ingestion_client import IngestionClient
+from backend.services.edge_controller.core.config import settings
+from backend.services.edge_controller.infrastructure.clients.ingestion_client import IngestionClient
 
 
 class ForwardService:

@@ -1,4 +1,4 @@
-from shared.enums.health_state import HealthState
+from backend.shared.enums.health_state import HealthState
 
 class SimpleHealthModel:
     """

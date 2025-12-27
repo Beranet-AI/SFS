@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.devices.infrastructure.models.device_model import DeviceModel
-from apps.devices.infrastructure.models.device_discovery_model import DeviceDiscoveryModel
+from apps.devices.models import DeviceModel
+from apps.discovery.models import DeviceDiscoveryModel
 
 
 class DeviceSerializer(serializers.ModelSerializer):

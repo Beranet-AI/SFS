@@ -27,3 +27,23 @@ backend/
         ├── health_status_dto.py
         ├── incident_dto.py
         └── livestatus_dto.py
+
+
+
+# Shared Kernel – SFS
+
+This module contains immutable domain primitives shared across backend services.
+
+## Allowed
+- Value Objects
+- DTOs
+- IDs
+- Enums
+
+## Forbidden
+- ORM models
+- Repositories
+- Services
+- IO / Network / DB access
+
+Any violation of these rules is considered an architectural error.

@@ -1,5 +1,5 @@
 import requests
-from ai_decision.core.config import MANAGEMENT_BASE
+from backend.services.ai_decision.core.config import MANAGEMENT_BASE
 
 class ManagementClient:
     """

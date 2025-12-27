@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from shared.ids.livestock_id import LivestockId
+from backend.shared.ids.livestock_id import LivestockId
 from apps.health.domain.enums.diagnosis_type import DiagnosisType
 
 @dataclass

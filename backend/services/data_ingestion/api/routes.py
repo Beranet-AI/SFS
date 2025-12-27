@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from typing import Dict, Any
 
-from data_ingestion.application.services.ingest_service import IngestService
-from data_ingestion.application.services.rule_dispatcher import RuleDispatcher
+from backend.services.data_ingestion.application.services.ingest_service import IngestService
+from backend.services.data_ingestion.application.services.rule_dispatcher import RuleDispatcher
 
 router = APIRouter(prefix="/ingest", tags=["ingest"])
 

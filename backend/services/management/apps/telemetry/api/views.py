@@ -1,34 +1,34 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.telemetry.infrastructure.repositories.telemetry_repo_impl import DjangoTelemetryRepository
-from apps.telemetry.application.services.ingest_telemetry import IngestTelemetryService
+
+from apps.telemetry.application.services.telemetry_service import TelemetryService
+from apps.telemetry.api.serializers import TelemetryIngestSerializer, TelemetrySerializer
+
 
 class TelemetryIngestView(APIView):
-    repo = DjangoTelemetryRepository()
+    service = TelemetryService()
 
     def post(self, request):
-        svc = IngestTelemetryService(self.repo)
-        record = svc.ingest(
-            device_id=request.data["device_id"],
-            livestock_id=request.data["livestock_id"],
-            metric=request.data["metric"],
-            value=float(request.data["value"]),
-        )
+        ser = TelemetryIngestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+
+        obj = self.service.ingest(**ser.validated_data)
+
         return Response(
-            {
-                "device_id": record.device_id,
-                "livestock_id": record.livestock_id,
-                "metric": record.metric,
-                "value": record.value,
-                "recorded_at": record.recorded_at,
-            },
+            TelemetrySerializer(obj).data,
             status=status.HTTP_201_CREATED,
         )
 
+
 class TelemetryRecentView(APIView):
-    repo = DjangoTelemetryRepository()
+    service = TelemetryService()
 
     def get(self, request, livestock_id: str):
-        data = self.repo.list_recent(livestock_id)
-        return Response(data)
+        limit = int(request.query_params.get("limit", 100))
+        qs = self.service.list_recent(livestock_id=livestock_id, limit=limit)
+
+        return Response(
+            TelemetrySerializer(qs, many=True).data,
+            status=status.HTTP_200_OK,
+        )

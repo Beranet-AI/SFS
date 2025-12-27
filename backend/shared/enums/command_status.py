@@ -1,0 +1,15 @@
+from enum import Enum
+
+
+class CommandStatus(str, Enum):
+    PENDING = "PENDING"
+    DISPATCHED = "DISPATCHED"
+    DELIVERED = "DELIVERED"
+    ACKED = "ACKED"
+    EXECUTING = "EXECUTING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
+    TIMEOUT = "TIMEOUT"
+    RETRYING = "RETRYING"
+    CANCELLED = "CANCELLED"
+    DEAD = "DEAD"

@@ -1,6 +1,6 @@
 import requests
 from typing import Dict, Any
-from data_ingestion.core.config import settings
+from backend.services.data_ingestion.core.config import settings
 
 class AIDecisionClient:
     def evaluate(self, payload: Dict[str, Any]) -> Dict[str, Any]:

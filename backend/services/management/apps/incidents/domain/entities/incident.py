@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from shared.ids.incident_id import IncidentId
-from shared.ids.livestock_id import LivestockId
-from shared.enums.incident_severity import IncidentSeverity
+from backend.shared.ids.incident_id import IncidentId
+from backend.shared.ids.livestock_id import LivestockId
+from backend.shared.enums.incident_severity import IncidentSeverity
 from apps.incidents.domain.enums.incident_status import IncidentStatus
 from apps.incidents.domain.enums.incident_source import IncidentSource
 

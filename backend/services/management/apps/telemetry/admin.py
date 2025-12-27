@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .infrastructure.models.telemetry_model import TelemetryModel
+from .models import TelemetryModel
+
 
 @admin.register(TelemetryModel)
 class TelemetryAdmin(admin.ModelAdmin):
@@ -12,3 +13,4 @@ class TelemetryAdmin(admin.ModelAdmin):
         "recorded_at",
     )
     list_filter = ("metric",)
+    search_fields = ("device_id", "livestock_id", "metric")

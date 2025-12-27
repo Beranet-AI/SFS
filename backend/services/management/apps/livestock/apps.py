@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
+
 class LivestockConfig(AppConfig):
     name = "apps.livestock"
     verbose_name = "Livestock"

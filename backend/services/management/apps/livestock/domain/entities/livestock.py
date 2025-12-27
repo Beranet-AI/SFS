@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from shared.value_objects.livestock_location import LivestockLocation
+from backend.shared.value_objects.livestock_location import LivestockLocation
 from apps.livestock.domain.value_objects.health_status import HealthStatus
 
 @dataclass

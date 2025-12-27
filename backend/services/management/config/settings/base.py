@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.auth",
 
     # --- YOUR APPS (قبل از admin) ---
-    "apps.users.apps.UsersConfig",
+    #"apps.users.apps.UsersConfig",
 
     # --- Django admin بعد از users ---
     "django.contrib.admin",
@@ -29,12 +29,15 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # --- بقیه اپ‌ها ---
+    "apps.users",
     "apps.devices",
     "apps.farms",
     "apps.livestock",
     "apps.health",
     "apps.incidents",
     "apps.telemetry",
+    "apps.discovery",
+    "apps.commands",  # NEW
 ]
 # ======================
 # Custom User Model

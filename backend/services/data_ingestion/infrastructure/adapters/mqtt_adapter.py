@@ -5,7 +5,7 @@ Bridges MQTT messages into IngestService.
 
 import json
 from datetime import datetime
-from data_ingestion.domain.telemetry_event import TelemetryEvent
+from backend.services.data_ingestion.domain.telemetry_event import TelemetryEvent
 
 class MQTTAdapter:
     def __init__(self, ingest_service):

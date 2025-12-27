@@ -1,4 +1,4 @@
-from ai_decision.application.services.prediction_service import PredictionService
+from backend.services.ai_decision.application.services.prediction_service import PredictionService
 
 class DecisionPipeline:
     """

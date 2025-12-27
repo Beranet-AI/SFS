@@ -1,5 +1,5 @@
 import requests
-from data_ingestion.core.config import RULES_BASE
+from backend.services.data_ingestion.core.config import RULES_BASE
 
 class RulesClient:
     """

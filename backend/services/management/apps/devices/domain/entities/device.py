@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from shared.ids.device_id import DeviceId
-from shared.ids.livestock_id import LivestockId
-from shared.enums.device_type import DeviceType
+from backend.shared.ids.device_id import DeviceId
+from backend.shared.ids.livestock_id import LivestockId
+from backend.shared.enums.device_type import DeviceType
 from apps.devices.domain.enums.device_status import DeviceStatus
 
 @dataclass

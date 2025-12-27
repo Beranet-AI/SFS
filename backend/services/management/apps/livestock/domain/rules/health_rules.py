@@ -1,5 +1,5 @@
 from datetime import datetime
-from shared.enums.health_state import HealthState
+from backend.shared.enums.health_state import HealthState
 from apps.livestock.domain.value_objects.health_status import HealthStatus
 
 class HealthRules:

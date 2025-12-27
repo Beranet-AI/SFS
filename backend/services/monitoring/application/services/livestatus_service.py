@@ -1,28 +1,37 @@
-from typing import Dict, Any, Optional
-from collections import defaultdict, deque
+from __future__ import annotations
+
+from backend.services.monitoring.application.dispatchers.command_dispatcher import CommandDispatcher
+from backend.services.monitoring.application.dispatchers.incident_dispatcher import IncidentDispatcher
+from backend.services.monitoring.application.streams.livestatus_event_stream import LiveStatusEventStream
+from backend.shared.dto.livestatus_dto import LiveStatusEventDTO
 
 
 class LiveStatusService:
-    """
-    Very lightweight in-memory store for realtime dashboard.
-    In production: replace with Redis pubsub / NATS / Kafka.
-    """
-    def __init__(self):
-        self._by_livestock = defaultdict(lambda: deque(maxlen=200))
-        self._by_device = defaultdict(lambda: deque(maxlen=200))
+    def __init__(
+        self,
+        stream: LiveStatusEventStream,
+        incident_dispatcher: IncidentDispatcher,
+        command_dispatcher: CommandDispatcher,
+    ) -> None:
+        self.stream = stream
+        self.incidents = incident_dispatcher
+        self.commands = command_dispatcher
 
-    def add(self, evt: Dict[str, Any]) -> None:
-        livestock_id = evt.get("livestock_id")
-        device_serial = evt.get("device_serial") or evt.get("serial")
+    async def publish_livestatus(self, dto: LiveStatusEventDTO) -> None:
+        # 1) publish to SSE
+        await self.stream.publish(dto)
 
-        if livestock_id:
-            self._by_livestock[livestock_id].append(evt)
-        if device_serial:
-            self._by_device[device_serial].append(evt)
-
-    def get_recent(self, livestock_id: Optional[str] = None, device_serial: Optional[str] = None):
-        if livestock_id:
-            return list(self._by_livestock[livestock_id])
-        if device_serial:
-            return list(self._by_device[device_serial])
-        return []
+        # 2) (future) run rules, raise incidents, trigger commands
+        #    For now we keep it simple: example threshold hook
+        if dto.metric == "temp" and dto.value >= 45:
+            await self.incidents.rule_violation(
+                rule_code="TEMP_TOO_HIGH",
+                device_id=dto.device_id,
+                details={"metric": dto.metric, "value": dto.value, "ts": dto.ts},
+            )
+            # Example auto-actuation (later configurable by rules/policies)
+            await self.commands.send_command(
+                device_id=dto.device_id,
+                command="FAN_ON",
+                params={"level": 3},
+            )

@@ -3,7 +3,13 @@ from apps.integrations.infrastructure.clients.monitoring_client import Monitorin
 from apps.integrations.infrastructure.clients.edge_client import EdgeClient
 from apps.integrations.infrastructure.clients.ai_client import AIClient
 
+
 class HealthChecks:
+    """
+    Application service aggregating health checks
+    for external bounded contexts.
+    """
+
     def __init__(self):
         self.ingestion = IngestionClient()
         self.monitoring = MonitoringClient()

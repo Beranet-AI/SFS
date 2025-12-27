@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from data_ingestion.core.config import settings
+from backend.services.data_ingestion.core.config import settings
 import requests
 
 

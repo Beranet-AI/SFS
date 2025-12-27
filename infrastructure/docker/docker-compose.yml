@@ -5,7 +5,10 @@ volumes:
   postgres_data:
 
 services:
-  # --- Base image (single source of truth) ---
+
+  # -----------------------
+  # Base image (Shared Kernel)
+  # -----------------------
   base:
     image: sfs_base:latest
     build:
@@ -31,7 +34,6 @@ services:
 
   management:
     container_name: sfs-management
-    restart: always
     build:
       context: ../..
       dockerfile: infrastructure/docker/management/Dockerfile
@@ -47,7 +49,6 @@ services:
 
   data_ingestion:
     container_name: sfs-data-ingestion
-    restart: always
     build:
       context: ../..
       dockerfile: infrastructure/docker/data_ingestion/Dockerfile
@@ -63,7 +64,6 @@ services:
 
   monitoring:
     container_name: sfs-monitoring
-    restart: always
     build:
       context: ../..
       dockerfile: infrastructure/docker/monitoring/Dockerfile
@@ -79,7 +79,6 @@ services:
 
   edge_controller:
     container_name: sfs-edge-controller
-    restart: always
     build:
       context: ../..
       dockerfile: infrastructure/docker/edge_controller/Dockerfile
@@ -95,7 +94,6 @@ services:
 
   ai_decision:
     container_name: sfs-ai-decision
-    restart: always
     build:
       context: ../..
       dockerfile: infrastructure/docker/ai_decision/Dockerfile
@@ -106,20 +104,5 @@ services:
       - ../env/ai_decision.env
     ports:
       - "8004:8004"
-    networks:
-      - sfs_net
-
-  webapp:
-    container_name: sfs-webapp
-    restart: always
-    build:
-      context: ../..
-      dockerfile: infrastructure/docker/webapp/Dockerfile
-    depends_on:
-      - management
-      - monitoring
-      - ai_decision
-    ports:
-      - "3000:3000"
     networks:
       - sfs_net

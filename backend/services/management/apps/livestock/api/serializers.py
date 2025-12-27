@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+
 class LivestockSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     tag = serializers.CharField()

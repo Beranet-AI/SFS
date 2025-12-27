@@ -1,13 +1,9 @@
 FROM sfs_base:latest
 
-# ریشه اجرای سرویس
 WORKDIR /app
 
-# کپی کل پکیج سرویس با نام خودش
-COPY backend/services/monitoring /app/monitoring
+COPY backend/services/monitoring /app/backend/services/monitoring
 
-# نصب وابستگی‌های runtime
-RUN pip install --no-cache-dir fastapi uvicorn
+RUN pip install --no-cache-dir fastapi uvicorn requests pydantic-settings httpx
 
-# اجرای سرویس
-CMD ["uvicorn", "monitoring.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn","backend.services.monitoring.main:app","--host", "0.0.0.0","--port", "8002"]

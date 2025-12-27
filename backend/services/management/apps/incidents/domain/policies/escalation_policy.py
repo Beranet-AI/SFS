@@ -1,4 +1,4 @@
-from shared.enums.incident_severity import IncidentSeverity
+from backend.shared.enums.incident_severity import IncidentSeverity
 
 class EscalationPolicy:
     """

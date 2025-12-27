@@ -15,7 +15,6 @@ urlpatterns = [
         path("rules/", include("apps.rules.api.urls")),
         path("integrations/", include("apps.integrations.api.urls")),
         path("discovery/", include("apps.discovery.api.urls")),
-        path("control/", include("apps.control.api.urls")),
         path("commands/", include("apps.commands.api.urls")),
 
     ])),

@@ -1,33 +1,42 @@
 backend/services/monitoring/
-├── __init__.py
 ├── main.py
+├── api/
+│   ├── routes.py
+│   └── sse.py
 │
 ├── core/
-│   ├── __init__.py
 │   ├── config.py
 │   └── lifespan.py
 │
 ├── domain/
-│   ├── __init__.py
-│   └── livestatus.py
+│   ├── device_health_state.py
+│   ├── enums.py
+│   ├── value_objects.py
+│   └── events/
+│       ├── livestatus_event.py
+│       └── device_offline_event.py
 │
 ├── application/
-│   ├── __init__.py
-│   └── services/
-│       ├── __init__.py
-│       └── livestatus_service.py
+│   ├── services/
+│   │   ├── device_health_service.py
+│   │   ├── livestatus_service.py
+│   │   └── rule_evaluator_service.py
+│   │
+│   ├── streams/
+│   │   └── livestatus_event_stream.py
+│   │
+│   └── dispatchers/
+│       ├── incident_dispatcher.py
+│       └── command_dispatcher.py
 │
 ├── infrastructure/
-│   ├── __init__.py
-│   ├── cache/
-│   │   ├── __init__.py
-│   │   └── livestatus_store.py
+│   ├── repositories/
+│   │   └── heartbeat_repository.py
 │   │
 │   └── clients/
-│       ├── __init__.py
-│       └── telemetry_client.py
+│       ├── management_client.py
+│       └── command_client.py
 │
-└── api/
-    ├── __init__.py
-    ├── schemas.py
-    └── routes.py
+└── dto/
+    ├── livestatus_dto.py
+    └── health_status_dto.py

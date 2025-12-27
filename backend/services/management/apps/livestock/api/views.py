@@ -1,26 +1,38 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from apps.livestock.infrastructure.models.livestock_model import LivestockModel
-from apps.livestock.infrastructure.repositories.livestock_repo_impl import DjangoLivestockRepository
-from apps.livestock.application.use_cases.update_health import UpdateHealthUseCase
+from rest_framework import status
+
+from apps.livestock.application.services.livestock_service import LivestockService
+from apps.livestock.api.serializers import LivestockSerializer
+
 
 class LivestockView(APIView):
+    service = LivestockService()
+
     def get(self, request):
-        qs = LivestockModel.objects.all().values(
-            "id","tag","farm_id","barn","zone","health_state","health_confidence","health_evaluated_at"
+        qs = self.service.list_all()
+        return Response(LivestockSerializer(qs, many=True).data)
+
+    def post(self, request):
+        livestock = self.service.create(**request.data)
+        return Response(
+            LivestockSerializer(livestock).data,
+            status=status.HTTP_201_CREATED,
         )
-        return Response(list(qs))
+
 
 class LivestockHealthEvalView(APIView):
-    repo = DjangoLivestockRepository()
+    service = LivestockService()
 
     def post(self, request, livestock_id: str):
         score = float(request.data.get("score", 1.0))
-        uc = UpdateHealthUseCase(self.repo)
-        livestock = uc.execute(livestock_id=livestock_id, score=score)
-        return Response({
-            "id": livestock.id,
-            "health_state": livestock.health_status.state.value,
-            "health_confidence": livestock.health_status.confidence,
-            "health_evaluated_at": livestock.health_status.evaluated_at,
-        })
+
+        livestock = self.service.update_health_from_score(
+            livestock_id=livestock_id,
+            score=score,
+        )
+
+        return Response(
+            LivestockSerializer(livestock).data,
+            status=status.HTTP_200_OK,
+        )

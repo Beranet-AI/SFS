@@ -1,15 +1,19 @@
-ARG BASE_IMAGE=sfs_base
-FROM ${BASE_IMAGE}:latest
 
-WORKDIR /app/backend/services/management
+FROM sfs_base:latest
 
-COPY backend/services/management .
+WORKDIR /app
 
+# کپی سورس سرویس
+COPY backend/services/management /app/backend/services/management
+
+# نصب وابستگی‌ها
 RUN pip install --no-cache-dir \
     django \
     djangorestframework \
     django-extensions \
-    psycopg2-binary
+    psycopg2-binary \
+    httpx \
+    requests
 
-#CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# اجرای Django
+CMD ["python", "backend/services/management/manage.py", "runserver", "0.0.0.0:8000"]

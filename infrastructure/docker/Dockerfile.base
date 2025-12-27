@@ -1,16 +1,16 @@
 FROM python:3.11-slim
 
+# مسیر ثابت برای کل پروژه
 WORKDIR /app
 
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
-
-# نصب ابزار runtime مشترک
-RUN pip install --no-cache-dir \
-    uvicorn \
-    requests
-
-# کپی shared kernel
+# Shared Kernel (DDD)
 COPY backend/shared /app/backend/shared
 
-# نصب shared kernel به‌صورت پکیج
-RUN pip install -e /app/backend/shared
+# Python import root
+ENV PYTHONPATH=/app
+
+# وابستگی‌های پایه (حداقلی)
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    pydantic

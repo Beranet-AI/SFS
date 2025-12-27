@@ -1,7 +1,31 @@
 from django.contrib import admin
-from .infrastructure.models.device_model import DeviceModel
+from apps.devices.models import DeviceModel
+
 
 @admin.register(DeviceModel)
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("id", "serial", "device_type", "status", "assigned_livestock_id")
-    list_filter = ("device_type", "status")
+    list_display = (
+        "id",
+        "kind",
+        "display_name",
+        "status",
+        "farm_id",
+        "livestock_id",
+        "updated_at",
+    )
+
+    list_filter = (
+        "kind",
+        "status",
+        "farm_id",
+    )
+
+    search_fields = (
+        "display_name",
+        "id",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )

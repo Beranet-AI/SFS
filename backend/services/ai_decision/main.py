@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
-from ai_decision.api.routes import router
-from ai_decision.core.lifespan import lifespan
+from backend.services.ai_decision.api.routes import router
+from backend.services.ai_decision.core.lifespan import lifespan
 
 app = FastAPI(
     title="SFS AI Decision Service",

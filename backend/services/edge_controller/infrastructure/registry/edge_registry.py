@@ -1,5 +1,5 @@
 from collections import defaultdict
-from edge_controller.domain.edge_node import EdgeNode
+from backend.services.edge_controller.domain.edge_node import EdgeNode
 
 class EdgeRegistry:
     """

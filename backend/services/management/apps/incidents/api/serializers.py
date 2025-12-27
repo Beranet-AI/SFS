@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.incidents.infrastructure.models.incident_model import IncidentModel
+from apps.incidents.models import IncidentModel
 
 
 class IncidentSerializer(serializers.ModelSerializer):

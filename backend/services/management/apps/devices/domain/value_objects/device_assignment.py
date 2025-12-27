@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from shared.ids.device_id import DeviceId
-from shared.ids.livestock_id import LivestockId
+from backend.shared.ids.device_id import DeviceId
+from backend.shared.ids.livestock_id import LivestockId
 from datetime import datetime
 
 @dataclass(frozen=True)

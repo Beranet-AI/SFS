@@ -1,15 +1,23 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from apps.users.infrastructure.repositories.user_repo_impl import DjangoUserRepository
-from apps.users.application.use_cases.create_user import CreateUserUseCase
+from rest_framework import status
+
+from apps.users.application.services.user_service import CreateUserService
+from apps.users.api.serializers import CreateUserSerializer
+
 
 class UsersView(APIView):
-    repo = DjangoUserRepository()
-
-    def get(self, request):
-        return Response({"detail": "users endpoint"})
-
     def post(self, request):
-        uc = CreateUserUseCase(self.repo)
-        created = uc.execute(id="tmp", email=request.data["email"], role=request.data["role"])
-        return Response({"id": created.id, "email": created.email, "role": created.role.value, "is_active": created.is_active})
+        serializer = CreateUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        service = CreateUserService()
+        user = service.create_user(**serializer.validated_data)
+
+        return Response(
+            {
+                "id": str(user.id),
+                "email": user.email,
+            },
+            status=status.HTTP_201_CREATED,
+        )
