@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EdgeTelemetryOutput",
+  "description": "Telemetry payload emitted by edge_controller toward data_ingestion",
+  "type": "object",
+  "required": [
+    "edge_id",
+    "device_id",
+    "device_type",
+    "timestamp",
+    "metrics"
+  ],
+  "properties": {
+    "edge_id": {
+      "type": "string",
+      "description": "Identifier of the emitting edge"
+    },
+    "device_id": {
+      "type": "string",
+      "description": "Identifier of the source device or sensor"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": ["ENVIRONMENTAL", "LIVESTOCK", "PLANT"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

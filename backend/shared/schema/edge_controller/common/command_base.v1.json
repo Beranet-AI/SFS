@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CommandBase",
+  "type": "object",
+  "required": [
+    "command_id",
+    "command_type",
+    "edge_id",
+    "issued_at"
+  ],
+  "properties": {
+    "command_id": {
+      "type": "string",
+      "description": "Globally unique command identifier"
+    },
+    "command_type": {
+      "type": "string",
+      "description": "Command discriminator (DISCOVER, ON_OFF, ...)"
+    },
+    "edge_id": {
+      "type": "string",
+      "description": "Target edge identifier"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp"
+    }
+  },
+  "additionalProperties": false
+}

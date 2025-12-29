@@ -1,5 +1,23 @@
 from fastapi import FastAPI
-from backend.services.edge_controller.api.routes import router
 
-app = FastAPI(title="SFS Edge Controller")
-app.include_router(router)
+from .core.lifespan import lifespan
+
+# routers
+from .api.routes.base import router as base_router
+from .api.routes.health import router as health_router
+
+app = FastAPI(
+    title="SFS Edge Controller",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# -------------------------
+# Health (simple / optional)
+# -------------------------
+app.include_router(health_router)
+
+# -------------------------
+# Core API (command, telemetry, ...)
+# -------------------------
+app.include_router(base_router)

@@ -82,6 +82,9 @@ services:
     build:
       context: ../..
       dockerfile: infrastructure/docker/edge_controller/Dockerfile
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
     depends_on:
       - base
       - postgres

@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EdgeCommandOutput",
+  "type": "object",
+  "required": [
+    "command_id",
+    "command_type",
+    "status",
+    "executed_at"
+  ],
+  "properties": {
+    "command_id": { "type": "string" },
+    "command_type": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["COMPLETED", "FAILED"]
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "oneOf": [
+    {
+      "title": "DiscoverResult",
+      "properties": {
+        "command_type": { "const": "DISCOVER" },
+        "devices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["device_id", "device_kind"],
+            "properties": {
+              "device_id": { "type": "string" },
+              "device_kind": {
+                "type": "string",
+                "enum": ["SENSOR", "ACTUATOR"]
+              },
+              "sensor_type": {
+                "type": "string",
+                "enum": ["ENVIRONMENTAL", "LIVESTOCK"],
+                "nullable": true
+              },
+              "capabilities": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "required": ["devices"]
+    },
+    {
+      "title": "OnOffResult",
+      "properties": {
+        "command_type": { "const": "ON_OFF" },
+        "device_id": { "type": "string" },
+        "execution_state": {
+          "type": "string",
+          "enum": ["ON", "OFF", "FAILED"]
+        }
+      },
+      "required": ["device_id", "execution_state"]
+    },
+    {
+      "title": "RebootCommandResult",
+      "properties": {
+        "command_type": { "const": "REBOOT" },
+        "device_id": { "type": "string" },
+        "reboot_state": {
+          "type": "string",
+          "enum": ["REBOOTED", "FAILED"]
+        }
+      },
+      "required": ["device_id", "reboot_state"]
+    }
+  ],
+  "additionalProperties": false
+}

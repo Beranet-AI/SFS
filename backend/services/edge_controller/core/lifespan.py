@@ -1,7 +1,11 @@
 from contextlib import asynccontextmanager
+from ..core.logging import get_logger
+
+
+logger = get_logger("lifespan")
 
 @asynccontextmanager
 async def lifespan(app):
-    # startup
+    logger.info("Edge controller starting")
     yield
-    # shutdown
+    logger.info("Edge controller stopping")

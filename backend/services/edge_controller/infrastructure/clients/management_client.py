@@ -1,13 +1,9 @@
-import requests
-from typing import Dict, Any
-from backend.services.edge_controller.core.config import settings
+from ...core.logging import get_logger
 
+logger = get_logger("ManagementClient")
 
 class ManagementClient:
-    def upsert_discovery(self, payload: Dict[str, Any]) -> None:
-        url = f"{settings.MANAGEMENT_BASE_URL}/devices/discoveries/upsert/"
-        requests.post(url, json=payload, timeout=5)
+    def send_command_result(self, payload: dict):
+        logger.info(f"[MANAGEMENT] Command result sent: {payload}")
 
-    def create_incident(self, payload: Dict[str, Any]) -> None:
-        url = f"{settings.MANAGEMENT_BASE_URL}/incidents/create/"
-        requests.post(url, json=payload, timeout=5)
+        # placeholder: mqtt / http / grpc

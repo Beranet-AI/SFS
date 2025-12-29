@@ -1,35 +1,68 @@
-backend/services/edge_controller/
-├── __init__.py
-├── main.py
-│
-├── core/
-│   ├── __init__.py
-│   ├── config.py
-│   └── lifespan.py
-│
-├── domain/
-│   ├── __init__.py
-│   ├── edge_node.py
-│   └── discovery_event.py
-│
-├── application/
-│   ├── __init__.py
-│   └── services/
-│       ├── __init__.py
-│       ├── discovery_service.py
-│       └── forward_service.py
-│
-├── infrastructure/
-│   ├── __init__.py
-│   ├── registry/
-│   │   ├── __init__.py
-│   │   └── edge_registry.py
-│   │
-│   └── clients/
-│       ├── __init__.py
-│       └── ingestion_client.py
-│
-└── api/
-    ├── __init__.py
-    ├── schemas.py
-    └── routes.py
+backend/
+└── services/
+    └── edge_controller/
+        ├── api/
+        │   └── routes/
+        │       ├── base.py
+        │       ├── health.py
+        │       ├── command.py
+        │       └── __init__.py
+        │
+        ├── application/
+        │   ├── edge_service.py
+        │   │
+        │   ├── common/                         # envelopes (shared inside service)
+        │   │   ├── command_base.py
+        │   │   ├── command_result_base.py
+        │   │   ├── error.py
+        │   │   └── __init__.py
+        │   │
+        │   └── services/
+        │       └── use_cases/
+        │           ├── listen_commands/
+        │           │   ├── use_case.py
+        │           │   ├── input_dto.py
+        │           │   └── output_dto.py
+        │           │
+        │           ├── dispatch_command/
+        │           │   ├── use_case.py
+        │           │   ├── input_dto.py
+        │           │   └── output_dto.py
+        │           │
+        │           ├── execute_command/
+        │           │   ├── use_case.py
+        │           │   ├── input_dto.py
+        │           │   └── output_dto.py
+        │           │
+        │           └── report_command_result/
+        │               ├── use_case.py
+        │               ├── input_dto.py
+        │               └── output_dto.py
+        │
+        ├── mappers/
+        │   ├── command_mapper.py               # JSON → Command DTO
+        │   ├── result_mapper.py                # Result DTO → JSON
+        │   └── __init__.py
+        │
+        ├── infrastructure/
+        │   ├── mqtt/                           # 🔵 OT – device side
+        │   │   ├── device_client.py            # send commands to devices
+        │   │   ├── device_topics.py            # device topic constants
+        │   │   └── __init__.py
+        │   │
+        │   ├── client/                         # 🟢 IT – software side
+        │   │   ├── management_client.py        # send results to management
+        │   │   ├── data_ingestion_client.py    # send telemetry
+        │   │   ├── monitoring_client.py        # optional
+        │   │   └── __init__.py
+        │   │
+        │   └── registry/
+        │       └── edge_registry.py            # approved / active devices
+        │
+        ├── core/
+        │   ├── config.py
+        │   ├── logging.py
+        │   └── lifespan.py
+        │
+        ├── main.py
+        └── __init__.py

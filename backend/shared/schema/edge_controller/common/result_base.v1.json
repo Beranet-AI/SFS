@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CommandResultBase",
+  "type": "object",
+  "required": [
+    "command_id",
+    "edge_id",
+    "command_type",
+    "status",
+    "executed_at"
+  ],
+  "properties": {
+    "command_id": {
+      "type": "string"
+    },
+    "edge_id": {
+      "type": "string"
+    },
+    "command_type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["COMPLETED", "FAILED"]
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

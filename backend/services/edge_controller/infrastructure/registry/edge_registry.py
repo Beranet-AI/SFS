@@ -1,26 +1,16 @@
-from collections import defaultdict
-from backend.services.edge_controller.domain.edge_node import EdgeNode
-
 class EdgeRegistry:
     """
-    In-memory registry.
-    Replace with Redis/DB if needed.
+    Runtime registry of approved / active devices.
     """
+
     def __init__(self):
-        self.nodes: dict[str, EdgeNode] = {}
-        self.discovery_events = defaultdict(list)
+        self._approved_devices = set()
 
-    def upsert(self, node: EdgeNode):
-        self.nodes[node.node_id] = node
+    def approve(self, device_id: str):
+        self._approved_devices.add(device_id)
 
-    def get(self, node_id: str):
-        return self.nodes.get(node_id)
+    def remove(self, device_id: str):
+        self._approved_devices.discard(device_id)
 
-    def list(self):
-        return list(self.nodes.values())
-
-    def record_discovery(self, event):
-        self.discovery_events[event.node_id].append(event)
-
-    def list_discoveries(self, node_id: str):
-        return self.discovery_events.get(node_id, [])
+    def is_approved(self, device_id: str) -> bool:
+        return device_id in self._approved_devices

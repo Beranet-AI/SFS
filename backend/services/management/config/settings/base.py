@@ -36,8 +36,7 @@ INSTALLED_APPS = [
     "apps.health",
     "apps.incidents",
     "apps.telemetry",
-    "apps.discovery",
-    "apps.commands",  # NEW
+    "apps.commands", 
 ]
 # ======================
 # Custom User Model
