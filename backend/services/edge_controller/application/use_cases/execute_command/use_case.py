@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ....application.use_cases.execute_command.input_dto import ExecuteCommandInputDTO
 from ....application.use_cases.execute_command.output_dto import (
     DiscoverCommandResultDTO,
     OnOffCommandResultDTO,
-    RebootCommandResultDTO,   # 👈 اضافه می‌شود
+    RebootCommandResultDTO,
 )
 from ....infrastructure.scanners.scan_local_network import scan_local_network
 from ....infrastructure.mqtt.device_client import DeviceClient
@@ -23,6 +23,8 @@ class ExecuteCommandUseCase:
         """
         Dispatch execution based on command_type
         """
+        received_at = datetime.now(timezone.utc)
+
         if dto.command_type == "DISCOVER":
             return self._execute_discover(dto)
 
@@ -30,7 +32,7 @@ class ExecuteCommandUseCase:
             return self._execute_on_off(dto)
 
         if dto.command_type == "REBOOT":
-            return self._execute_reboot(dto)   # 👈 اینجا صدا زده می‌شود
+            return self._execute_reboot(dto)
 
         raise ValueError(f"Unsupported command_type: {dto.command_type}")
 
@@ -44,7 +46,7 @@ class ExecuteCommandUseCase:
             command_id=dto.command_id,
             command_type="DISCOVER",
             status="COMPLETED",
-            executed_at=datetime.utcnow(),
+            executed_at=datetime.now(timezone.utc),
             devices=devices,
         )
 
@@ -65,13 +67,13 @@ class ExecuteCommandUseCase:
             command_id=dto.command_id,
             command_type="ON_OFF",
             status="COMPLETED" if success else "FAILED",
-            executed_at=datetime.utcnow(),
+            executed_at=datetime.now(timezone.utc),
             device_id=device_id,
             execution_state=action if success else "FAILED",
         )
 
     # ------------------------
-    # REBOOT  👈 این متد
+    # REBOOT
     # ------------------------
     def _execute_reboot(self, dto: ExecuteCommandInputDTO):
         device_id = dto.payload["device_id"]
@@ -82,7 +84,7 @@ class ExecuteCommandUseCase:
             command_id=dto.command_id,
             command_type="REBOOT",
             status="COMPLETED" if success else "FAILED",
-            executed_at=datetime.utcnow(),
+            executed_at=datetime.now(timezone.utc),
             device_id=device_id,
             reboot_state="REBOOTED" if success else "FAILED",
         )

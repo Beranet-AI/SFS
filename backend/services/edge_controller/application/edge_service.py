@@ -1,5 +1,6 @@
-from ..application.use_cases.execute_command.use_case import ExecuteCommandUseCase
+from datetime import timezone
 
+from ..application.use_cases.execute_command.use_case import ExecuteCommandUseCase
 from ..application.use_cases.report_command_result.use_case import (
     ReportCommandResultUseCase,
 )
@@ -11,6 +12,9 @@ from ..infrastructure.clients.data_ingestion_client import DataIngestionClient
 
 from ..application.use_cases.execute_command.input_dto import ExecuteCommandInputDTO
 from ..application.use_cases.forward_telemetry.input_dto import TelemetryInputDTO
+from ..application.use_cases.report_command_result.input_dto import (
+    ReportCommandResultInputDTO,
+)
 
 
 class EdgeService:
@@ -19,7 +23,7 @@ class EdgeService:
     """
 
     def __init__(self):
-        # Infrastructure dependencies
+        # Infrastructure
         self._device_client = DeviceClient()
         self._management_client = ManagementClient()
         self._data_ingestion_client = DataIngestionClient()
@@ -45,22 +49,26 @@ class EdgeService:
         3. Return result for API response
         """
 
-        # 1️⃣ Execute
+        # 1️⃣ Execute command
         result_dto = self._execute_command_uc.execute(command_dto)
 
-        # 2️⃣ Report to management (fire & forget or sync)
-        self._report_result_uc.execute(
-            result_dto=result_dto.__dict__
+        # 2️⃣ Map ResultDTO → ReportCommandResultInputDTO
+        report_dto = ReportCommandResultInputDTO(
+            command_id=result_dto.command_id,
+            command_type=result_dto.command_type,
+            status=result_dto.status,
+            executed_at=result_dto.executed_at,
+            payload=result_dto.__dict__,  # full result payload for management
         )
 
-        # 3️⃣ Return result
+        # 3️⃣ Report to management
+        self._report_result_uc.execute(report_dto)
+
+        # 4️⃣ Return result to API
         return result_dto
 
     # =====================================================
     # TELEMETRY FLOW (Device → Edge → Data Ingestion)
     # =====================================================
     def handle_telemetry(self, telemetry_dto: TelemetryInputDTO):
-        """
-        Forward telemetry from approved devices to data_ingestion
-        """
         self._forward_telemetry_uc.execute(telemetry_dto)

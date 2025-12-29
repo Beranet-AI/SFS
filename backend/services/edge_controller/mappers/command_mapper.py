@@ -14,8 +14,11 @@ def json_to_command_dto(payload: dict) -> ExecuteCommandInputDTO:
         return ExecuteCommandInputDTO(
             command_id=payload["command_id"],
             command_type=payload["command_type"],
+            edge_id=payload["edge_id"],
+            issued_at=datetime.fromisoformat(
+                payload["issued_at"].replace("Z", "+00:00")
+            ),
             payload=payload.get("payload", {}),
-            received_at=datetime.utcnow(),
         )
 
     except KeyError as e:

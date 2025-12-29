@@ -1,7 +1,12 @@
 from dataclasses import dataclass
-from typing import Dict, Any
+from datetime import datetime
+from typing import Any, Dict
 
 
 @dataclass
 class ReportCommandResultInputDTO:
-    result_payload: Dict[str, Any]
+    command_id: str
+    command_type: str
+    status: str
+    executed_at: datetime
+    payload: Dict[str, Any]

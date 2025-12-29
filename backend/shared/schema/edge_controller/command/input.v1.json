@@ -13,7 +13,7 @@
     "command_id": { "type": "string" },
     "command_type": {
       "type": "string",
-      "enum": ["DISCOVER", "ON_OFF"]
+      "enum": ["DISCOVER", "ON_OFF", "REBOOT"]
     },
     "edge_id": { "type": "string" },
     "issued_at": {
