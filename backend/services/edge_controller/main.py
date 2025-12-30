@@ -4,7 +4,7 @@ from .core.lifespan import lifespan
 
 # routers
 from .api.routes.base import router as base_router
-from .api.routes.health import router as health_router
+from .api.routes.heartbeat import router as heartbeat_router
 
 app = FastAPI(
     title="SFS Edge Controller",
@@ -13,9 +13,9 @@ app = FastAPI(
 )
 
 # -------------------------
-# Health (simple / optional)
+# Heartbeat (simple / optional)
 # -------------------------
-app.include_router(health_router)
+app.include_router(heartbeat_router)
 
 # -------------------------
 # Core API (command, telemetry, ...)

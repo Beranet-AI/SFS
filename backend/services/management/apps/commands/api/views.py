@@ -4,12 +4,25 @@ from rest_framework.views import APIView
 
 from apps.commands.api.serializers import (
     CommandCreateSerializer,
-    CommandSerializer,
     CommandAckSerializer,
     CommandResultSerializer,
 )
-from apps.commands.application.services.command_api_service import (
-    CommandApiService,
+from apps.commands.application.use_cases.receive_result.use_case import (
+    ReceiveResultUseCase,
+)
+from apps.commands.application.use_cases.send_command.use_case import (
+    SendCommandUseCase,
+)
+from apps.commands.mappers.command_mapper import (
+    InboundCommandMapper,
+    OutboundCommandMapper,
+)
+from apps.commands.mappers.result_mapper import (
+    InboundResultMapper,
+    OutboundResultMapper,
+)
+from apps.commands.application.use_cases.receive_result.output_dto import (
+    ReceiveResultOutputDTO,
 )
 
 
@@ -23,14 +36,14 @@ class CommandCreateView(APIView):
         ser = CommandCreateSerializer(data=request.data or {})
         ser.is_valid(raise_exception=True)
 
-        service = CommandApiService()
-        cmd = service.create_command(
-            data=ser.validated_data,
+        inbound = InboundCommandMapper.from_create_payload(ser.validated_data)
+        cmd = SendCommandUseCase().create_command(
+            inbound,
             created_by=str(getattr(request.user, "username", "")),
         )
 
         return Response(
-            CommandSerializer(cmd).data,
+            OutboundCommandMapper.to_response(cmd),
             status=status.HTTP_201_CREATED,
         )
 
@@ -41,16 +54,16 @@ class CommandDetailView(APIView):
     """
 
     def get(self, request, command_id):
-        service = CommandApiService()
         try:
-            cmd = service.get_command(command_id=command_id)
+            inbound = InboundCommandMapper.from_command_id(command_id)
+            cmd = SendCommandUseCase().get_command(command_id=inbound)
         except Exception:
             return Response(
                 {"detail": "not found"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response(CommandSerializer(cmd).data)
+        return Response(OutboundCommandMapper.to_response(cmd))
 
 
 class CommandAckView(APIView):
@@ -62,10 +75,10 @@ class CommandAckView(APIView):
         ser = CommandAckSerializer(data=request.data or {})
         ser.is_valid(raise_exception=True)
 
-        service = CommandApiService()
-        service.ack_command(data=ser.validated_data)
+        inbound = InboundCommandMapper.from_ack_payload(ser.validated_data)
+        SendCommandUseCase().ack_command(data=inbound)
 
-        return Response({"ok": True})
+        return Response(OutboundCommandMapper.to_ok_response())
 
 
 class CommandResultView(APIView):
@@ -77,7 +90,9 @@ class CommandResultView(APIView):
         ser = CommandResultSerializer(data=request.data or {})
         ser.is_valid(raise_exception=True)
 
-        service = CommandApiService()
-        service.report_result(data=ser.validated_data)
+        inbound = InboundResultMapper.from_payload(ser.validated_data)
+        ReceiveResultUseCase().report(inbound)
 
-        return Response({"ok": True})
+        return Response(
+            OutboundResultMapper.to_response(ReceiveResultOutputDTO(ok=True))
+        )

@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from ....schemas.command.execute_command_input import ExecuteCommandInput
-
 
 @dataclass
-class ExecuteCommandInputDTO(ExecuteCommandInput):
+class ExecuteCommandInput:
     command_id: str
     command_type: str
     edge_id: str

@@ -3,10 +3,10 @@ from .base import router as base_router
 
 from ...application.edge_service import EdgeService
 
-from ...mappers.command_mapper import json_to_command_dto
-from ...mappers.result_mapper import result_dto_to_json
-
-from ...validators.command_validator import validate_command_payload         # 0️⃣ Schema validation
+from ...mappers.command_mapper import (
+    InboundCommandMapper,
+    OutboundCommandMapper,
+)
 
 
 router = APIRouter(
@@ -24,17 +24,14 @@ edge_service = EdgeService()
 )
 def execute_command(payload: dict):
     try:
-        # 0️⃣ Schema validation
-        validate_command_payload(payload)
-
         # 1️⃣ JSON → DTO
-        command_dto = json_to_command_dto(payload)
+        command_dto = InboundCommandMapper.to_input(payload)
 
         # 2️⃣ Orchestrate
         result_dto = edge_service.handle_command(command_dto)
 
         # 3️⃣ DTO → JSON
-        return result_dto_to_json(result_dto)
+        return OutboundCommandMapper.to_response(result_dto)
 
     except ValueError as e:
         # Contract / validation error

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
-from ....application.use_cases.execute_command.input_dto import ExecuteCommandInputDTO
-from ....application.use_cases.execute_command.output_dto import (
+from .input_dto import ExecuteCommandInputDTO
+from .output_dto import (
     DiscoverCommandResultDTO,
     OnOffCommandResultDTO,
     RebootCommandResultDTO,

@@ -4,8 +4,8 @@ import paho.mqtt.client as mqtt
 from apps.discovery.application.use_cases.ingest_discovery_result import (
     IngestDiscoveryResultUseCase,
 )
-from apps.commands.application.use_cases.ingest_command_result import (
-    IngestCommandResultUseCase,
+from apps.commands.application.use_cases.receive_result.use_case import (
+    ReceiveResultUseCase,
 )
 from .topics import discovery_result_topic, command_result_topic
 
@@ -33,7 +33,7 @@ class ManagementMQTTClient:
             IngestDiscoveryResultUseCase().execute(payload=payload)
 
         elif topic.endswith("/commands/results"):
-            IngestCommandResultUseCase().execute(payload=payload)
+            ReceiveResultUseCase().execute(payload=payload)
 
     def publish_command(self, *, edge_id: str, command: dict):
         topic = f"sfs/edge/{edge_id}/commands"

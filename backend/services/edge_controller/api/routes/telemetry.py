@@ -3,9 +3,13 @@ from fastapi import APIRouter, HTTPException, status
 from .base import router as base_router
 
 from ...application.edge_service import EdgeService
-from ...mappers.telemetry_mapper import raw_telemetry_to_dto
-
-from ...validators.telemetry_validator import validate_telemetry_payload            # 0️⃣ Schema validation
+from ...mappers.telemetry_mapper import (
+    InboundTelemetryMapper,
+    OutboundTelemetryMapper,
+)
+from ...application.use_cases.forward_telemetry.output_dto import (
+    ForwardTelemetryOutputDTO,
+)
 
   
 router = APIRouter(
@@ -24,20 +28,13 @@ edge_service = EdgeService()
 def receive_telemetry(payload: dict):
     try:
 
-        # 0️⃣ Schema validation
-        validate_telemetry_payload(payload)
-
-        telemetry_dto = raw_telemetry_to_dto(
-            edge_id=payload["edge_id"],
-            device_id=payload["device_id"],
-            device_type=payload["device_type"],
-            metrics=payload["metrics"],
-            meta=payload.get("meta"),
-        )
+        telemetry_dto = InboundTelemetryMapper.to_input(payload)
 
         edge_service.handle_telemetry(telemetry_dto)
 
-        return {"status": "FORWARDED"}
+        return OutboundTelemetryMapper.to_response(
+            ForwardTelemetryOutputDTO(forwarded=True)
+        )
 
     except KeyError as e:
         raise HTTPException(

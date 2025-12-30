@@ -84,3 +84,10 @@ class CommandApiService:
                     "last_error_message",
                 ]
             )
+
+    def ingest_result(self, *, payload: dict):
+        CommandModel.objects.filter(
+            command_id=payload["command_id"]
+        ).update(
+            status=payload["status"]
+        )
