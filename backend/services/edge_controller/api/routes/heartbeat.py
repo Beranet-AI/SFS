@@ -1,16 +1,16 @@
-# api/routes/health.py
+# api/routes/heartbeat.py
 from fastapi import APIRouter
 from datetime import datetime
 
 
 router = APIRouter(
-    prefix="/health",
-    tags=["health"]
+    prefix="/heartbeat",
+    tags=["heartbeat"]
 )
 
 
-@router.get("", summary="Health check")
-def health_check():
+@router.get("", summary="Heartbeat check")
+def heartbeat_check():
     return {
         "status": "OK",
         "service": "edge_controller",

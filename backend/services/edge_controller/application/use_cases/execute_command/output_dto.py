@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
+from ....schemas.command.execute_command_output import (
+    DiscoverCommandOutput,
+    ExecuteCommandOutput,
+    OnOffCommandOutput,
+    RebootCommandOutput,
+)
 
 
 @dataclass
-class BaseCommandResultDTO:
+class BaseCommandResultDTO(ExecuteCommandOutput):
     command_id: str
     command_type: str
     status: str
@@ -12,17 +19,17 @@ class BaseCommandResultDTO:
 
 
 @dataclass
-class DiscoverCommandResultDTO(BaseCommandResultDTO):
+class DiscoverCommandResultDTO(DiscoverCommandOutput, BaseCommandResultDTO):
     devices: List[Dict[str, Any]]
 
 
 @dataclass
-class OnOffCommandResultDTO(BaseCommandResultDTO):
+class OnOffCommandResultDTO(OnOffCommandOutput, BaseCommandResultDTO):
     device_id: str
     execution_state: str
 
 
 @dataclass
-class RebootCommandResultDTO(BaseCommandResultDTO):
+class RebootCommandResultDTO(RebootCommandOutput, BaseCommandResultDTO):
     device_id: str
     reboot_state: str

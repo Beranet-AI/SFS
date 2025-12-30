@@ -1,20 +1,21 @@
 from datetime import timezone
 
 from ..application.use_cases.execute_command.use_case import ExecuteCommandUseCase
-from ..application.use_cases.report_command_result.use_case import (
-    ReportCommandResultUseCase,
-)
+from ..application.use_cases.send_result.use_case import SendResultUseCase
 from ..application.use_cases.forward_telemetry.use_case import ForwardTelemetryUseCase
 
 from ..infrastructure.mqtt.device_client import DeviceClient
 from ..infrastructure.clients.management_client import ManagementClient
 from ..infrastructure.clients.data_ingestion_client import DataIngestionClient
 
-from ..application.use_cases.execute_command.input_dto import ExecuteCommandInputDTO
-from ..application.use_cases.forward_telemetry.input_dto import TelemetryInputDTO
-from ..application.use_cases.report_command_result.input_dto import (
-    ReportCommandResultInputDTO,
+from ..application.use_cases.execute_command.input_dto import (
+    ExecuteCommandInputDTO,
 )
+from ..application.use_cases.forward_telemetry.input_dto import (
+    TelemetryInputDTO,
+)
+
+from ..mappers.result_mapper import InboundResultMapper
 
 
 class EdgeService:
@@ -32,7 +33,7 @@ class EdgeService:
         self._execute_command_uc = ExecuteCommandUseCase(
             device_client=self._device_client
         )
-        self._report_result_uc = ReportCommandResultUseCase(
+        self._report_result_uc = SendResultUseCase(
             management_client=self._management_client
         )
         self._forward_telemetry_uc = ForwardTelemetryUseCase(
@@ -52,14 +53,8 @@ class EdgeService:
         # 1️⃣ Execute command
         result_dto = self._execute_command_uc.execute(command_dto)
 
-        # 2️⃣ Map ResultDTO → ReportCommandResultInputDTO
-        report_dto = ReportCommandResultInputDTO(
-            command_id=result_dto.command_id,
-            command_type=result_dto.command_type,
-            status=result_dto.status,
-            executed_at=result_dto.executed_at,
-            payload=result_dto.__dict__,  # full result payload for management
-        )
+        # 2️⃣ Map ResultDTO → SendResultInput
+        report_dto = InboundResultMapper.to_input(result_dto)
 
         # 3️⃣ Report to management
         self._report_result_uc.execute(report_dto)

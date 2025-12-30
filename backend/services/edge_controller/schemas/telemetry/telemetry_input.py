@@ -1,16 +1,13 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any, Dict
-
-from ....schemas.telemetry.telemetry_input import TelemetryInput
 
 
 @dataclass
-class TelemetryInputDTO(TelemetryInput):
+class TelemetryInput:
     edge_id: str
     device_id: str
     device_type: str
-    timestamp: datetime
+    timestamp: str
     metrics: Dict[str, float]
     meta: Dict[str, Any] | None = None
 

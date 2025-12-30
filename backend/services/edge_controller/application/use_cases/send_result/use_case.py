@@ -1,8 +1,8 @@
 from ....infrastructure.clients.management_client import ManagementClient
-from .input_dto import ReportCommandResultInputDTO
+from .input_dto import SendResultInputDTO
 
 
-class ReportCommandResultUseCase:
+class SendResultUseCase:
     """
     Report command execution result from edge to management service
     """
@@ -10,7 +10,7 @@ class ReportCommandResultUseCase:
     def __init__(self, management_client: ManagementClient):
         self.management_client = management_client
 
-    def execute(self, dto: ReportCommandResultInputDTO):
+    def execute(self, dto: SendResultInputDTO):
         """
         Translate DTO to payload expected by ManagementClient
         """
