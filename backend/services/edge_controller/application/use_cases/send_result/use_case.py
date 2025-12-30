@@ -1,4 +1,4 @@
-from ....infrastructure.clients.management_client import ManagementClient
+from ....infrastructure.clients.commands_client import CommandsClient
 from .input_dto import SendResultInputDTO
 
 
@@ -7,12 +7,12 @@ class SendResultUseCase:
     Report command execution result from edge to management service
     """
 
-    def __init__(self, management_client: ManagementClient):
-        self.management_client = management_client
+    def __init__(self, commands_client: CommandsClient):
+        self.commands_client = commands_client
 
     def execute(self, dto: SendResultInputDTO):
         """
-        Translate DTO to payload expected by ManagementClient
+        Translate DTO to payload expected by CommandsClient
         """
 
         payload = {
@@ -23,4 +23,4 @@ class SendResultUseCase:
             "payload": dto.payload,
         }
 
-        self.management_client.send_command_result(payload)
+        self.commands_client.send_command_result(payload)
