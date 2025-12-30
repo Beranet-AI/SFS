@@ -3,7 +3,16 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from apps.livestock.application.services.livestock_service import LivestockService
-from apps.livestock.api.serializers import LivestockSerializer
+from apps.livestock.api.serializers import (
+    LivestockSerializer,
+    LivestockSensorGroupSerializer,
+)
+from apps.livestock.application.use_cases.register_sensor_group.use_case import (
+    RegisterLivestockSensorGroupUseCase,
+)
+from apps.livestock.mappers.sensor_group_mapper import (
+    LivestockSensorGroupMapper,
+)
 
 
 class LivestockView(APIView):
@@ -35,4 +44,22 @@ class LivestockHealthEvalView(APIView):
         return Response(
             LivestockSerializer(livestock).data,
             status=status.HTTP_200_OK,
+        )
+
+
+class LivestockSensorGroupView(APIView):
+    use_case = RegisterLivestockSensorGroupUseCase()
+
+    def post(self, request):
+        ser = LivestockSensorGroupSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+
+        input_dto = LivestockSensorGroupMapper.from_payload(
+            ser.validated_data
+        )
+        result = self.use_case.execute(input_dto)
+
+        return Response(
+            LivestockSensorGroupMapper.to_response(result),
+            status=status.HTTP_201_CREATED,
         )

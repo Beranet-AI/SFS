@@ -20,8 +20,11 @@ class DeviceOnboardingService:
                 "kind": payload.get("kind", "sensor"),
                 "display_name": payload.get("display_name") or serial,
                 "farm_id": payload.get("farm_id"),
+                "barn_id": payload.get("barn_id"),
+                "zone_id": payload.get("zone_id"),
                 "livestock_id": payload.get("livestock_id"),
                 "metadata": payload.get("metadata") or {},
+                "capabilities": payload.get("capabilities") or {},
                 "status": "active",
             },
         )
