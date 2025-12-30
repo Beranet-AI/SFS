@@ -1,9 +1,10 @@
 from ...core.logging import get_logger
 
-logger = get_logger("ManagementClient")
+logger = get_logger("CommandsClient")
 
-class ManagementClient:
+
+class CommandsClient:
     def send_command_result(self, payload: dict):
-        logger.info(f"[MANAGEMENT] Command result sent: {payload}")
+        logger.info(f"[COMMANDS] Command result sent: {payload}")
 
         # placeholder: mqtt / http / grpc

@@ -1,14 +1,18 @@
 from django.urls import path
-from apps.commands.api.views import (
-    CommandCreateView,
-    CommandDetailView,
-    CommandAckView,
-    CommandResultView,
+from apps.commands.api.command import (
+    CommandCreateController,
+    CommandDetailController,
+    CommandAckController,
+    CommandResultController,
 )
 
 urlpatterns = [
-    path("commands/", CommandCreateView.as_view(), name="command-create"),
-    path("commands/<uuid:command_id>/", CommandDetailView.as_view(), name="command-detail"),
-    path("commands/ack/", CommandAckView.as_view(), name="command-ack"),
-    path("commands/result/", CommandResultView.as_view(), name="command-result"),
+    path("commands/", CommandCreateController.as_view(), name="command-create"),
+    path(
+        "commands/<uuid:command_id>/",
+        CommandDetailController.as_view(),
+        name="command-detail",
+    ),
+    path("commands/ack/", CommandAckController.as_view(), name="command-ack"),
+    path("commands/result/", CommandResultController.as_view(), name="command-result"),
 ]

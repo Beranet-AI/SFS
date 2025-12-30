@@ -1,7 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from .base import router as base_router
-
-from ...application.edge_service import EdgeService
+from .base import BaseController, router as base_router
 
 from ...mappers.command_mapper import (
     InboundCommandMapper,
@@ -9,12 +7,21 @@ from ...mappers.command_mapper import (
 )
 
 
+class CommandController(BaseController):
+    """Command controller receiving payloads from CommandsClient."""
+
+    def execute(self, payload: dict) -> dict:
+        command_dto = InboundCommandMapper.to_input(payload)
+        result_dto = self._edge_service.handle_command(command_dto)
+        return OutboundCommandMapper.to_response(result_dto)
+
+
 router = APIRouter(
-    prefix="/command",
-    tags=["command"]
+    prefix="/api/commands",
+    tags=["command"],
 )
 
-edge_service = EdgeService()
+controller = CommandController()
 
 
 @router.post(
@@ -24,14 +31,7 @@ edge_service = EdgeService()
 )
 def execute_command(payload: dict):
     try:
-        # 1️⃣ JSON → DTO
-        command_dto = InboundCommandMapper.to_input(payload)
-
-        # 2️⃣ Orchestrate
-        result_dto = edge_service.handle_command(command_dto)
-
-        # 3️⃣ DTO → JSON
-        return OutboundCommandMapper.to_response(result_dto)
+        return controller.execute(payload)
 
     except ValueError as e:
         # Contract / validation error

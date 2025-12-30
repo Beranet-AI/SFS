@@ -5,7 +5,7 @@ from apps.commands.models import CommandModel, CommandAttemptModel
 from apps.incidents.application.services.incident_service import IncidentService
 
 
-class CommandDispatchService:
+class CommandService:
     """
     Handles dispatch, retry and failure escalation.
     """

@@ -10,7 +10,8 @@ from apps.commands.application.use_cases.receive_result.use_case import (
 from .topics import discovery_result_topic, command_result_topic
 
 
-class ManagementMQTTClient:
+class EdgeControllerClient:
+    """MQTT client for communicating with edge_controller command controller."""
 
     def __init__(self, broker_host="localhost", broker_port=1883):
         self.client = mqtt.Client(client_id="management")

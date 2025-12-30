@@ -5,7 +5,7 @@ from ..application.use_cases.send_result.use_case import SendResultUseCase
 from ..application.use_cases.forward_telemetry.use_case import ForwardTelemetryUseCase
 
 from ..infrastructure.mqtt.device_client import DeviceClient
-from ..infrastructure.clients.management_client import ManagementClient
+from ..infrastructure.clients.commands_client import CommandsClient
 from ..infrastructure.clients.data_ingestion_client import DataIngestionClient
 
 from ..application.use_cases.execute_command.input_dto import (
@@ -26,7 +26,7 @@ class EdgeService:
     def __init__(self):
         # Infrastructure
         self._device_client = DeviceClient()
-        self._management_client = ManagementClient()
+        self._commands_client = CommandsClient()
         self._data_ingestion_client = DataIngestionClient()
 
         # Use cases
@@ -34,7 +34,7 @@ class EdgeService:
             device_client=self._device_client
         )
         self._report_result_uc = SendResultUseCase(
-            management_client=self._management_client
+            commands_client=self._commands_client
         )
         self._forward_telemetry_uc = ForwardTelemetryUseCase(
             data_ingestion_client=self._data_ingestion_client
