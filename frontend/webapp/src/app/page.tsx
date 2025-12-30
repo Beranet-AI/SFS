@@ -1,6 +1,5 @@
 "use client";
 
-import './globals.css'; 
 import { useTranslation } from "@/i18n/useTranslation";
 
 export default function HomePage() {

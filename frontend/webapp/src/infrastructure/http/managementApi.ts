@@ -7,6 +7,10 @@ export function fetchLivestock() {
   return http<LivestockDTO[]>(`${BASE}/api/v1/livestock/`);
 }
 
+export function fetchFarms() {
+  return http<{ id: number; name: string }[]>(`${BASE}/api/v1/farms/`);
+}
+
 export function fetchIncidents() {
   return http<IncidentDTO[]>(`${BASE}/api/v1/incidents/`);
 }
