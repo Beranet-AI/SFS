@@ -33,6 +33,11 @@ class DeviceService:
         kind: str,
         display_name: str | None = None,
         metadata: dict[str, Any] | None = None,
+        capabilities: dict[str, Any] | None = None,
+        farm_id: str | None = None,
+        barn_id: str | None = None,
+        zone_id: str | None = None,
+        status: DeviceStatus | None = None,
     ) -> DeviceModel:
         obj, _ = DeviceModel.objects.get_or_create(
             serial=serial,
@@ -40,19 +45,67 @@ class DeviceService:
                 "kind": kind,
                 "display_name": display_name or "",
                 "metadata": metadata or {},
+                "capabilities": capabilities or {},
                 "status": DeviceStatus.DISCOVERED,
+                "farm_id": farm_id,
+                "barn_id": barn_id,
+                "zone_id": zone_id,
             },
         )
 
         # update mutable fields
         obj.kind = kind
+        update_fields = ["kind", "display_name", "metadata", "updated_at"]
         if display_name is not None:
             obj.display_name = display_name
+            update_fields.append("display_name")
         if metadata is not None:
             obj.metadata = metadata
+            update_fields.append("metadata")
+        if capabilities is not None:
+            obj.capabilities = capabilities
+            update_fields.append("capabilities")
+        if farm_id is not None:
+            obj.farm_id = farm_id
+            update_fields.append("farm_id")
+        if barn_id is not None:
+            obj.barn_id = barn_id
+            update_fields.append("barn_id")
+        if zone_id is not None:
+            obj.zone_id = zone_id
+            update_fields.append("zone_id")
+        if status is not None:
+            obj.status = status
+            update_fields.append("status")
 
-        obj.save(update_fields=["kind", "display_name", "metadata", "updated_at"])
+        obj.save(update_fields=sorted(set(update_fields)))
         return obj
+
+    def list_devices(self):
+        return DeviceModel.objects.all()
+
+    def approve_discovery(self, *, data: dict) -> DeviceModel:
+        serial = data.get("serial")
+        if not serial:
+            raise ValueError("serial is required")
+
+        device = self.register_or_update(
+            serial=serial,
+            kind=data.get("kind") or "sensor",
+            display_name=data.get("display_name") or serial,
+            metadata=data.get("metadata") or {},
+            capabilities=data.get("capabilities") or {},
+            farm_id=data.get("farm_id"),
+            barn_id=data.get("barn_id"),
+            zone_id=data.get("zone_id"),
+            status=DeviceStatus.ACTIVE,
+        )
+
+        livestock_id = data.get("livestock_id")
+        if livestock_id is not None:
+            self.assign(device=device, livestock_id=livestock_id)
+
+        return device
 
     # -------------------------
     # Activation / lifecycle

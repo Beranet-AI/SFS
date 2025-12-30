@@ -47,3 +47,31 @@ class DeviceApproveSerializer(serializers.Serializer):
 
     capabilities = serializers.JSONField(required=False)
     metadata = serializers.JSONField(required=False)
+
+
+class RegisterEnvironmentalSensorSerializer(serializers.Serializer):
+    serial = serializers.CharField()
+    device_type = serializers.CharField()
+    json_schema = serializers.JSONField()
+    raw_example = serializers.JSONField()
+    farm_id = serializers.CharField()
+    barn_id = serializers.CharField()
+    zone_id = serializers.CharField()
+    created_by = serializers.CharField()
+    approved_by = serializers.CharField()
+    display_name = serializers.CharField(required=False, allow_blank=True)
+    metadata = serializers.JSONField(required=False)
+    capabilities = serializers.JSONField(required=False)
+    kind = serializers.CharField(required=False, allow_blank=True)
+
+
+class RegisterControlDeviceSerializer(serializers.Serializer):
+    serial = serializers.CharField()
+    farm_id = serializers.CharField()
+    barn_id = serializers.CharField()
+    zone_id = serializers.CharField()
+    created_by = serializers.CharField()
+    display_name = serializers.CharField(required=False, allow_blank=True)
+    metadata = serializers.JSONField(required=False)
+    capabilities = serializers.JSONField(required=False)
+    kind = serializers.CharField(required=False, allow_blank=True)
