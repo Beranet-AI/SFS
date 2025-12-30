@@ -2,14 +2,7 @@
 
 import { useTranslation } from "@/i18n/useTranslation";
 import { Locale } from "@/i18n/I18nProvider";
-
-const buttonStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  border: "1px solid #ccc",
-  background: "white",
-  cursor: "pointer",
-};
+import styles from "@/ui/styles/dashboard.module.css";
 
 export function LanguageSwitcher() {
   const { locale, setLocale, t } = useTranslation();
@@ -19,24 +12,20 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <span style={{ fontWeight: 600 }}>{t("layout.language")}</span>
+    <div className={styles.topbarGroup}>
+      <span className={styles.seedHint}>{t("layout.language")}</span>
       <button
-        style={{
-          ...buttonStyle,
-          fontWeight: locale === "en" ? 700 : 400,
-          opacity: locale === "en" ? 1 : 0.8,
-        }}
+        className={`${styles.button} ${
+          locale === "en" ? styles.buttonActive : ""
+        }`}
         onClick={() => changeLocale("en")}
       >
         {t("layout.english")}
       </button>
       <button
-        style={{
-          ...buttonStyle,
-          fontWeight: locale === "fa" ? 700 : 400,
-          opacity: locale === "fa" ? 1 : 0.8,
-        }}
+        className={`${styles.button} ${
+          locale === "fa" ? styles.buttonActive : ""
+        }`}
         onClick={() => changeLocale("fa")}
       >
         {t("layout.farsi")}
