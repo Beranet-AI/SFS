@@ -7,11 +7,22 @@ import {
 } from "@/infrastructure/http/monitoringApi";
 import { mapLiveStatus } from "@/domain/mappers/livestatusMapper";
 import type { LiveStatus } from "@/domain/models/LiveStatus";
+import { seedLiveStatus } from "@/domain/seed/dashboardSeed";
+import type { DataSource } from "@/ui/types/DataSource";
 
-export function useLiveStatus(livestockId?: string) {
+type UseLiveStatusOptions = {
+  useSeed?: boolean;
+};
+
+export function useLiveStatus(
+  livestockId?: string,
+  options: UseLiveStatusOptions = {}
+) {
   const [data, setData] = useState<LiveStatus[]>([]);
   const [loading, setLoading] = useState(true);
+  const [source, setSource] = useState<DataSource>("live");
   const esRef = useRef<EventSource | null>(null);
+  const { useSeed } = options;
 
   useEffect(() => {
     let alive = true;
@@ -22,11 +33,32 @@ export function useLiveStatus(livestockId?: string) {
       return;
     }
 
+    if (useSeed) {
+      setData(seedLiveStatus.filter((item) => item.livestockId === livestockId));
+      setSource("seed");
+      setLoading(false);
+      return;
+    }
+
     // 1) initial snapshot
     fetchLiveStatusRecent(livestockId)
       .then((rows) => {
         if (!alive) return;
-        setData(rows.map(mapLiveStatus));
+        const mapped = rows.map(mapLiveStatus);
+        if (mapped.length === 0) {
+          setData(
+            seedLiveStatus.filter((item) => item.livestockId === livestockId)
+          );
+          setSource("seed");
+        } else {
+          setData(mapped);
+          setSource("live");
+        }
+      })
+      .catch(() => {
+        if (!alive) return;
+        setData(seedLiveStatus.filter((item) => item.livestockId === livestockId));
+        setSource("seed");
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -58,7 +90,7 @@ export function useLiveStatus(livestockId?: string) {
       es.close();
       esRef.current = null;
     };
-  }, [livestockId]);
+  }, [livestockId, useSeed]);
 
-  return { data, loading };
+  return { data, loading, source };
 }

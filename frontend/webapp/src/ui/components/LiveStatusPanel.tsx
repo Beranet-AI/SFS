@@ -1,45 +1,96 @@
 "use client";
 
+import { useMemo } from "react";
+import { useTranslation } from "@/i18n/useTranslation";
 import { useLiveStatus } from "@/ui/hooks/useLiveStatus";
 import { useHealthDecision } from "@/ui/hooks/useHealthDecision";
-import { useTranslation } from "@/i18n/useTranslation";
-import { useState } from "react";
+import type { Livestock } from "@/domain/models/Livestock";
+import { formatDateTime } from "@/ui/utils/formatters";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { Skeleton } from "@/ui/components/Skeleton";
+import styles from "@/ui/styles/dashboard.module.css";
 
-export function LiveStatusPanel() {
-  const [livestockId, setLivestockId] = useState("1");
-  const { data, loading } = useLiveStatus(livestockId);
+type LiveStatusPanelProps = {
+  livestock: Livestock[];
+  selectedLivestockId: string | null;
+  onSelectLivestock: (id: string) => void;
+  useSeed: boolean;
+  loading: boolean;
+};
+
+export function LiveStatusPanel({
+  livestock,
+  selectedLivestockId,
+  onSelectLivestock,
+  useSeed,
+  loading,
+}: LiveStatusPanelProps) {
+  const { t, locale } = useTranslation();
+  const { data, loading: liveLoading } = useLiveStatus(
+    selectedLivestockId ?? undefined,
+    { useSeed }
+  );
   const { run, loading: decisionLoading } = useHealthDecision();
-  const { t } = useTranslation();
+
+  const livestockOptions = useMemo(
+    () =>
+      livestock.map((item) => ({
+        id: item.id,
+        label: `${item.tag} · ${item.barn} / ${item.zone}`,
+      })),
+    [livestock]
+  );
+
+  if (!loading && livestockOptions.length === 0) {
+    return <EmptyState message={t("livestatus.empty")} />;
+  }
 
   return (
-    <section>
-      <h2>{t("livestatus.title")}</h2>
-
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <input
-          value={livestockId}
-          onChange={(e) => setLivestockId(e.target.value)}
-          placeholder={t("livestatus.inputPlaceholder")}
-        />
+    <div>
+      <div className={styles.statusHeader}>
+        <select
+          className={styles.select}
+          value={selectedLivestockId ?? ""}
+          onChange={(event) => onSelectLivestock(event.target.value)}
+        >
+          {livestockOptions.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
         <button
-          onClick={() => run(livestockId)}
-          disabled={decisionLoading}
+          className={styles.button}
+          onClick={() => selectedLivestockId && run(selectedLivestockId)}
+          disabled={decisionLoading || !selectedLivestockId}
         >
           {t("livestatus.runDecision")}
         </button>
       </div>
 
-      {loading ? (
-        <div>{t("livestatus.loading")}</div>
+      {loading || liveLoading ? (
+        <div className={styles.liveStatusList}>
+          <Skeleton />
+          <Skeleton width="80%" />
+          <Skeleton width="60%" />
+        </div>
+      ) : data.length === 0 ? (
+        <EmptyState message={t("livestatus.empty")} />
       ) : (
-        <ul>
-          {data.map((s, idx) => (
-            <li key={idx}>
-              {s.metric}: {s.value} ({s.recordedAt})
-            </li>
+        <div className={styles.liveStatusList}>
+          {data.slice(-5).map((item, index) => (
+            <div key={`${item.metric}-${index}`} className={styles.liveStatusItem}>
+              <div>
+                <div className={styles.metricLabel}>{item.metric}</div>
+                <div className={styles.metricMeta}>
+                  {formatDateTime(item.recordedAt, locale)}
+                </div>
+              </div>
+              <div className={styles.metricLabel}>{item.value}</div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
-    </section>
+    </div>
   );
 }
