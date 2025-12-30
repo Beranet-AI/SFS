@@ -51,7 +51,7 @@ backend/
         │   │   └── __init__.py
         │   │
         │   ├── client/                         # 🟢 IT – software side
-        │   │   ├── management_client.py        # send results to management
+        │   │   ├── commands_client.py          # send results to command source
         │   │   ├── data_ingestion_client.py    # send telemetry
         │   │   ├── monitoring_client.py        # optional
         │   │   └── __init__.py
