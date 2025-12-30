@@ -1,17 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { fetchLiveStatusRecent, openLiveStatusStream } from "@/infrastructure/http/monitoringApi";
+import {
+  fetchLiveStatusRecent,
+  openLiveStatusStream,
+} from "@/infrastructure/http/monitoringApi";
 import { mapLiveStatus } from "@/domain/mappers/livestatusMapper";
 import type { LiveStatus } from "@/domain/models/LiveStatus";
 
-export function useLiveStatus(livestockId: string) {
+export function useLiveStatus(livestockId?: string) {
   const [data, setData] = useState<LiveStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     let alive = true;
+
+    // اگر livestockId نداریم، فقط loading را خاموش کن
+    if (!livestockId) {
+      setLoading(false);
+      return;
+    }
 
     // 1) initial snapshot
     fetchLiveStatusRecent(livestockId)
@@ -41,8 +50,7 @@ export function useLiveStatus(livestockId: string) {
     };
 
     es.onerror = () => {
-      // optional: close and let it reconnect by browser (EventSource does auto-retry)
-      // or implement manual backoff if needed.
+      // EventSource auto-retries
     };
 
     return () => {

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from ....schemas.command.execute_command_input import ExecuteCommandInput
-
+from ......shared.schemas.edge_controller.command.execute_command_input import ExecuteCommandInput
 
 @dataclass
 class ExecuteCommandInputDTO(ExecuteCommandInput):

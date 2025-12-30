@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List
 
-from ....schemas.command.execute_command_output import (
+
+from ......shared.schemas.edge_controller.command.execute_command_output import (
     DiscoverCommandOutput,
     ExecuteCommandOutput,
     OnOffCommandOutput,
     RebootCommandOutput,
 )
-
 
 @dataclass
 class BaseCommandResultDTO(ExecuteCommandOutput):

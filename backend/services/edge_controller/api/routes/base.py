@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from ...application.edge_service import EdgeService
+from ...application.services.edge_service import EdgeService
 
 
 class BaseController:

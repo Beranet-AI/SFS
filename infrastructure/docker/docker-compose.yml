@@ -109,3 +109,17 @@ services:
       - "8004:8004"
     networks:
       - sfs_net
+  webapp:
+    container_name: sfs-webapp
+    restart: always
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/webapp/Dockerfile
+    depends_on:
+      - management
+      - monitoring
+      - ai_decision
+    ports:
+      - "3000:3000"
+    networks:
+      - sfs_net

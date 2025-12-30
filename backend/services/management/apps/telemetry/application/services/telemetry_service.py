@@ -1,43 +1,24 @@
-from datetime import datetime
-from django.utils import timezone
+# backend/services/management/apps/telemetry/application/services/telemetry_service.py
 
-from apps.telemetry.models import TelemetryModel
+from ..use_cases.receive_telemetry.use_case import ReceiveTelemetryUseCase
+from ..use_cases.receive_telemetry.input_dto import ReceiveTelemetryInputDTO
+from ..use_cases.receive_telemetry.output_dto import ReceiveTelemetryOutputDTO
 
 
 class TelemetryService:
     """
-    Application service responsible for ingesting and querying telemetry data.
-    Single source of truth for telemetry persistence.
-    All ORM access lives here.
+    Application Service (Orchestrator)
+
+    Coordinates telemetry flow:
+    - receive
+    - validate
+    - store
     """
 
-    # -------------------------
-    # Commands
-    # -------------------------
-    def ingest(
-        self,
-        *,
-        device_id: str,
-        livestock_id: str,
-        metric: str,
-        value: float,
-        recorded_at: datetime | None = None,
-    ) -> TelemetryModel:
-        return TelemetryModel.objects.create(
-            device_id=str(device_id),
-            livestock_id=str(livestock_id),
-            metric=metric,
-            value=float(value),
-            recorded_at=recorded_at or timezone.now(),
-        )
+    def __init__(self):
+        self._receive_uc = ReceiveTelemetryUseCase()
 
-    # -------------------------
-    # Queries
-    # -------------------------
-    def list_recent(self, *, livestock_id: str, limit: int = 100):
-        qs = (
-            TelemetryModel.objects
-            .filter(livestock_id=str(livestock_id))
-            .order_by("-recorded_at")[: int(limit)]
-        )
-        return qs
+    def receive_telemetry(
+        self, input_dto: ReceiveTelemetryInputDTO
+    ) -> ReceiveTelemetryOutputDTO:
+        return self._receive_uc.execute(input_dto)

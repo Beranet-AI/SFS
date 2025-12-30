@@ -1,21 +1,21 @@
 from datetime import timezone
 
-from ..application.use_cases.execute_command.use_case import ExecuteCommandUseCase
-from ..application.use_cases.send_result.use_case import SendResultUseCase
-from ..application.use_cases.forward_telemetry.use_case import ForwardTelemetryUseCase
+from ..use_cases.execute_command.use_case import ExecuteCommandUseCase
+from ..use_cases.send_result.use_case import SendResultUseCase
+from ..use_cases.forward_telemetry.use_case import ForwardTelemetryUseCase
 
-from ..infrastructure.mqtt.device_client import DeviceClient
-from ..infrastructure.clients.commands_client import CommandsClient
-from ..infrastructure.clients.data_ingestion_client import DataIngestionClient
+from ...infrastructure.mqtt.device_client import DeviceClient
+from ...infrastructure.clients.commands_client import CommandsClient
+from ...infrastructure.clients.data_ingestion_client import DataIngestionClient
 
-from ..application.use_cases.execute_command.input_dto import (
+from ..use_cases.execute_command.input_dto import (
     ExecuteCommandInputDTO,
 )
-from ..application.use_cases.forward_telemetry.input_dto import (
+from ..use_cases.forward_telemetry.input_dto import (
     TelemetryInputDTO,
 )
 
-from ..mappers.result_mapper import InboundResultMapper
+from ...mappers.result_mapper import InboundResultMapper
 
 
 class EdgeService:

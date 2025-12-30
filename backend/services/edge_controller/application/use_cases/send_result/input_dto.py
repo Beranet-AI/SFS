@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict
 
-from ....schemas.result.send_result_input import SendResultInput
-
+from ......shared.schemas.edge_controller.result.send_result_input import SendResultInput
 
 @dataclass
 class SendResultInputDTO(SendResultInput):

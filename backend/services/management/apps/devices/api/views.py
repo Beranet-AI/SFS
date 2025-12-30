@@ -19,24 +19,25 @@ def list_devices(request):
 
 @api_view(["GET"])
 def list_discoveries(request):
-    status_q = request.query_params.get("status")
-    service = DeviceService()
-    qs = service.list_discoveries(status=status_q)
-    return Response(DeviceDiscoverySerializer(qs, many=True).data)
+    """
+    Discovery list is NOT persisted in management.
+    This endpoint is kept for compatibility.
+    """
+    return Response([])
 
 
 @api_view(["POST"])
 def upsert_discovery(request):
-    service = DeviceService()
-
-    try:
-        obj, created = service.upsert_discovery(payload=request.data or {})
-    except ValueError as exc:
-        return Response({"detail": str(exc)}, status=400)
+    """
+    Discovery payload comes from edge.
+    We validate it but do NOT store it.
+    """
+    ser = DeviceDiscoverySerializer(data=request.data)
+    ser.is_valid(raise_exception=True)
 
     return Response(
-        DeviceDiscoverySerializer(obj).data,
-        status=201 if created else 200,
+        ser.validated_data,
+        status=status.HTTP_200_OK,
     )
 
 

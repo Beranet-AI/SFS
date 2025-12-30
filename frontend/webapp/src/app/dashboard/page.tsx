@@ -1,6 +1,7 @@
 "use client";
 
-import { useLiveStatus } from "@/hooks/useLiveStatus";
+import { useLiveStatus } from "@/ui/hooks/useLiveStatus";
+
 
 export default function DashboardPage() {
   const { data, loading } = useLiveStatus(undefined); // یا livestockId مشخص

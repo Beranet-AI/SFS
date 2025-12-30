@@ -13,7 +13,8 @@ RUN pip install --no-cache-dir \
     django-extensions \
     psycopg2-binary \
     httpx \
-    requests
+    requests \
+    jsonschema
 
 # اجرای Django
 CMD ["python", "backend/services/management/manage.py", "runserver", "0.0.0.0:8000"]

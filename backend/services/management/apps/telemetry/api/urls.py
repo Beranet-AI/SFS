@@ -1,7 +1,18 @@
+# apps/telemetry/api/urls.py
+
 from django.urls import path
-from .views import TelemetryIngestView, TelemetryRecentView
+from .edge_controller import EdgeControllerTelemetryView
+from .commands import CommandResultTelemetryView
 
 urlpatterns = [
-    path("ingest/", TelemetryIngestView.as_view()),
-    path("recent/<str:livestock_id>/", TelemetryRecentView.as_view()),
+    path(
+        "edge/",
+        EdgeControllerTelemetryView.as_view(),
+        name="telemetry",
+    ),
+    path(
+        "commands/",
+        CommandResultTelemetryView.as_view(),
+        name="command-result",
+    ),
 ]
