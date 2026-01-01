@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from apps.commands.schemas.result.receive_result_input import ReceiveResultInput
 
+from backend.shared.schemas.management.commands.result.receive_result_input import ReceiveResultInput
 
 @dataclass
 class ReceiveResultInputDTO(ReceiveResultInput):

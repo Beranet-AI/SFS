@@ -1,0 +1,2 @@
+class FarmDomainError(Exception):
+    pass

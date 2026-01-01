@@ -1,7 +1,7 @@
 # mappers/telemetry_mapper.py
 
-from ..models.telemetry_record import TelemetryRecord
-
+from ..infrastructure.models.telemetry_record import TelemetryRecord
+from ..infrastructure.models.telemetry_schema import TelemetrySchema
 
 class TelemetryMapper:
     def raw_to_domain(self, raw: dict) -> dict:

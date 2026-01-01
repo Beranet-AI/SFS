@@ -1,36 +1,22 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+# farm/api/views.py
+from .base import BaseAPIView
+from .serializers.environment_metrics_serializer import EnvironmentMetricsSerializer
+from ..application.use_cases.record_zone_environment_metrics.input_dto import RecordZoneEnvironmentInputDTO
+from ..application.use_cases.record_zone_environment_metrics.use_case import RecordZoneEnvironmentMetricsUseCase
 
-from apps.farms.application.services.farm_service import FarmService
-from .serializers import FarmSerializer
+class RecordZoneEnvironmentView(BaseAPIView):
+    def post(self, request, farm_id, barn_id, zone_id):
+        s = EnvironmentMetricsSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
 
-
-class FarmsView(APIView):
-    service = FarmService()
-
-    def get(self, request):
-        farms = self.service.list_all()
-        return Response(FarmSerializer(farms, many=True).data)
-
-    def post(self, request):
-        farm = self.service.create(name=request.data["name"])
-        return Response(
-            FarmSerializer(farm).data,
-            status=status.HTTP_201_CREATED,
-        )
-
-
-class FarmDetailView(APIView):
-    service = FarmService()
-
-    def put(self, request, farm_id: int):
-        farm = self.service.rename(
+        dto = RecordZoneEnvironmentInputDTO(
             farm_id=farm_id,
-            name=request.data["name"],
+            barn_id=barn_id,
+            zone_id=zone_id,
+            **s.validated_data
         )
-        return Response(FarmSerializer(farm).data)
+        result = RecordZoneEnvironmentMetricsUseCase(
+            request.app_context.farm_repo
+        ).execute(dto)
 
-    def delete(self, request, farm_id: int):
-        self.service.delete(farm_id=farm_id)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.ok(result)

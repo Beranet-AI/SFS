@@ -2,7 +2,7 @@
 
 from .input_dto import RegisterSchemaInputDTO
 from .output_dto import RegisterSchemaOutputDTO
-from ....models.telemetry_schema import TelemetrySchema
+from ....infrastructure.models.telemetry_schema import TelemetrySchema
 
 
 class RegisterTelemetrySchemaUseCase:

@@ -1,65 +1,87 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+# File: livestock/api/views.py
+from .base import BaseAPIView
+from .serializers.livestock_identity_serializer import LivestockIdentitySerializer
+from .serializers.health_metrics_serializer import HealthMetricsSerializer
+from .serializers.nutrition_metrics_serializer import NutritionMetricsSerializer
+from .serializers.milk_production_serializer import MilkProductionSerializer
+from .serializers.reproduction_serializer import ReproductionSerializer
+from .serializers.disease_serializer import TreatmentSerializer
 
-from apps.livestock.application.services.livestock_service import LivestockService
-from apps.livestock.api.serializers import (
-    LivestockSerializer,
-    LivestockSensorGroupSerializer,
-)
-from apps.livestock.application.use_cases.register_sensor_group.use_case import (
-    RegisterLivestockSensorGroupUseCase,
-)
-from apps.livestock.mappers.sensor_group_mapper import (
-    LivestockSensorGroupMapper,
-)
+from ..application.use_cases.register_livestock.input_dto import RegisterLivestockInputDTO
+from ..application.use_cases.register_livestock.use_case import RegisterLivestockUseCase
 
+from ..application.use_cases.record_health_metrics.input_dto import RecordHealthMetricsInputDTO
+from ..application.use_cases.record_health_metrics.use_case import RecordHealthMetricsUseCase
 
-class LivestockView(APIView):
-    service = LivestockService()
+from ..application.use_cases.record_nutrition_metrics.input_dto import RecordNutritionMetricsInputDTO
+from ..application.use_cases.record_nutrition_metrics.use_case import RecordNutritionMetricsUseCase
 
-    def get(self, request):
-        qs = self.service.list_all()
-        return Response(LivestockSerializer(qs, many=True).data)
+from ..application.use_cases.record_milk_production.input_dto import RecordMilkProductionInputDTO
+from ..application.use_cases.record_milk_production.use_case import RecordMilkProductionUseCase
 
+from ..application.use_cases.evaluate_reproduction_status.input_dto import EvaluateReproductionStatusInputDTO
+from ..application.use_cases.evaluate_reproduction_status.use_case import EvaluateReproductionStatusUseCase
+
+from ..application.use_cases.record_treatment.input_dto import RecordTreatmentInputDTO
+from ..application.use_cases.record_treatment.use_case import RecordTreatmentUseCase
+
+from ..application.use_cases.generate_livestock_ai_insights.input_dto import GenerateLivestockAIInsightsInputDTO
+from ..application.use_cases.generate_livestock_ai_insights.use_case import GenerateLivestockAIInsightsUseCase
+
+class RegisterLivestockView(BaseAPIView):
     def post(self, request):
-        livestock = self.service.create(**request.data)
-        return Response(
-            LivestockSerializer(livestock).data,
-            status=status.HTTP_201_CREATED,
-        )
+        s = LivestockIdentitySerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = RegisterLivestockInputDTO(**s.validated_data)
+        result = RegisterLivestockUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result, status=201)
 
-
-class LivestockHealthEvalView(APIView):
-    service = LivestockService()
-
+class RecordHealthMetricsView(BaseAPIView):
     def post(self, request, livestock_id: str):
-        score = float(request.data.get("score", 1.0))
+        s = HealthMetricsSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = RecordHealthMetricsInputDTO(livestock_id=livestock_id, **s.validated_data)
+        result = RecordHealthMetricsUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result)
 
-        livestock = self.service.update_health_from_score(
-            livestock_id=livestock_id,
-            score=score,
-        )
+class RecordNutritionMetricsView(BaseAPIView):
+    def post(self, request, livestock_id: str):
+        s = NutritionMetricsSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = RecordNutritionMetricsInputDTO(livestock_id=livestock_id, **s.validated_data)
+        result = RecordNutritionMetricsUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result)
 
-        return Response(
-            LivestockSerializer(livestock).data,
-            status=status.HTTP_200_OK,
-        )
+class RecordMilkProductionView(BaseAPIView):
+    def post(self, request, livestock_id: str):
+        s = MilkProductionSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = RecordMilkProductionInputDTO(livestock_id=livestock_id, **s.validated_data)
+        result = RecordMilkProductionUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result)
 
+class RecordReproductionView(BaseAPIView):
+    def post(self, request, livestock_id: str):
+        s = ReproductionSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = EvaluateReproductionStatusInputDTO(livestock_id=livestock_id, **s.validated_data)
+        result = EvaluateReproductionStatusUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result)
 
-class LivestockSensorGroupView(APIView):
-    use_case = RegisterLivestockSensorGroupUseCase()
+class RecordTreatmentView(BaseAPIView):
+    def post(self, request, livestock_id: str):
+        s = TreatmentSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        dto = RecordTreatmentInputDTO(livestock_id=livestock_id, **s.validated_data)
+        result = RecordTreatmentUseCase(request.app_context.livestock_repo).execute(dto)
+        return self.ok(result)
 
-    def post(self, request):
-        ser = LivestockSensorGroupSerializer(data=request.data)
-        ser.is_valid(raise_exception=True)
-
-        input_dto = LivestockSensorGroupMapper.from_payload(
-            ser.validated_data
-        )
-        result = self.use_case.execute(input_dto)
-
-        return Response(
-            LivestockSensorGroupMapper.to_response(result),
-            status=status.HTTP_201_CREATED,
-        )
+class LivestockAIInsightsView(BaseAPIView):
+    def get(self, request, livestock_id: str):
+        dto = GenerateLivestockAIInsightsInputDTO(livestock_id=livestock_id)
+        result = GenerateLivestockAIInsightsUseCase(
+            request.app_context.livestock_repo,
+            request.app_context.livestock_risk_evaluator,
+            request.app_context.livestock_ai_adapter,
+        ).execute(dto)
+        return self.ok(result)

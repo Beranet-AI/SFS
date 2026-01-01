@@ -2,7 +2,7 @@
 
 from .input_dto import ApproveSchemaInputDTO
 from .output_dto import ApproveSchemaOutputDTO
-from ....models.telemetry_schema import TelemetrySchema
+from ....infrastructure.models.telemetry_schema import TelemetrySchema
 from ...services.schema_service import SchemaService
 
 

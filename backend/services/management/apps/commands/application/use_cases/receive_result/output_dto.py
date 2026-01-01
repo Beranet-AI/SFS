@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 
-from apps.commands.schemas.result.receive_result_output import ReceiveResultOutput
+
+from backend.shared.schemas.management.commands.result.receive_result_output import ReceiveResultOutput
+
 
 
 @dataclass

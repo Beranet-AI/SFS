@@ -1,7 +1,10 @@
+# farm/api/urls.py
 from django.urls import path
-from .views import FarmsView, FarmDetailView
+from .views import RecordZoneEnvironmentView
 
 urlpatterns = [
-    path("", FarmsView.as_view()),
-    path("<int:farm_id>/", FarmDetailView.as_view()),
+    path(
+        "farms/<str:farm_id>/barn/<str:barn_id>/zone/<str:zone_id>/environment/",
+        RecordZoneEnvironmentView.as_view()
+    ),
 ]

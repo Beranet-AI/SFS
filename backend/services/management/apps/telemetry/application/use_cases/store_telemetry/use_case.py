@@ -2,7 +2,7 @@
 
 from .input_dto import StoreTelemetryInputDTO
 from .output_dto import StoreTelemetryOutputDTO
-from ....models.telemetry_record import TelemetryRecord
+from ....infrastructure.models.telemetry_record import TelemetryRecord
 from ....mappers.telemetry_mapper import TelemetryMapper
 
 
