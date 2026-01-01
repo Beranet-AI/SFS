@@ -1,0 +1,6 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend/services/management",
+    "${workspaceFolder}/backend"
+  ]
+}
