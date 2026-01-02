@@ -3,7 +3,7 @@ from django.db import transaction
 from ..domain.repositories.farm_repository import FarmRepository
 from ..domain.entities.farm import Farm
 from ..domain.value_objects.environmental_metrics import EnvironmentalMetrics
-from .models import (
+from .models.models import (
     FarmModel,
     BarnModel,
     ZoneModel,

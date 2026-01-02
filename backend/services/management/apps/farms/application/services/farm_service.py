@@ -1,4 +1,4 @@
-from apps.farms.infrastructure.models import FarmModel
+from apps.farms.infrastructure.models.models import FarmModel
 
 
 class FarmService:

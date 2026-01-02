@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-from backend.shared.schemas.management.commands.result.receive_result_output import ReceiveResultOutput
+from shared.schemas.management.commands.receive_result.receive_result_output import ReceiveResultOutput
 
 
 

@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 
-from backend.shared.schemas.management.commands.result.receive_result_input import ReceiveResultInput
+from shared.schemas.management.commands.receive_result.receive_result_input import ReceiveResultInput
+
 
 @dataclass
 class ReceiveResultInputDTO(ReceiveResultInput):
@@ -13,3 +14,6 @@ class ReceiveResultInputDTO(ReceiveResultInput):
     error_code: str
     error_message: str
     meta: Dict[str, Any]
+
+
+

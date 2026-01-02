@@ -5,7 +5,7 @@ from ..domain.entities.zone import Zone
 from ..domain.value_objects.location import Location
 from ..domain.value_objects.environmental_metrics import EnvironmentalMetrics
 from ..domain.value_objects.economic_metrics import EconomicMetrics
-from .models import FarmModel, BarnModel, ZoneModel
+from .models.models import FarmModel, BarnModel, ZoneModel
 
 
 class FarmMapper:

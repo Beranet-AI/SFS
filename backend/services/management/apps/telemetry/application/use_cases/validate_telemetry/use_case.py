@@ -4,7 +4,7 @@ from jsonschema import validate, ValidationError
 
 from .output_dto import ValidateTelemetryOutputDTO
 from ...services.schema_service import SchemaService
-from ....mappers.telemetry_mapper import TelemetryMapper
+from ....infrastructure.mappers.telemetry_mapper import TelemetryMapper
 
 
 class ValidateTelemetryUseCase:

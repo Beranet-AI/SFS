@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict
 
-from ......shared.schemas.edge_controller.telemetry.telemetry_input import TelemetryInput
+from shared.schemas.edge_controller.forward_telemetry.telemetry_input import TelemetryInput
 
 @dataclass
 class TelemetryInputDTO(TelemetryInput):

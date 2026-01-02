@@ -1,0 +1,7 @@
+# ۱. به پوشه docker-compose بروید
+cd "C:\Users\Behzad\Desktop\SFS\infrastructure\docker"
+
+# ۲. اجرای مستقیم اسکریپت SQL
+Get-Content "C:\Users\Behzad\Desktop\SFS\tools\scripts\show_database_structure.sql" | docker-compose exec -T postgres psql -U sfs -d sfs
+# ۳. یا اگر نام سرویس db نیست، ببینید نام چیست:
+docker-compose ps

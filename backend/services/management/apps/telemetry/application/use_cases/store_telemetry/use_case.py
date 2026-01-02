@@ -3,7 +3,7 @@
 from .input_dto import StoreTelemetryInputDTO
 from .output_dto import StoreTelemetryOutputDTO
 from ....infrastructure.models.telemetry_record import TelemetryRecord
-from ....mappers.telemetry_mapper import TelemetryMapper
+from ....infrastructure.mappers.telemetry_mapper import TelemetryMapper
 
 
 class StoreTelemetryUseCase:

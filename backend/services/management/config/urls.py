@@ -7,7 +7,7 @@ urlpatterns = [
     path("api/v1/", include([
         path("users/", include("apps.users.api.urls")),
         path("farms/", include("apps.farms.api.urls")),
-        path("livestock/", include("apps.livestock.api.urls")),
+        path("livestocks/", include("apps.livestocks.api.urls")),
         path("devices/", include("apps.devices.api.urls")),
         path("telemetry/", include("apps.telemetry.api.urls")),
         path("health/", include("apps.health.api.urls")),

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 
-from ......shared.schemas.edge_controller.command.execute_command_output import (
+from shared.schemas.edge_controller.execute_command.execute_command_output import (
     DiscoverCommandOutput,
     ExecuteCommandOutput,
     OnOffCommandOutput,

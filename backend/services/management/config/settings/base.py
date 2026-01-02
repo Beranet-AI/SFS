@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.devices",
     "apps.farms",
-    "apps.livestock",
+    "apps.livestocks",
     "apps.health",
     "apps.incidents",
     "apps.telemetry",

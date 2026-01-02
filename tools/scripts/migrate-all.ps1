@@ -14,7 +14,7 @@ python backend/services/management/manage.py migrate devices
 
 Write-Host "▶ Migrating livestock..."
 docker compose -f $composeFile exec management `
-python backend/services/management/manage.py migrate livestock
+python backend/services/management/manage.py migrate livestocks
 
 Write-Host "▶ Migrating telemetry..."
 docker compose -f $composeFile exec management `

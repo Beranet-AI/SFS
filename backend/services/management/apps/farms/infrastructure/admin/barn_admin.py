@@ -1,7 +1,27 @@
-# File: farm/infrastructure/admin/barn_admin.py
 from django.contrib import admin
-from ..models import BarnModel
+from ..models.models import BarnModel
+from .zone_admin import ZoneInline
 
-@admin.register(BarnModel)
-class BarnAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "farm")
+
+class BarnInline(admin.TabularInline):
+    model = BarnModel
+    extra = 0
+    show_change_link = True
+
+    fields = (
+        "name",
+        "barn_type",
+        "zone_count",
+    )
+
+    readonly_fields = (
+        "zone_count",
+    )
+
+    inlines = [
+        ZoneInline,
+    ]
+
+    @admin.display(description="Zones")
+    def zone_count(self, obj):
+        return obj.zones.count()

@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from apps.commands.models import (
+from apps.commands.infrastructure.models.models import (
     CommandModel,
     CommandAttemptModel,
     CommandStatus,

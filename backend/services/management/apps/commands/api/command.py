@@ -8,18 +8,19 @@ from apps.commands.application.use_cases.receive_result.use_case import (
 from apps.commands.application.use_cases.send_command.use_case import (
     SendCommandUseCase,
 )
-from apps.commands.mappers.command_mapper import (
+
+from apps.commands.infrastructure.mappers.command_mapper import (
     InboundCommandMapper,
     OutboundCommandMapper,
 )
-from apps.commands.mappers.result_mapper import (
+from apps.commands.infrastructure.mappers.result_mapper import (
     InboundResultMapper,
     OutboundResultMapper,
 )
 from apps.commands.application.use_cases.receive_result.output_dto import (
     ReceiveResultOutputDTO,
 )
-from apps.commands.models import CommandStatus
+from apps.commands.infrastructure.models.models import CommandStatus
 
 
 class CommandCreateController(BaseController):

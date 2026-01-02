@@ -1,22 +1,42 @@
-# backend/services/management/apps/telemetry/api/base.py
+# backend/services/management/apps/shared/api/base.py
 
-from abc import ABC
-from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 
-class BaseTelemetryController(ABC):
+class Base(APIView):
     """
-    Base controller for telemetry-related endpoints.
-    Controllers must only:
-    - extract request data
-    - build input DTO
-    - call application service
+    Base HTTP controller (adapter).
     """
 
-    service = None  # TelemetryService injected by subclass
+    request_serializer_class = None
+    response_serializer_class = None
 
-    def response_ok(self, data: dict, status: int = 200):
-        return JsonResponse(data, status=status, safe=False)
+    def get_request_serializer(self, *args, **kwargs):
+        if not self.request_serializer_class:
+            raise NotImplementedError(
+                "request_serializer_class is not defined"
+            )
+        return self.request_serializer_class(*args, **kwargs)
 
-    def response_error(self, message: str, status: int = 400):
-        return JsonResponse({"error": message}, status=status)
+    def get_response_serializer(self, *args, **kwargs):
+        if not self.response_serializer_class:
+            raise NotImplementedError(
+                "response_serializer_class is not defined"
+            )
+        return self.response_serializer_class(*args, **kwargs)
+
+    def validate_request(self, request):
+        serializer = self.get_request_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return serializer.validated_data
+
+    def success(self, data, http_status=status.HTTP_200_OK):
+        serializer = self.get_response_serializer(data)
+        return Response(serializer.data, status=http_status)
+
+    @property
+    def user_id(self):
+        user = getattr(self.request, "user", None)
+        return getattr(user, "id", None)

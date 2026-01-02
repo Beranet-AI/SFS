@@ -46,6 +46,11 @@ services:
       - "8000:8000"
     networks:
       - sfs_net
+    develop:
+      watch:
+        # هر تغییری در shared → rebuild base
+        - action: rebuild
+          path: ../../backend/shared
 
   data_ingestion:
     container_name: sfs-data-ingestion

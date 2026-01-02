@@ -1,7 +1,7 @@
 # backend/services/management/apps/telemetry/application/services/schema_service.py
 
 
-from ...infrastructure.models.telemetry_schema import TelemetrySchema
+from ...api.schemas.telemetry_schema import TelemetrySchema
 
 
 class SchemaService:

@@ -1,8 +1,34 @@
-# File: farm/infrastructure/admin/zone_admin.py
 from django.contrib import admin
-from ..models import ZoneModel
+from ..models.models import ZoneModel, ZoneEnvironmentHistoryModel
 
-@admin.register(ZoneModel)
-class ZoneAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "barn", "temperature_c", "humidity", "ammonia_ppm", "co2_ppm", "airflow_mps", "updated_at")
-    readonly_fields = ("updated_at",)
+
+class ZoneEnvironmentInline(admin.TabularInline):
+    model = ZoneEnvironmentHistoryModel
+    extra = 0
+    can_delete = False
+    max_num = 0
+
+    fields = (
+        "temperature",
+        "humidity",
+        "ammonia",
+        "recorded_at",
+    )
+
+    readonly_fields = fields
+
+
+class ZoneInline(admin.StackedInline):
+    model = ZoneModel
+    extra = 0
+    show_change_link = True
+
+    fields = (
+        "name",
+        "zone_type",
+        "capacity",
+    )
+
+    inlines = [
+        ZoneEnvironmentInline,
+    ]

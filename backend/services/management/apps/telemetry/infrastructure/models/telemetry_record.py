@@ -1,4 +1,4 @@
-# backend/services/management/apps/telemetry/models/telemetry_record.py
+# backend/services/management/apps/telemetry/infrastructure/models/telemetry_record.py
 
 import uuid
 from django.db import models
