@@ -6,8 +6,6 @@ from ..application.use_cases.forward_telemetry.input_dto import (
 from ..application.use_cases.forward_telemetry.output_dto import (
     ForwardTelemetryOutputDTO,
 )
-from ..validators.telemetry_validator import validate_telemetry_payload
-
 
 class InboundTelemetryMapper:
     @staticmethod
@@ -15,13 +13,19 @@ class InboundTelemetryMapper:
         """
         Map raw telemetry payload to TelemetryInput
         """
-        validate_telemetry_payload(payload)
+        timestamp = payload.get("timestamp")
+        if isinstance(timestamp, str):
+            parsed_timestamp = datetime.fromisoformat(
+                timestamp.replace("Z", "+00:00")
+            )
+        else:
+            parsed_timestamp = datetime.utcnow()
 
         return TelemetryInputDTO(
             edge_id=payload["edge_id"],
             device_id=payload["device_id"],
             device_type=payload["device_type"],
-            timestamp=datetime.utcnow(),
+            timestamp=parsed_timestamp,
             metrics=payload["metrics"],
             meta=payload.get("meta"),
         )

@@ -1,4 +1,4 @@
 # Import all route modules so they register themselves
 from . import command
-from . import telemetry  # اگر داری
+from . import management_telemetry  # registers telemetry route
 # heartbeat لازم نیست چون مستقیم در main include شده

@@ -7,7 +7,7 @@ apps/telemetry/
 │   ├── __init__.py
 │   ├── records/
 │   │   ├── __init__.py
-│   │   └── telemetry_record.py
+│   │   └── telemetry_model.py
 │   │
 │   └── repositories/
 │       ├── __init__.py

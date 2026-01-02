@@ -1,11 +1,10 @@
 from django.contrib import admin
-from django.utils.html import format_html
 
-from ..models import TelemetryRecordModel
+from ..models import TelemetryModel
 
 
-@admin.register(TelemetryRecordModel)
-class TelemetryRecordAdmin(admin.ModelAdmin):
+@admin.register(TelemetryModel)
+class TelemetryAdmin(admin.ModelAdmin):
     """
     Read-only telemetry viewer (industrial-grade)
     """
@@ -16,28 +15,28 @@ class TelemetryRecordAdmin(admin.ModelAdmin):
         "value_preview",
         "unit",
         "source",
-        "farm",
-        "barn",
-        "zone",
-        "livestock",
+        "farm_id",
+        "barn_id",
+        "zone_id",
+        "livestock_id",
     )
 
     list_filter = (
         "metric",
         "source",
-        "farm",
-        "barn",
-        "zone",
-        "livestock",
+        "farm_id",
+        "barn_id",
+        "zone_id",
+        "livestock_id",
         ("recorded_at", admin.DateFieldListFilter),
     )
 
     search_fields = (
         "metric",
-        "farm__name",
-        "barn__name",
-        "zone__name",
-        "livestock__tag_id",
+        "farm_id",
+        "barn_id",
+        "zone_id",
+        "livestock_id",
     )
 
     ordering = ("-recorded_at",)
@@ -54,10 +53,10 @@ class TelemetryRecordAdmin(admin.ModelAdmin):
         "source",
         "payload",
         "recorded_at",
-        "farm",
-        "barn",
-        "zone",
-        "livestock",
+        "farm_id",
+        "barn_id",
+        "zone_id",
+        "livestock_id",
     )
 
     fieldsets = (
@@ -72,10 +71,10 @@ class TelemetryRecordAdmin(admin.ModelAdmin):
         }),
         ("Context", {
             "fields": (
-                "farm",
-                "barn",
-                "zone",
-                "livestock",
+                "farm_id",
+                "barn_id",
+                "zone_id",
+                "livestock_id",
             )
         }),
         ("Raw Payload (JSON)", {

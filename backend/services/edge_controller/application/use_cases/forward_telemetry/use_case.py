@@ -1,10 +1,12 @@
-from ....infrastructure.clients.data_ingestion_client import DataIngestionClient
+from ....infrastructure.clients.management_telemetry_client import (
+    ManagementTelemetryClient,
+)
 from .input_dto import TelemetryInputDTO
 
 
 class ForwardTelemetryUseCase:
-    def __init__(self, data_ingestion_client: DataIngestionClient):
-        self.data_ingestion_client = data_ingestion_client
+    def __init__(self, management_telemetry_client: ManagementTelemetryClient):
+        self.management_telemetry_client = management_telemetry_client
 
     def execute(self, dto: TelemetryInputDTO):
-        self.data_ingestion_client.send_telemetry(dto.to_dict())
+        self.management_telemetry_client.send_raw_telemetry(dto.to_dict())

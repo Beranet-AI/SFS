@@ -52,7 +52,7 @@ backend/
         │   │
         │   ├── client/                         # 🟢 IT – software side
         │   │   ├── commands_client.py          # send results to command source
-        │   │   ├── data_ingestion_client.py    # send telemetry
+        │   │   ├── management_telemetry_client.py    # send telemetry
         │   │   ├── monitoring_client.py        # optional
         │   │   └── __init__.py
         │   │
