@@ -2,7 +2,7 @@
 
 from .input_dto import RegisterSchemaInputDTO
 from .output_dto import RegisterSchemaOutputDTO
-from ....api.schemas.telemetry_schema import TelemetrySchema
+from ....infrastructure.models.schema_model import TelemetrySchemaModel
 
 
 class RegisterTelemetrySchemaUseCase:
@@ -11,9 +11,9 @@ class RegisterTelemetrySchemaUseCase:
     """
 
     def execute(self, input_dto: RegisterSchemaInputDTO) -> RegisterSchemaOutputDTO:
-        version = TelemetrySchema.next_version(input_dto.device_type)
+        version = TelemetrySchemaModel.next_version(input_dto.device_type)
 
-        schema = TelemetrySchema.objects.create(
+        schema = TelemetrySchemaModel.objects.create(
             device_type=input_dto.device_type,
             json_schema=input_dto.json_schema,
             raw_example=input_dto.raw_example,

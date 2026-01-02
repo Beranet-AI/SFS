@@ -1,8 +1,7 @@
 # mappers/telemetry_mapper.py
 
 
-from ...infrastructure.models.telemetry_record import TelemetryRecord
-from ...api.schemas.telemetry_schema import TelemetrySchema
+from ...infrastructure.models.telemetry_model import TelemetryModel
 
 class TelemetryMapper:
     def raw_to_domain(self, raw: dict) -> dict:
@@ -15,11 +14,21 @@ class TelemetryMapper:
         schema_version: str,
         telemetry_data: dict,
         received_at: int,
-    ) -> TelemetryRecord:
-        return TelemetryRecord(
+    ) -> TelemetryModel:
+        metric = telemetry_data.get("metric")
+        value = telemetry_data.get("value", telemetry_data)
+        if metric is None and isinstance(telemetry_data.get("metrics"), dict):
+            metric, value = next(
+                iter(telemetry_data["metrics"].items()), ("raw", telemetry_data)
+            )
+
+        return TelemetryModel(
             device_id=device_id,
+            device_type=telemetry_data.get("device_type", ""),
+            metric=metric or "raw",
+            value=value,
             source=source,
             schema_version=schema_version,
-            telemetry_data=telemetry_data,
-            received_at=received_at,
+            payload=telemetry_data,
+            recorded_at=received_at,
         )

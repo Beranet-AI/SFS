@@ -9,15 +9,15 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 
 # ======================================
 # Telemetry schema path
-# backend/shared/schema/edge_controller/telemetry/input.v1.json
+# backend/shared/schemas/management/telemetry/raw_telemetry_input.v1.json
 # ======================================
 SCHEMA_PATH = (
     BASE_DIR
     / "shared"
-    / "schema"
-    / "edge_controller"
+    / "schemas"
+    / "management"
     / "telemetry"
-    / "input.v1.json"
+    / "raw_telemetry_input.v1.json"
 )
 
 _schema_cache: dict | None = None

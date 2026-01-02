@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ApproveTelemetrySchemaOutput",
+  "type": "object",
+  "required": ["schema_id", "status", "activated_version"],
+  "properties": {
+    "schema_id": { "type": "string" },
+    "status": { "type": "string" },
+    "activated_version": { "type": "string" }
+  },
+  "additionalProperties": false
+}

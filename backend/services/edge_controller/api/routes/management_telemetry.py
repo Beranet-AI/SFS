@@ -1,21 +1,14 @@
-# api/routes/telemetry.py
+# api/routes/management_telemetry.py
 from fastapi import APIRouter, HTTPException, status
 from .base import router as base_router
 
 from ...application.services.edge_service import EdgeService
 from ...mappers.telemetry_mapper import (
     InboundTelemetryMapper,
-    OutboundTelemetryMapper,
-)
-from ...application.use_cases.forward_telemetry.output_dto import (
-    ForwardTelemetryOutputDTO,
 )
 
   
-router = APIRouter(
-    prefix="/telemetry",
-    tags=["telemetry"]
-)
+router = APIRouter(prefix="/telemetry", tags=["telemetry"])
 
 edge_service = EdgeService()
 
@@ -23,18 +16,15 @@ edge_service = EdgeService()
 @router.post(
     "",
     summary="Receive telemetry from device",
-    description="Forward telemetry from approved devices to data_ingestion"
+    description="Forward telemetry from approved devices to management-telemetry"
 )
 def receive_telemetry(payload: dict):
     try:
-
         telemetry_dto = InboundTelemetryMapper.to_input(payload)
 
         edge_service.handle_telemetry(telemetry_dto)
 
-        return OutboundTelemetryMapper.to_response(
-            ForwardTelemetryOutputDTO(forwarded=True)
-        )
+        return {"status": "ACCEPTED"}
 
     except KeyError as e:
         raise HTTPException(

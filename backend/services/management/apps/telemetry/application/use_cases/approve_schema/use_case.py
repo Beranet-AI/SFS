@@ -2,7 +2,7 @@
 
 from .input_dto import ApproveSchemaInputDTO
 from .output_dto import ApproveSchemaOutputDTO
-from ....api.schemas.telemetry_schema import TelemetrySchema
+from ....infrastructure.models.schema_model import TelemetrySchemaModel
 from ...services.schema_service import SchemaService
 
 
@@ -15,7 +15,7 @@ class ApproveTelemetrySchemaUseCase:
         self._schema_service = SchemaService()
 
     def execute(self, input_dto: ApproveSchemaInputDTO) -> ApproveSchemaOutputDTO:
-        schema = TelemetrySchema.objects.get(id=input_dto.schema_id)
+        schema = TelemetrySchemaModel.objects.get(id=input_dto.schema_id)
 
         self._schema_service.deactivate_active_schema(schema.device_type)
 

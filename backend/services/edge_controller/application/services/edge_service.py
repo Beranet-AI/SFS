@@ -2,17 +2,26 @@ from datetime import timezone
 
 from ..use_cases.execute_command.use_case import ExecuteCommandUseCase
 from ..use_cases.send_result.use_case import SendResultUseCase
-from ..use_cases.forward_telemetry.use_case import ForwardTelemetryUseCase
+from ..use_cases.CheckDeviceRegistered.use_case import CheckDeviceRegisteredUseCase
+from ..use_cases.ValidateRawTelemetry.use_case import ValidateRawTelemetryUseCase
 
 from ...infrastructure.mqtt.device_client import DeviceClient
 from ...infrastructure.clients.commands_client import CommandsClient
-from ...infrastructure.clients.data_ingestion_client import DataIngestionClient
+from ...infrastructure.clients.management_telemetry_client import (
+    ManagementTelemetryClient,
+)
 
 from ..use_cases.execute_command.input_dto import (
     ExecuteCommandInputDTO,
 )
 from ..use_cases.forward_telemetry.input_dto import (
     TelemetryInputDTO,
+)
+from ..use_cases.CheckDeviceRegistered.check_device_registered_input import (
+    CheckDeviceRegisteredInput,
+)
+from ..use_cases.ValidateRawTelemetry.validate_raw_telemetry_input import (
+    ValidateRawTelemetryInput,
 )
 
 from ...mappers.result_mapper import InboundResultMapper
@@ -27,7 +36,7 @@ class EdgeService:
         # Infrastructure
         self._device_client = DeviceClient()
         self._commands_client = CommandsClient()
-        self._data_ingestion_client = DataIngestionClient()
+        self._management_telemetry_client = ManagementTelemetryClient()
 
         # Use cases
         self._execute_command_uc = ExecuteCommandUseCase(
@@ -36,9 +45,8 @@ class EdgeService:
         self._report_result_uc = SendResultUseCase(
             commands_client=self._commands_client
         )
-        self._forward_telemetry_uc = ForwardTelemetryUseCase(
-            data_ingestion_client=self._data_ingestion_client
-        )
+        self._check_device_uc = CheckDeviceRegisteredUseCase()
+        self._validate_raw_uc = ValidateRawTelemetryUseCase()
 
     # =====================================================
     # COMMAND FLOW (Management → Edge → Management)
@@ -66,4 +74,15 @@ class EdgeService:
     # TELEMETRY FLOW (Device → Edge → Data Ingestion)
     # =====================================================
     def handle_telemetry(self, telemetry_dto: TelemetryInputDTO):
-        self._forward_telemetry_uc.execute(telemetry_dto)
+        check_result = self._check_device_uc.execute(
+            CheckDeviceRegisteredInput(device_id=telemetry_dto.device_id)
+        )
+        if not check_result.is_registered:
+            raise ValueError("Device is not registered")
+
+        self._validate_raw_uc.execute(
+            ValidateRawTelemetryInput(payload=telemetry_dto.to_dict())
+        )
+        self._management_telemetry_client.send_raw_telemetry(
+            telemetry_dto.to_dict()
+        )

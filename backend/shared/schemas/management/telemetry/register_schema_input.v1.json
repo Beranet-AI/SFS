@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RegisterTelemetrySchemaInput",
+  "type": "object",
+  "required": ["serial", "device_type", "json_schema", "raw_example", "created_by"],
+  "properties": {
+    "serial": { "type": "string" },
+    "device_type": { "type": "string" },
+    "json_schema": { "type": "object" },
+    "raw_example": { "type": "object" },
+    "created_by": { "type": "string" },
+    "farm_id": { "type": ["string", "null"] },
+    "barn_id": { "type": ["string", "null"] },
+    "zone_id": { "type": ["string", "null"] },
+    "livestock_id": { "type": ["string", "null"] },
+    "display_name": { "type": ["string", "null"] },
+    "metadata": { "type": ["object", "null"] },
+    "capabilities": { "type": ["object", "null"] },
+    "kind": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

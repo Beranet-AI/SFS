@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RegisterTelemetrySchemaOutput",
+  "type": "object",
+  "required": ["device_id", "schema_id", "version"],
+  "properties": {
+    "device_id": { "type": "string" },
+    "schema_id": { "type": "string" },
+    "version": { "type": "string" }
+  },
+  "additionalProperties": false
+}

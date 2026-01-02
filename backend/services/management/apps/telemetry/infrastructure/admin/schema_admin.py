@@ -3,37 +3,37 @@ from ..models import TelemetrySchemaModel
 
 
 @admin.register(TelemetrySchemaModel)
-class TelemetrySchemaAdmin(admin.ModelAdmin):
+class SchemaAdmin(admin.ModelAdmin):
     """
     Telemetry schema registry (governance only)
     """
 
     list_display = (
-        "name",
+        "device_type",
         "version",
-        "approved",
+        "is_active",
         "created_at",
     )
 
     list_filter = (
-        "approved",
+        "is_active",
     )
 
     search_fields = (
-        "name",
+        "device_type",
         "version",
     )
 
     readonly_fields = (
-        "name",
+        "device_type",
         "version",
-        "schema",
         "created_at",
+        "approved_at",
     )
 
-    actions = ["approve_schema"]
+    actions = ["activate_schema"]
 
-    def approve_schema(self, request, queryset):
-        queryset.update(approved=True)
+    def activate_schema(self, request, queryset):
+        queryset.update(is_active=True)
 
-    approve_schema.short_description = "Approve selected schemas"
+    activate_schema.short_description = "Activate selected schemas"
