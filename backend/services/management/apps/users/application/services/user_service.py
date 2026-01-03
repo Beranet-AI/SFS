@@ -1,4 +1,4 @@
-from apps.users.models import UserModel
+from apps.users.infrastructure.models.models import UserModel
 
 
 class CreateUserService:

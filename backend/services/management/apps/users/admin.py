@@ -1,8 +1,4 @@
-from django.contrib import admin
-from .models import UserModel
+# apps/users/admin.py
 
+from .infrastructure.admin.users_admin import *
 
-@admin.register(UserModel)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ("email", "is_staff", "is_active")
-    search_fields = ("email",)
