@@ -2,7 +2,7 @@ from typing import Any, Dict
 
 from fastapi import APIRouter
 
-from backend.services.data_ingestion.api.base import BaseController
+from backend.services.data_ingestion.presentation.api.base import BaseController
 from backend.services.data_ingestion.application.services.ingest_service import (
     IngestService,
 )
@@ -21,7 +21,7 @@ from backend.services.data_ingestion.application.use_cases.request_validation.us
 from backend.services.data_ingestion.application.use_cases.request_validation.input_dto import (
     RequestValidationInput,
 )
-from backend.services.data_ingestion.api.management_telemetry_schema import (
+from services.data_ingestion.presentation.schemas.management_telemetry import (
     TelemetryIngestSchema,
 )
 
