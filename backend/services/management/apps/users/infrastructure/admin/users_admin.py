@@ -1,5 +1,6 @@
 from django.contrib import admin
-from ..models.models import UserModel
+
+from apps.users.models import UserModel
 
 
 @admin.register(UserModel)

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from apps.users.domain.entities.user import User
 
 class UserRepository(ABC):

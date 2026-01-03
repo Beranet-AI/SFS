@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from apps.users.domain.enums.role import Role
 
 @dataclass

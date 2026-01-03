@@ -1,1 +1,1 @@
-
+"""Users app package."""
