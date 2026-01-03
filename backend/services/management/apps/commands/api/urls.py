@@ -1,5 +1,5 @@
 from django.urls import path
-from apps.commands.api.command import (
+from apps.commands.api.edge_controller import (
     CommandCreateController,
     CommandDetailController,
     CommandAckController,

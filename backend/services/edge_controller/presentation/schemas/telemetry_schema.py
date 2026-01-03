@@ -5,7 +5,7 @@ from jsonschema import validate, ValidationError
 # ======================================
 # Base directory: backend/
 # ======================================
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[4]
 
 # ======================================
 # Telemetry schema path

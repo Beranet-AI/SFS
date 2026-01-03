@@ -1,5 +1,5 @@
-from .request_validation_input import RequestValidationInput
-from .request_validation_output import RequestValidationOutput
+from .input_dto import RequestValidationInput
+from .output_dto import RequestValidationOutput
 from ....infrastructure.clients.management_telemetry_client import (
     ManagementTelemetryClient,
 )

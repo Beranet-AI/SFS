@@ -4,8 +4,8 @@ backend/
         ├── api/
         │   └── routes/
         │       ├── base.py
-        │       ├── health.py
         │       ├── command.py                # single command endpoint
+        │       ├── management_telemetry.py
         │       └── __init__.py
         │
         ├── application/
@@ -69,10 +69,6 @@ backend/
         │   │
         │   └── registry/
         │       └── edge_registry.py            # runtime approved sensors
-        │
-        ├── mappers/
-        │   ├── command_mapper.py               # contract → DTO
-        │   └── telemetry_mapper.py
         │
         ├── core/
         │   ├── config.py

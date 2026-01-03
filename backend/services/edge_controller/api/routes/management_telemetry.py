@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from .base import router as base_router
 
 from ...application.services.edge_service import EdgeService
-from ...mappers.telemetry_mapper import (
+from ...infrastructure.mappers.telemetry_mapper import (
     InboundTelemetryMapper,
 )
 
