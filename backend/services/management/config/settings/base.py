@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 # ======================
 # Custom User Model
 # ======================
+
 AUTH_USER_MODEL = "users.UserModel"
 
 # ======================
