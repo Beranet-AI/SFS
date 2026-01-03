@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from ..application.use_cases.forward_telemetry.input_dto import (
+from ...application.use_cases.forward_telemetry.input_dto import (
     TelemetryInputDTO,
 )
-from ..application.use_cases.forward_telemetry.output_dto import (
+from ...application.use_cases.forward_telemetry.output_dto import (
     ForwardTelemetryOutputDTO,
 )
 

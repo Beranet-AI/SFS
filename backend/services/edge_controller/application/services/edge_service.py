@@ -24,7 +24,7 @@ from ..use_cases.ValidateRawTelemetry.validate_raw_telemetry_input import (
     ValidateRawTelemetryInput,
 )
 
-from ...mappers.result_mapper import InboundResultMapper
+from ...infrastructure.mappers.result_mapper import InboundResultMapper
 
 
 class EdgeService:

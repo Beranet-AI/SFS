@@ -3,7 +3,7 @@ from pathlib import Path
 from jsonschema import validate, ValidationError
 
 # مسیر پایه shared
-BASE_DIR = Path(__file__).resolve().parents[3]  # backend/
+BASE_DIR = Path(__file__).resolve().parents[4]  # backend/
 SCHEMA_PATH = (
     BASE_DIR
     / "shared"

@@ -1,15 +1,15 @@
 from datetime import datetime
 
-from ..application.use_cases.execute_command.input_dto import (
+from ...application.use_cases.execute_command.input_dto import (
     ExecuteCommandInputDTO,
 )
-from ..application.use_cases.execute_command.output_dto import (
+from ...application.use_cases.execute_command.output_dto import (
     BaseCommandResultDTO,
     DiscoverCommandResultDTO,
     OnOffCommandResultDTO,
     RebootCommandResultDTO,
 )
-from ..validators.command_validator import validate_command_payload
+from ...presentation.schemas.command_schema import validate_command_payload
 
 
 class InboundCommandMapper:

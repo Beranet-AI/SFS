@@ -1,8 +1,8 @@
-from ..application.use_cases.execute_command.output_dto import (
+from ...application.use_cases.execute_command.output_dto import (
     BaseCommandResultDTO,
 )
-from ..application.use_cases.send_result.input_dto import SendResultInputDTO
-from ..application.use_cases.send_result.output_dto import SendResultOutputDTO
+from ...application.use_cases.send_result.input_dto import SendResultInputDTO
+from ...application.use_cases.send_result.output_dto import SendResultOutputDTO
 
 
 class InboundResultMapper:

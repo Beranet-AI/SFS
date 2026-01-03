@@ -4,8 +4,8 @@ backend/
         ├── api/
         │   └── routes/
         │       ├── base.py
-        │       ├── health.py
-        │       ├── command.py
+        │       ├── management_commands.py
+        │       ├── management_telemetry.py
         │       └── __init__.py
         │
         ├── application/
@@ -39,11 +39,6 @@ backend/
         │               ├── input_dto.py
         │               └── output_dto.py
         │
-        ├── mappers/
-        │   ├── command_mapper.py               # JSON → Command DTO
-        │   ├── result_mapper.py                # Result DTO → JSON
-        │   └── __init__.py
-        │
         ├── infrastructure/
         │   ├── mqtt/                           # 🔵 OT – device side
         │   │   ├── device_client.py            # send commands to devices
@@ -56,8 +51,19 @@ backend/
         │   │   ├── monitoring_client.py        # optional
         │   │   └── __init__.py
         │   │
+        │   ├── mappers/
+        │   │   ├── command_mapper.py           # JSON → Command DTO
+        │   │   ├── result_mapper.py            # Result DTO → JSON
+        │   │   └── __init__.py
+        │   │
         │   └── registry/
         │       └── edge_registry.py            # approved / active devices
+        │
+        ├── presentation/
+        │   └── schemas/
+        │       ├── command_schema.py
+        │       ├── telemetry_schema.py
+        │       └── __init__.py
         │
         ├── core/
         │   ├── config.py

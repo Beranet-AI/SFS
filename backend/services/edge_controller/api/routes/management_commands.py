@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from .base import BaseController, router as base_router
 
-from ...mappers.command_mapper import (
+from ...infrastructure.mappers.command_mapper import (
     InboundCommandMapper,
     OutboundCommandMapper,
 )
