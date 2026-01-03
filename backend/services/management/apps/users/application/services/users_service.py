@@ -1,4 +1,4 @@
-from apps.users.infrastructure.models.models import UserModel
+from django.contrib.auth import get_user_model
 
 
 class CreateUserService:
@@ -14,9 +14,9 @@ class CreateUserService:
         phone_number: str = "",
         is_staff: bool = False,
         is_superuser: bool = False,
-    ) -> UserModel:
-
-        user = UserModel.objects.create_user(
+    ):
+        user_model = get_user_model()
+        user = user_model.objects.create_user(
             email=email,
             password=password,
             username=email,  # الزام Django
