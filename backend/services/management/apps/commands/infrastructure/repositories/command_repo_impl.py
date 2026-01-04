@@ -28,6 +28,11 @@ class DjangoCommandRepository(CommandRepository):
         command.mark_acked(meta=meta)
         return CommandMapper.to_domain(command)
 
+    def mark_dispatched(self, *, command_id: str) -> Command:
+        command = CommandModel.objects.get(id=command_id)
+        command.mark_dispatched()
+        return CommandMapper.to_domain(command)
+
     def mark_result(
         self,
         *,

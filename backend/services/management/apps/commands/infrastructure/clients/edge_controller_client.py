@@ -10,6 +10,12 @@ from apps.commands.application.use_cases.receive_result.use_case import (
 from apps.commands.application.use_cases.receive_result.input_dto import (
     ReceiveResultInputDTO,
 )
+from apps.commands.infrastructure.repositories.command_attempt_repository import (
+    DjangoCommandAttemptRepository,
+)
+from apps.commands.infrastructure.repositories.command_repository import (
+    DjangoCommandRepository,
+)
 from .topics import discovery_result_topic, command_result_topic
 
 
@@ -46,7 +52,10 @@ class EdgeControllerClient:
                 error_message=payload.get("error_message", ""),
                 meta=payload.get("meta", {}),
             )
-            ReceiveResultUseCase().execute(dto)
+            ReceiveResultUseCase(
+                command_repository=DjangoCommandRepository(),
+                attempt_repository=DjangoCommandAttemptRepository(),
+            ).execute(dto)
 
     def publish_command(self, *, edge_id: str, command: dict):
         topic = f"sfs/edge/{edge_id}/commands"

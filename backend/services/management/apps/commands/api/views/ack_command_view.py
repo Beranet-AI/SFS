@@ -6,6 +6,12 @@ from apps.commands.api.serializers.ack_command_serializer import AckCommandSeria
 from apps.commands.application.use_cases.ack_command.use_case import (
     AckCommandUseCase,
 )
+from apps.commands.infrastructure.repositories.command_attempt_repository import (
+    DjangoCommandAttemptRepository,
+)
+from apps.commands.infrastructure.repositories.command_repository import (
+    DjangoCommandRepository,
+)
 
 
 class AckCommandView(BaseController):
@@ -21,6 +27,9 @@ class AckCommandView(BaseController):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         dto = serializer.to_input_dto()
-        AckCommandUseCase().execute(dto)
+        AckCommandUseCase(
+            command_repository=DjangoCommandRepository(),
+            attempt_repository=DjangoCommandAttemptRepository(),
+        ).execute(dto)
 
         return Response(AckCommandSerializer.to_response())

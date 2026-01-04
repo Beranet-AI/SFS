@@ -14,6 +14,9 @@ class CommandRepository(Protocol):
     def mark_acked(self, *, command_id: str, meta: dict | None = None) -> Command:
         ...
 
+    def mark_dispatched(self, *, command_id: str) -> Command:
+        ...
+
     def mark_result(
         self,
         *,
