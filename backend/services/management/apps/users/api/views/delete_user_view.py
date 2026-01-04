@@ -5,25 +5,25 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.users.api.forms.create_user_form import CreateUserForm
-from apps.users.api.serializers.create_user_serializer import CreateUserSerializer
-from apps.users.application.use_cases.create_user.use_case import CreateUserUseCase
+from apps.users.api.forms.delete_user_form import DeleteUserForm
+from apps.users.api.serializers.delete_user_serializer import DeleteUserSerializer
+from apps.users.application.use_cases.delete_user.use_case import DeleteUserUseCase
 from apps.users.infrastructure.repositories.users_repo_imp import UsersRepositoryImpl
 
 
-class CreateUserView(APIView):
-    def post(self, request):
-        form = CreateUserForm(request.data)
+class DeleteUserView(APIView):
+    def delete(self, request, user_id: str):
+        form = DeleteUserForm({"user_id": user_id})
         if not form.is_valid():
             raise ValidationError(form.errors)
 
-        serializer = CreateUserSerializer(data=form.cleaned_data)
+        serializer = DeleteUserSerializer(data=form.cleaned_data)
         serializer.is_valid(raise_exception=True)
 
         repository = UsersRepositoryImpl()
-        use_case = CreateUserUseCase(repository)
+        use_case = DeleteUserUseCase(repository)
         input_dto = serializer.to_input_dto(serializer.validated_data)
         output_dto = use_case.execute(input_dto)
         output_schema = serializer.to_output_schema(output_dto)
 
-        return Response(asdict(output_schema), status=status.HTTP_201_CREATED)
+        return Response(asdict(output_schema), status=status.HTTP_200_OK)
