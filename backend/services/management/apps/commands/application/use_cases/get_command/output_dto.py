@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from shared.schemas.get_command.get_command_output import GetCommandOutput
+from shared.schemas.management.commands.get_command.get_command_output import GetCommandOutput
 
 
 @dataclass

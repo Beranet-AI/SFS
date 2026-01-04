@@ -13,8 +13,8 @@ from apps.commands.application.use_cases.send_command.use_case import (
 
 class SendCommandView(BaseController):
     """
-    GET /commands/
-    POST /commands/
+    GET  /api/v1/commands/
+    POST /api/v1/commands/
     """
 
     renderer_classes = [TemplateHTMLRenderer, JSONRenderer]
@@ -22,6 +22,7 @@ class SendCommandView(BaseController):
     template_name = "management/commands/actions/send_command.html"
 
     def get(self, request):
+        # ⚠️ GET → serializer بدون data (نباید is_valid صدا زده شود)
         serializer = self.get_serializer()
         return Response(
             {"serializer": serializer},
@@ -30,6 +31,8 @@ class SendCommandView(BaseController):
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
+
+        # ⚠️ فقط در POST is_valid
         if not serializer.is_valid():
             if request.accepted_renderer.format == "html":
                 return Response(
@@ -39,13 +42,16 @@ class SendCommandView(BaseController):
                 )
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        # اجرای Use Case
         dto = serializer.to_input_dto()
         command = SendCommandUseCase().execute(
             dto,
             created_by=self.get_username(request),
         )
+
         response_payload = SendCommandSerializer.to_response(command)
 
+        # HTML response
         if request.accepted_renderer.format == "html":
             return Response(
                 {
@@ -56,4 +62,5 @@ class SendCommandView(BaseController):
                 template_name="management/commands/actions/send_command_result.html",
             )
 
+        # JSON response
         return Response(response_payload, status=status.HTTP_201_CREATED)

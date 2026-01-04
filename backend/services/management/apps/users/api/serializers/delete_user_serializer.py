@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from apps.users.application.use_cases.delete_user.input_dto import DeleteUserInputDTO
 from apps.users.application.use_cases.delete_user.output_dto import DeleteUserOutputDTO
-from shared.schemas.delete_user.delete_user_input import DeleteUserInputSchema
-from shared.schemas.delete_user.delete_user_output import DeleteUserOutputSchema
+from shared.schemas.management.users.delete_user.delete_user_input import DeleteUserInputSchema
+from shared.schemas.management.users.delete_user.delete_user_output import DeleteUserOutputSchema
 
 
 class DeleteUserSerializer(serializers.Serializer):

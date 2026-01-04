@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from apps.users.application.use_cases.update_user.input_dto import UpdateUserInputDTO
 from apps.users.application.use_cases.update_user.output_dto import UpdateUserOutputDTO
-from shared.schemas.update_user.update_user_input import UpdateUserInputSchema
-from shared.schemas.update_user.update_user_output import UpdateUserOutputSchema
+from shared.schemas.management.users.update_user.update_user_input import UpdateUserInputSchema
+from shared.schemas.management.users.update_user.update_user_output import UpdateUserOutputSchema
 
 
 class UpdateUserSerializer(serializers.Serializer):

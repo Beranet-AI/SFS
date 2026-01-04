@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 
-from shared.schemas.receive_result.receive_result_input import ReceiveResultInput
+from shared.schemas.management.commands.receive_result.receive_result_input import ReceiveResultInput
 
 
 @dataclass

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from shared.schemas.ack_command.ack_command_input import AckCommandInput
+from shared.schemas.management.commands.ack_command.ack_command_input import AckCommandInput
 
 
 @dataclass

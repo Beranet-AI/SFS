@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from shared.schemas.ack_command.ack_command_output import AckCommandOutput
+from shared.schemas.management.commands.ack_command.ack_command_output import AckCommandOutput
 
 
 @dataclass

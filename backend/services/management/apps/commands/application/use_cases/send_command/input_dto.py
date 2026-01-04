@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from shared.schemas.send_command.send_command_input import SendCommandInput
+from shared.schemas.management.commands.send_command.send_command_input import SendCommandInput
 
 @dataclass
 class SendCommandInputDTO(SendCommandInput):

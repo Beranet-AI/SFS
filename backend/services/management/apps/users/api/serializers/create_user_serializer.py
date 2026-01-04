@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from apps.users.application.use_cases.create_user.input_dto import CreateUserInputDTO
 from apps.users.application.use_cases.create_user.output_dto import CreateUserOutputDTO
-from shared.schemas.create_user.create_user_input import CreateUserInputSchema
-from shared.schemas.create_user.create_user_output import CreateUserOutputSchema
+from shared.schemas.management.users.create_user.create_user_input import CreateUserInputSchema
+from shared.schemas.management.users.create_user.create_user_output import CreateUserOutputSchema
 
 
 class CreateUserSerializer(serializers.Serializer):
