@@ -1,10 +1,10 @@
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 
+from apps.users.api.serializers.create_user_serializer import CreateUserSerializer
 from apps.users.application.use_cases.create_user.input_dto import CreateUserInputDTO
 from apps.users.application.use_cases.create_user.use_case import CreateUserUseCase
-from apps.users.api.serializers import CreateUserSerializer
 
 
 class UsersView(APIView):
