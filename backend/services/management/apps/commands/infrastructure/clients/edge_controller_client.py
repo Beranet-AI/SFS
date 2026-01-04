@@ -7,6 +7,9 @@ from apps.discovery.application.use_cases.ingest_discovery_result import (
 from apps.commands.application.use_cases.receive_result.use_case import (
     ReceiveResultUseCase,
 )
+from apps.commands.application.use_cases.receive_result.input_dto import (
+    ReceiveResultInputDTO,
+)
 from .topics import discovery_result_topic, command_result_topic
 
 
@@ -34,7 +37,16 @@ class EdgeControllerClient:
             IngestDiscoveryResultUseCase().execute(payload=payload)
 
         elif topic.endswith("/commands/results"):
-            ReceiveResultUseCase().execute(payload=payload)
+            dto = ReceiveResultInputDTO(
+                command_id=str(payload["command_id"]),
+                attempt_no=payload["attempt_no"],
+                status=payload["status"],
+                result=payload.get("result", {}),
+                error_code=payload.get("error_code", ""),
+                error_message=payload.get("error_message", ""),
+                meta=payload.get("meta", {}),
+            )
+            ReceiveResultUseCase().execute(dto)
 
     def publish_command(self, *, edge_id: str, command: dict):
         topic = f"sfs/edge/{edge_id}/commands"
