@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+  {{ block.super }}
+  {% if original %}
+    <div class="submit-row">
+      <form method="post" action="{% url 'admin:devices_devicemodel_turn_on' original.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="submit" class="default" value="{% trans "ON" %}">
+      </form>
+      <form method="post" action="{% url 'admin:devices_devicemodel_turn_off' original.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="submit" class="deletelink" value="{% trans "OFF" %}">
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
