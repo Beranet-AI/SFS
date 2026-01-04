@@ -1,9 +1,10 @@
 import uuid
+
 from django.db import models
 from django.utils import timezone
 
 
-class CommandStatus(models.TextChoices):
+class CommandStatusChoices(models.TextChoices):
     PENDING = "pending", "Pending"
     DISPATCHED = "dispatched", "Dispatched"
     ACKED = "acked", "Acked"
@@ -15,7 +16,7 @@ class CommandStatus(models.TextChoices):
     DEAD_LETTERED = "dead_lettered", "Dead lettered"
 
 
-class CommandTargetKind(models.TextChoices):
+class CommandTargetKindChoices(models.TextChoices):
     DEVICE = "device", "Device"
     LIVESTOCK = "livestock", "Livestock"
     LOCATION = "location", "Location"
@@ -37,8 +38,8 @@ class CommandModel(models.Model):
     # target abstraction
     target_kind = models.CharField(
         max_length=20,
-        choices=CommandTargetKind.choices,
-        default=CommandTargetKind.DEVICE,
+        choices=CommandTargetKindChoices.choices,
+        default=CommandTargetKindChoices.DEVICE,
     )
     target_id = models.CharField(max_length=64, db_index=True)
 
@@ -54,8 +55,8 @@ class CommandModel(models.Model):
     # lifecycle
     status = models.CharField(
         max_length=20,
-        choices=CommandStatus.choices,
-        default=CommandStatus.PENDING,
+        choices=CommandStatusChoices.choices,
+        default=CommandStatusChoices.PENDING,
         db_index=True,
     )
 
@@ -93,32 +94,32 @@ class CommandModel(models.Model):
     # ---- lifecycle helpers ----
 
     def mark_dispatched(self):
-        self.status = CommandStatus.DISPATCHED
+        self.status = CommandStatusChoices.DISPATCHED
         self.save(update_fields=["status"])
 
     def mark_acked(self, meta: dict | None = None):
-        self.status = CommandStatus.ACKED
+        self.status = CommandStatusChoices.ACKED
         self.acked_at = timezone.now()
         if meta:
             self.last_result = {**(self.last_result or {}), "ack": meta}
         self.save(update_fields=["status", "acked_at", "last_result"])
 
     def mark_running(self, meta: dict | None = None):
-        self.status = CommandStatus.RUNNING
+        self.status = CommandStatusChoices.RUNNING
         self.started_at = timezone.now()
         if meta:
             self.last_result = {**(self.last_result or {}), "running": meta}
         self.save(update_fields=["status", "started_at", "last_result"])
 
     def mark_succeeded(self, result: dict | None = None):
-        self.status = CommandStatus.SUCCEEDED
+        self.status = CommandStatusChoices.SUCCEEDED
         self.finished_at = timezone.now()
         if result is not None:
             self.last_result = result
         self.save(update_fields=["status", "finished_at", "last_result"])
 
     def mark_failed(self, code: str = "", message: str = "", result: dict | None = None):
-        self.status = CommandStatus.FAILED
+        self.status = CommandStatusChoices.FAILED
         self.finished_at = timezone.now()
         self.last_error_code = code or ""
         self.last_error_message = message or ""
@@ -133,38 +134,3 @@ class CommandModel(models.Model):
                 "last_result",
             ]
         )
-
-
-class CommandAttemptModel(models.Model):
-    """
-    Each delivery attempt (retry + audit).
-    """
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
-    command = models.ForeignKey(
-        CommandModel,
-        on_delete=models.CASCADE,
-        related_name="attempts",
-    )
-
-    attempt_no = models.IntegerField()
-    created_at = models.DateTimeField(default=timezone.now)
-
-    dispatched_at = models.DateTimeField(null=True, blank=True)
-    acked_at = models.DateTimeField(null=True, blank=True)
-    result_at = models.DateTimeField(null=True, blank=True)
-
-    status = models.CharField(max_length=32, default="created")
-
-    executor_receipt = models.CharField(max_length=128, blank=True, default="")
-    debug = models.JSONField(default=dict, blank=True)
-
-    class Meta:
-        app_label = "commands"
-        db_table = "commands_attempt"
-        unique_together = [("command", "attempt_no")]
-        indexes = [
-            models.Index(fields=["command", "attempt_no"]),
-            models.Index(fields=["status", "created_at"]),
-        ]
