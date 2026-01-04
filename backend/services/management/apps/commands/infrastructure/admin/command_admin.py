@@ -18,17 +18,16 @@ from apps.commands.infrastructure.clients.edge_controller_client import (
 from apps.commands.infrastructure.repositories.command_repository import (
     DjangoCommandRepository,
 )
-
 from apps.commands.infrastructure.models.command_attempt_model import CommandAttemptModel
 from apps.commands.infrastructure.models.command_model import CommandModel
 
 
 class SendCommandForm(forms.Form):
     command_type = forms.ChoiceField(
-        choices=[(command_type.value, command_type.value) for command_type in CommandType]
+        choices=[(c.value, c.value) for c in CommandType]
     )
     target_kind = forms.ChoiceField(
-        choices=[(kind.value, kind.value) for kind in CommandTargetKind]
+        choices=[(k.value, k.value) for k in CommandTargetKind]
     )
     target_id = forms.CharField(max_length=64)
     edge_node_id = forms.CharField(max_length=64, required=False)
@@ -43,6 +42,7 @@ class SendCommandForm(forms.Form):
 @admin.register(CommandModel)
 class CommandAdmin(admin.ModelAdmin):
     change_list_template = "admin/commands/commandmodel/change_list.html"
+
     list_display = (
         "id",
         "command_name",
@@ -52,8 +52,10 @@ class CommandAdmin(admin.ModelAdmin):
         "status",
         "created_at",
     )
+
     list_filter = ("status", "target_kind", "command_name")
     search_fields = ("id", "target_id", "edge_node_id", "idempotency_key")
+
     readonly_fields = (
         "id",
         "created_at",
@@ -62,68 +64,22 @@ class CommandAdmin(admin.ModelAdmin):
         "finished_at",
     )
 
-    fieldsets = (
-        (
-            "Identity",
-            {
-                "fields": ("id", "command_name", "idempotency_key"),
-            },
-        ),
-        (
-            "Target",
-            {
-                "fields": ("target_kind", "target_id", "edge_node_id"),
-            },
-        ),
-        (
-            "Payload",
-            {
-                "fields": ("payload",),
-            },
-        ),
-        (
-            "Policy",
-            {
-                "fields": ("ack_deadline_sec", "result_deadline_sec", "max_attempts"),
-            },
-        ),
-        (
-            "Status",
-            {
-                "fields": (
-                    "status",
-                    "created_by",
-                    "created_at",
-                    "acked_at",
-                    "started_at",
-                    "finished_at",
-                ),
-            },
-        ),
-        (
-            "Latest Result / Error",
-            {
-                "fields": ("last_result", "last_error_code", "last_error_message"),
-            },
-        ),
-    )
-
     def get_urls(self):
         urls = super().get_urls()
-        custom_urls = [
+        return [
             path(
                 "send/",
                 self.admin_site.admin_view(self.send_command_view),
                 name="commands_commandmodel_send",
             )
-        ]
-        return custom_urls + urls
+        ] + urls
 
     def send_command_view(self, request):
         context = {
             **self.admin_site.each_context(request),
             "title": "Send Command",
         }
+
         command = None
 
         if request.method == "POST":
@@ -134,31 +90,38 @@ class CommandAdmin(admin.ModelAdmin):
                     target_kind=form.cleaned_data["target_kind"],
                     target_id=form.cleaned_data["target_id"],
                     edge_node_id=form.cleaned_data["edge_node_id"] or None,
-                    payload=form.cleaned_data.get("payload") or None,
-                    idempotency_key=form.cleaned_data.get("idempotency_key") or None,
+                    payload=form.cleaned_data.get("payload"),
+                    idempotency_key=form.cleaned_data.get("idempotency_key"),
                     ack_deadline_sec=form.cleaned_data.get("ack_deadline_sec"),
                     result_deadline_sec=form.cleaned_data.get("result_deadline_sec"),
                     max_attempts=form.cleaned_data.get("max_attempts"),
                     backoff_sec=form.cleaned_data.get("backoff_sec"),
                 )
+
                 try:
-                    command = SendCommandUseCase(
+                    use_case = SendCommandUseCase(
                         repository=DjangoCommandRepository(),
                         edge_client=EdgeControllerClient(),
-                    ).execute(
+                    )
+                    command = use_case.execute(
                         dto,
-                        created_by=request.user.get_username() or str(request.user),
+                        created_by=request.user.get_username()
+                        or str(request.user),
                     )
                     messages.success(request, "Command dispatched successfully.")
                     form = SendCommandForm()
                 except CommandValidationError as exc:
                     form.add_error(None, str(exc))
-            context["form"] = form
         else:
-            context["form"] = SendCommandForm()
+            form = SendCommandForm()
 
+        context["form"] = form
         context["command"] = command
-        return TemplateResponse(request, "admin/commands/send_command.html", context)
+        return TemplateResponse(
+            request,
+            "admin/commands/send_command.html",
+            context,
+        )
 
 
 @admin.register(CommandAttemptModel)

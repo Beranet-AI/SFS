@@ -14,7 +14,9 @@ RUN pip install --no-cache-dir \
     psycopg2-binary \
     httpx \
     requests \
-    jsonschema
+    jsonschema \
+    paho-mqtt
+
 
 # اجرای Django
 CMD ["python", "backend/services/management/manage.py", "runserver", "0.0.0.0:8000"]
