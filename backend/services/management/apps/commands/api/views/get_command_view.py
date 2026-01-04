@@ -7,6 +7,9 @@ from apps.commands.api.serializers.get_command_serializer import GetCommandSeria
 from apps.commands.application.use_cases.get_command.use_case import (
     GetCommandUseCase,
 )
+from apps.commands.infrastructure.repositories.command_repository import (
+    DjangoCommandRepository,
+)
 
 
 class GetCommandView(BaseController):
@@ -24,7 +27,7 @@ class GetCommandView(BaseController):
         dto = serializer.to_input_dto()
 
         try:
-            command = GetCommandUseCase().execute(dto)
+            command = GetCommandUseCase(DjangoCommandRepository()).execute(dto)
         except ObjectDoesNotExist:
             return Response({"detail": "not found"}, status=status.HTTP_404_NOT_FOUND)
 

@@ -9,6 +9,12 @@ from apps.commands.api.serializers.actions.send_command_serializer import (
 from apps.commands.application.use_cases.send_command.use_case import (
     SendCommandUseCase,
 )
+from apps.commands.infrastructure.clients.edge_controller_client import (
+    EdgeControllerClient,
+)
+from apps.commands.infrastructure.repositories.command_repository import (
+    DjangoCommandRepository,
+)
 
 
 class SendCommandView(BaseController):
@@ -40,10 +46,10 @@ class SendCommandView(BaseController):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         dto = serializer.to_input_dto()
-        command = SendCommandUseCase().execute(
-            dto,
-            created_by=self.get_username(request),
-        )
+        command = SendCommandUseCase(
+            repository=DjangoCommandRepository(),
+            edge_client=EdgeControllerClient(),
+        ).execute(dto, created_by=self.get_username(request))
         response_payload = SendCommandSerializer.to_response(command)
 
         if request.accepted_renderer.format == "html":
