@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from apps.commands.application.use_cases.send_command.input_dto import (
     SendCommandInputDTO,
 )
@@ -5,9 +7,10 @@ from apps.commands.application.use_cases.send_command.output_dto import (
     SendCommandOutputDTO,
 )
 from apps.commands.domain.entities.command import Command
+from apps.commands.domain.enums.command_target_kind import CommandTargetKind
 
 
-def _command_to_output(command: Command) -> dict:
+def command_to_output(command: Command) -> dict:
     return {
         "id": command.id,
         "command_name": command.command_name,
@@ -32,16 +35,30 @@ def _command_to_output(command: Command) -> dict:
     }
 
 
-class SendCommandSerializer:
-    @staticmethod
-    def to_input_dto(data: dict) -> SendCommandInputDTO:
-        return SendCommandInputDTO(**data)
+class SendCommandSerializer(serializers.Serializer):
+    command_name = serializers.CharField(max_length=120)
+    target_kind = serializers.ChoiceField(
+        choices=[(kind.value, kind.value) for kind in CommandTargetKind]
+    )
+    target_id = serializers.CharField(max_length=64)
+    edge_node_id = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    payload = serializers.JSONField(required=False)
+    idempotency_key = serializers.CharField(
+        max_length=128, required=False, allow_blank=True
+    )
+    ack_deadline_sec = serializers.IntegerField(required=False, min_value=1)
+    result_deadline_sec = serializers.IntegerField(required=False, min_value=1)
+    max_attempts = serializers.IntegerField(required=False, min_value=1)
+    backoff_sec = serializers.IntegerField(required=False, min_value=0)
+
+    def to_input_dto(self) -> SendCommandInputDTO:
+        return SendCommandInputDTO(**self.validated_data)
 
     @staticmethod
     def to_output_dto(command: Command) -> SendCommandOutputDTO:
-        payload = _command_to_output(command)
+        payload = command_to_output(command)
         return SendCommandOutputDTO(**payload)
 
     @staticmethod
     def to_response(command: Command) -> dict:
-        return _command_to_output(command)
+        return command_to_output(command)

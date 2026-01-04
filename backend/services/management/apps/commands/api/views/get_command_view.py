@@ -3,7 +3,6 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from apps.commands.api.base import BaseController
-from apps.commands.api.forms.get_command_form import GetCommandForm
 from apps.commands.api.serializers.get_command_serializer import GetCommandSerializer
 from apps.commands.application.use_cases.get_command.use_case import (
     GetCommandUseCase,
@@ -15,12 +14,14 @@ class GetCommandView(BaseController):
     GET /commands/{id}/
     """
 
-    def get(self, request, command_id):
-        form = GetCommandForm({"command_id": command_id})
-        if not form.is_valid():
-            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer_class = GetCommandSerializer
 
-        dto = GetCommandSerializer.to_input_dto(form.cleaned_data)
+    def get(self, request, command_id):
+        serializer = self.get_serializer(data={"command_id": command_id})
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        dto = serializer.to_input_dto()
 
         try:
             command = GetCommandUseCase().execute(dto)

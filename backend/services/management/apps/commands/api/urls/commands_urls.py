@@ -1,9 +1,9 @@
 from django.urls import path
 
 from apps.commands.api.views.ack_command_view import AckCommandView
+from apps.commands.api.views.actions.send_command_view import SendCommandView
 from apps.commands.api.views.get_command_view import GetCommandView
 from apps.commands.api.views.receive_result_view import ReceiveResultView
-from apps.commands.api.views.send_command_view import SendCommandView
 
 urlpatterns = [
     path("", SendCommandView.as_view(), name="command-send"),

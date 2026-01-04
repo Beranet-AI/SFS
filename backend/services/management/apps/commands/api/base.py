@@ -1,7 +1,7 @@
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 
 
-class BaseController(APIView):
+class BaseController(GenericAPIView):
     """Base controller for shared command API behavior."""
 
     def get_username(self, request) -> str:

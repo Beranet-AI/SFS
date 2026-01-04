@@ -2,7 +2,6 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from apps.commands.api.base import BaseController
-from apps.commands.api.forms.receive_result_form import ReceiveResultForm
 from apps.commands.api.serializers.receive_result_serializer import (
     ReceiveResultSerializer,
 )
@@ -16,12 +15,14 @@ class ReceiveResultView(BaseController):
     POST /commands/result/
     """
 
-    def post(self, request):
-        form = ReceiveResultForm(request.data or {})
-        if not form.is_valid():
-            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer_class = ReceiveResultSerializer
 
-        dto = ReceiveResultSerializer.to_input_dto(form.cleaned_data)
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        dto = serializer.to_input_dto()
         ReceiveResultUseCase().execute(dto)
 
         return Response(ReceiveResultSerializer.to_response())
