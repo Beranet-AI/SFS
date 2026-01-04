@@ -1,6 +1,7 @@
 # backend/services/management/apps/commands/admin.py
 from django.contrib import admin
-from .infrastructure.models.models import CommandModel, CommandAttemptModel
+from .infrastructure.models.command_attempt_model import CommandAttemptModel
+from .infrastructure.models.command_model import CommandModel
 
 
 @admin.register(CommandModel)

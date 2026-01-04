@@ -1,18 +1,5 @@
-from django.urls import path
-from apps.commands.api.edge_controller import (
-    CommandCreateController,
-    CommandDetailController,
-    CommandAckController,
-    CommandResultController,
-)
+from django.urls import include, path
 
 urlpatterns = [
-    path("commands/", CommandCreateController.as_view(), name="command-create"),
-    path(
-        "commands/<uuid:command_id>/",
-        CommandDetailController.as_view(),
-        name="command-detail",
-    ),
-    path("commands/ack/", CommandAckController.as_view(), name="command-ack"),
-    path("commands/result/", CommandResultController.as_view(), name="command-result"),
+    path("", include("apps.commands.api.urls.commands_urls")),
 ]

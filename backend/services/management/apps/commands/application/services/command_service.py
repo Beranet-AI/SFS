@@ -1,7 +1,8 @@
 import time
 from django.db import transaction
 
-from apps.commands.infrastructure.models.models import CommandModel, CommandAttemptModel
+from apps.commands.infrastructure.models.command_attempt_model import CommandAttemptModel
+from apps.commands.infrastructure.models.command_model import CommandModel
 from apps.incidents.application.services.incident_service import IncidentService
 
 
