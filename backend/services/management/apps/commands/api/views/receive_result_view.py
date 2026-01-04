@@ -8,6 +8,12 @@ from apps.commands.api.serializers.receive_result_serializer import (
 from apps.commands.application.use_cases.receive_result.use_case import (
     ReceiveResultUseCase,
 )
+from apps.commands.infrastructure.repositories.command_attempt_repository import (
+    DjangoCommandAttemptRepository,
+)
+from apps.commands.infrastructure.repositories.command_repository import (
+    DjangoCommandRepository,
+)
 
 
 class ReceiveResultView(BaseController):
@@ -23,6 +29,9 @@ class ReceiveResultView(BaseController):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         dto = serializer.to_input_dto()
-        ReceiveResultUseCase().execute(dto)
+        ReceiveResultUseCase(
+            command_repository=DjangoCommandRepository(),
+            attempt_repository=DjangoCommandAttemptRepository(),
+        ).execute(dto)
 
         return Response(ReceiveResultSerializer.to_response())

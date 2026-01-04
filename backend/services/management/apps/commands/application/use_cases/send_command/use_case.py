@@ -5,14 +5,16 @@ from apps.commands.domain.domain_events.command_sent import CommandSent
 from apps.commands.domain.domain_services.command_policy import CommandPolicy
 from apps.commands.domain.repositories.command_repository import CommandRepository
 from apps.commands.domain.specifications.can_send_command import CanSendCommand
-from apps.commands.infrastructure.repositories.command_repo_impl import (
-    DjangoCommandRepository,
-)
 from .input_dto import SendCommandInputDTO
 
 
 class EventPublisher(Protocol):
     def publish(self, event: CommandSent) -> None:
+        ...
+
+
+class EdgeControllerClient(Protocol):
+    def publish_command(self, *, edge_id: str, command: dict) -> None:
         ...
 
 
@@ -24,10 +26,13 @@ class NoopEventPublisher:
 class SendCommandUseCase:
     def __init__(
         self,
-        repository: CommandRepository | None = None,
+        *,
+        repository: CommandRepository,
+        edge_client: EdgeControllerClient,
         event_publisher: EventPublisher | None = None,
     ) -> None:
-        self._repository = repository or DjangoCommandRepository()
+        self._repository = repository
+        self._edge_client = edge_client
         self._event_publisher = event_publisher or NoopEventPublisher()
         self._policy = CommandPolicy()
         self._specification = CanSendCommand()
@@ -55,6 +60,16 @@ class SendCommandUseCase:
             max_attempts=dto.max_attempts,
         )
         command = self._repository.create(data=data, created_by=created_by)
+        edge_id = command.edge_node_id or command.target_id
+        payload = {
+            "command_id": str(command.id),
+            "command_type": command.command_name,
+            "edge_id": edge_id,
+            "issued_at": command.created_at.isoformat(),
+            "payload": command.payload,
+        }
+        self._edge_client.publish_command(edge_id=edge_id, command=payload)
+        self._repository.mark_dispatched(command_id=command.id)
         event = CommandSent(
             command_id=command.id,
             command_name=command.command_name,
