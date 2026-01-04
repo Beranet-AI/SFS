@@ -1,3 +1,3 @@
-from .infrastructure.models import CommandAttemptModel, CommandModel
+"""App-level models module intentionally left empty per DDD boundaries."""
 
-__all__ = ["CommandModel", "CommandAttemptModel"]
+__all__: list[str] = []
