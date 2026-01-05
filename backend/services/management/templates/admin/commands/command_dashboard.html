@@ -1,0 +1,16 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans "Command Dashboard" %}</h1>
+
+  <ul class="object-tools">
+    <li><a href="{% url 'admin:commands_commandmodel_send' %}" class="addlink">{% trans "Send Command" %}</a></li>
+    <li><a href="{% url 'admin:commands_commandmodel_receive_result' %}">{% trans "Receive Result" %}</a></li>
+    <li><a href="{% url 'admin:commands_commandmodel_changelist' %}">{% trans "View Command History" %}</a></li>
+  </ul>
+
+  <h2>{% trans "Lookup Command" %}</h2>
+  {% include "admin/commands/partials/command_form.html" with submit_label="Lookup" %}
+  {% include "admin/commands/partials/result_table.html" with command=command %}
+{% endblock %}

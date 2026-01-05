@@ -1,0 +1,33 @@
+{% load i18n %}
+
+{% if command %}
+  <h2>{% trans "Command Details" %}</h2>
+  <table class="adminlist">
+    <tbody>
+      <tr><th>{% trans "Command ID" %}</th><td>{{ command.id }}</td></tr>
+      <tr><th>{% trans "Status" %}</th><td>{{ command.status }}</td></tr>
+      <tr><th>{% trans "Command Type" %}</th><td>{{ command.command_name }}</td></tr>
+      <tr><th>{% trans "Target" %}</th><td>{{ command.target_kind }} / {{ command.target_id }}</td></tr>
+      <tr><th>{% trans "Edge Node" %}</th><td>{{ command.edge_node_id|default:"-" }}</td></tr>
+      <tr><th>{% trans "Payload" %}</th><td><pre>{{ command.payload }}</pre></td></tr>
+      <tr><th>{% trans "Created At" %}</th><td>{{ command.created_at }}</td></tr>
+      <tr><th>{% trans "Last Result" %}</th><td><pre>{{ command.last_result|default:"{}" }}</pre></td></tr>
+      <tr><th>{% trans "Last Error" %}</th><td>{{ command.last_error_code }} {{ command.last_error_message }}</td></tr>
+    </tbody>
+  </table>
+{% endif %}
+
+{% if received %}
+  <h2>{% trans "Received Result" %}</h2>
+  <table class="adminlist">
+    <tbody>
+      <tr><th>{% trans "Command ID" %}</th><td>{{ received.command_id }}</td></tr>
+      <tr><th>{% trans "Attempt No" %}</th><td>{{ received.attempt_no }}</td></tr>
+      <tr><th>{% trans "Status" %}</th><td>{{ received.status }}</td></tr>
+      <tr><th>{% trans "Result" %}</th><td><pre>{{ received.result }}</pre></td></tr>
+      <tr><th>{% trans "Error Code" %}</th><td>{{ received.error_code }}</td></tr>
+      <tr><th>{% trans "Error Message" %}</th><td>{{ received.error_message }}</td></tr>
+      <tr><th>{% trans "Meta" %}</th><td><pre>{{ received.meta }}</pre></td></tr>
+    </tbody>
+  </table>
+{% endif %}
