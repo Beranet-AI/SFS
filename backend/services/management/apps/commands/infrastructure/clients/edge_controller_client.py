@@ -1,27 +1,17 @@
 import json
+
 import paho.mqtt.client as mqtt
 
-from apps.commands.application.use_cases.receive_result.use_case import (
-    ReceiveResultUseCase,
-)
-from apps.commands.application.services.discovery_result_service import (
-    DiscoveryResultService,
-)
 from apps.commands.application.use_cases.receive_result.input_dto import (
     ReceiveResultInputDTO,
 )
-from apps.commands.infrastructure.repositories.command_attempt_repository import (
-    DjangoCommandAttemptRepository,
+from apps.commands.application.use_cases.receive_result.use_case import (
+    ReceiveResultUseCase,
 )
-from apps.commands.infrastructure.repositories.command_repository import (
+from apps.commands.infrastructure.repositories.django_command_repository import (
     DjangoCommandRepository,
 )
-from apps.commands.infrastructure.repositories.discovered_device_repository import (
-    DjangoDiscoveredDeviceRepository,
-)
-from apps.commands.infrastructure.repositories.discovery_session_repository import (
-    DjangoDiscoverySessionRepository,
-)
+from .topics import command_result_topic, edge_command_topic
 
 
 class EdgeControllerClient:
@@ -41,8 +31,7 @@ class EdgeControllerClient:
         self.client.connect(broker_host, broker_port, 60)
 
     def on_connect(self, client, userdata, flags, rc):
-        client.subscribe("sfs/edge/+/commands/results")
-        print("[MANAGEMENT MQTT] Subscribed to command results")
+        client.subscribe(command_result_topic("+"))
 
     def on_message(self, client, userdata, msg):
         payload = json.loads(msg.payload.decode())
@@ -59,15 +48,10 @@ class EdgeControllerClient:
 
         ReceiveResultUseCase(
             command_repository=DjangoCommandRepository(),
-            attempt_repository=DjangoCommandAttemptRepository(),
-            discovery_result_service=DiscoveryResultService(
-                session_repository=DjangoDiscoverySessionRepository(),
-                device_repository=DjangoDiscoveredDeviceRepository(),
-            ),
         ).execute(dto)
 
     def publish_command(self, *, edge_id: str, command: dict) -> None:
-        topic = f"sfs/edge/{edge_id}/commands"
+        topic = edge_command_topic(edge_id)
         self.client.publish(topic, json.dumps(command))
 
     def loop_forever(self) -> None:

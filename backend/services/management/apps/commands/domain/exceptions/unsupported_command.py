@@ -1,0 +1,2 @@
+class UnsupportedCommandError(ValueError):
+    pass

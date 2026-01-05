@@ -1,18 +1,13 @@
 from dataclasses import dataclass
-from typing import Any, Dict
-
-
-from shared.schemas.management.commands.receive_result.receive_result_input import ReceiveResultInput
+from typing import Any
 
 
 @dataclass
-class ReceiveResultInputDTO(ReceiveResultInput):
+class ReceiveResultInputDTO:
     command_id: str
     attempt_no: int
     status: str
-    result: Dict[str, Any]
-    error_code: str
-    error_message: str
-    meta: Dict[str, Any]
-
-
+    result: dict[str, Any] | None = None
+    error_code: str = ""
+    error_message: str = ""
+    meta: dict[str, Any] | None = None
