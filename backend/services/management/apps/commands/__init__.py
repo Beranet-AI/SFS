@@ -1,1 +1,1 @@
-default_app_config = "apps.commands.apps.CommandsConfig"
+"""Commands app."""

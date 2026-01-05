@@ -1,3 +1,3 @@
-from .actions.send_command_serializer import SendCommandSerializer
+from .admin_dto_serializer import AdminDTOSerializer
 
-__all__ = ["SendCommandSerializer"]
+__all__ = ["AdminDTOSerializer"]

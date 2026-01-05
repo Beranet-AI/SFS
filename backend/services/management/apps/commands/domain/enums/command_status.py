@@ -14,7 +14,4 @@ class CommandStatus(str, Enum):
 
     @classmethod
     def from_value(cls, value: str) -> "CommandStatus":
-        try:
-            return cls(value)
-        except ValueError:
-            return cls.PENDING
+        return cls(value)
