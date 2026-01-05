@@ -1,0 +1,8 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans "Receive Result" %}</h1>
+  {% include "admin/commands/partials/command_form.html" with submit_label="Receive" %}
+  {% include "admin/commands/partials/result_table.html" with received=received %}
+{% endblock %}

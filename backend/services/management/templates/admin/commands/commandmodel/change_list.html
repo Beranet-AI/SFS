@@ -8,4 +8,14 @@
       {% trans "Send Command" %}
     </a>
   </li>
+  <li>
+    <a href="{% url 'admin:commands_commandmodel_receive_result' %}">
+      {% trans "Receive Result" %}
+    </a>
+  </li>
+  <li>
+    <a href="{% url 'admin:commands_commandmodel_dashboard' %}">
+      {% trans "Command Dashboard" %}
+    </a>
+  </li>
 {% endblock %}

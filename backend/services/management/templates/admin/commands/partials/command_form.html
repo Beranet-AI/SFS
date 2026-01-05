@@ -1,0 +1,20 @@
+{% load i18n %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <fieldset class="module aligned">
+    {% for field in form %}
+      <div class="form-row{% if field.errors %} errors{% endif %}">
+        {{ field.errors }}
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}
+          <div class="help">{{ field.help_text }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </fieldset>
+  <div class="submit-row">
+    <input type="submit" value="{% trans submit_label %}" class="default">
+  </div>
+</form>

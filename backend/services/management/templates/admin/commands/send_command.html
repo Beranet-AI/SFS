@@ -3,48 +3,7 @@
 
 {% block content %}
   <h1>{% trans "Send Command" %}</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    <fieldset class="module aligned">
-      {% for field in form %}
-        <div class="form-row{% if field.errors %} errors{% endif %}">
-          {{ field.errors }}
-          {{ field.label_tag }}
-          {{ field }}
-          {% if field.help_text %}
-            <div class="help">{{ field.help_text }}</div>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </fieldset>
-    <div class="submit-row">
-      <input type="submit" value="{% trans "Send" %}" class="default">
-    </div>
-  </form>
+  {% include "admin/commands/partials/command_form.html" with submit_label="Send" %}
 
-  {% if command %}
-    <h2>{% trans "Dispatch Result" %}</h2>
-    <div class="module">
-      <dl>
-        <dt>{% trans "Command ID" %}</dt>
-        <dd>{{ command.id }}</dd>
-        <dt>{% trans "Status" %}</dt>
-        <dd>{{ command.status }}</dd>
-        <dt>{% trans "Command Type" %}</dt>
-        <dd>{{ command.command_name }}</dd>
-        <dt>{% trans "Target" %}</dt>
-        <dd>{{ command.target_kind }} / {{ command.target_id }}</dd>
-        <dt>{% trans "Edge Node" %}</dt>
-        <dd>{{ command.edge_node_id|default:"-" }}</dd>
-        <dt>{% trans "Payload" %}</dt>
-        <dd><pre>{{ command.payload }}</pre></dd>
-        <dt>{% trans "Created At" %}</dt>
-        <dd>{{ command.created_at }}</dd>
-        <dt>{% trans "Last Result" %}</dt>
-        <dd><pre>{{ command.last_result|default:"{}" }}</pre></dd>
-        <dt>{% trans "Last Error" %}</dt>
-        <dd>{{ command.last_error_code }} {{ command.last_error_message }}</dd>
-      </dl>
-    </div>
-  {% endif %}
+  {% include "admin/commands/partials/result_table.html" with command=command %}
 {% endblock %}
