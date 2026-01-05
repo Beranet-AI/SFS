@@ -1,6 +1,4 @@
-from apps.commands.application.services.command_lifecycle_service import (
-    CommandLifecycleService,
-)
+from apps.commands.application.services.commands_service import CommandsService
 from apps.commands.domain.repositories.command_attempt_repository import (
     CommandAttemptRepository,
 )
@@ -15,7 +13,7 @@ class AckCommandUseCase:
         command_repository: CommandRepository,
         attempt_repository: CommandAttemptRepository,
     ) -> None:
-        self._service = CommandLifecycleService(
+        self._service = CommandsService(
             command_repository=command_repository,
             attempt_repository=attempt_repository,
         )

@@ -2,9 +2,7 @@ from apps.commands.domain.entities.discovered_device import DiscoveredDevice
 from apps.commands.domain.enums.discovered_device_status import (
     DiscoveredDeviceStatus,
 )
-from apps.commands.infrastructure.models.discovered_device_model import (
-    DiscoveredDeviceModel,
-)
+from apps.commands.infrastructure.models.devices import DiscoveredDeviceModel
 
 
 class DiscoveredDeviceMapper:

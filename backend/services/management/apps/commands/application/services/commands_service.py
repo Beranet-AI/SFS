@@ -5,8 +5,8 @@ from apps.commands.domain.repositories.command_attempt_repository import (
 from apps.commands.domain.repositories.command_repository import CommandRepository
 
 
-class CommandLifecycleService:
-    """Reusable orchestration for command acknowledgements and results."""
+class CommandsService:
+    """Base orchestration service for command acknowledgements and results."""
 
     def __init__(
         self,
@@ -17,7 +17,14 @@ class CommandLifecycleService:
         self._command_repository = command_repository
         self._attempt_repository = attempt_repository
 
-    def acknowledge(self, *, command_id: str, attempt_no: int, executor_receipt: str | None, meta: dict | None) -> None:
+    def acknowledge(
+        self,
+        *,
+        command_id: str,
+        attempt_no: int,
+        executor_receipt: str | None,
+        meta: dict | None,
+    ) -> None:
         self._attempt_repository.record_ack(
             command_id=command_id,
             attempt_no=attempt_no,

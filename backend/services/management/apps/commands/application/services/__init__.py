@@ -1,5 +1,4 @@
-from .command_lifecycle_service import CommandLifecycleService
-from .command_service import CommandService
+from .commands_service import CommandsService
 from .discovery_result_service import DiscoveryResultService
 
-__all__ = ["CommandLifecycleService", "CommandService", "DiscoveryResultService"]
+__all__ = ["CommandsService", "DiscoveryResultService"]

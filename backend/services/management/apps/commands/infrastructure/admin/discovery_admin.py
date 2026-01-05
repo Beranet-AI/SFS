@@ -21,9 +21,7 @@ from apps.commands.domain.exceptions.command_exceptions import CommandValidation
 from apps.commands.infrastructure.clients.edge_controller_client import (
     EdgeControllerClient,
 )
-from apps.commands.infrastructure.models.discovered_device_model import (
-    DiscoveredDeviceModel,
-)
+from apps.commands.infrastructure.models.devices import DiscoveredDeviceModel
 from apps.commands.infrastructure.models.discovery_session_model import (
     DiscoverySessionModel,
 )
