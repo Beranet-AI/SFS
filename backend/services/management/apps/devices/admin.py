@@ -2,25 +2,32 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path, reverse
 
-from apps.commands.application.use_cases.turn_device_off.input_dto import (
-    TurnDeviceOffInputDTO,
+from apps.commands.application.services.command_dispatcher import CommandDispatcher
+from apps.commands.application.use_cases.send_command.input_dto import (
+    SendCommandInputDTO,
 )
-from apps.commands.application.use_cases.turn_device_off.use_case import (
-    TurnDeviceOffUseCase,
+from apps.commands.application.use_cases.send_command.use_case import (
+    SendCommandUseCase,
 )
-from apps.commands.application.use_cases.turn_device_on.input_dto import (
-    TurnDeviceOnInputDTO,
-)
-from apps.commands.application.use_cases.turn_device_on.use_case import (
-    TurnDeviceOnUseCase,
-)
-from apps.commands.domain.exceptions.command_exceptions import CommandValidationError
+from apps.commands.domain.enums.command_type import CommandType
+from apps.commands.domain.exceptions.invalid_target import InvalidTargetError
 from apps.commands.infrastructure.clients.edge_controller_client import (
     EdgeControllerClient,
 )
-from apps.commands.infrastructure.repositories.command_repository import (
+from apps.commands.infrastructure.executors.device_command_executor import (
+    DeviceCommandExecutor,
+)
+from apps.commands.infrastructure.executors.edge_command_executor import (
+    EdgeCommandExecutor,
+)
+from apps.commands.infrastructure.repositories.django_capability_repository import (
+    DjangoCapabilityRepository,
+)
+from apps.commands.infrastructure.repositories.django_command_repository import (
     DjangoCommandRepository,
 )
+from apps.devices.application.services.device_service import DeviceService
+from apps.devices.models import DeviceStatus
 from apps.devices.models import DeviceModel
 
 
@@ -77,15 +84,40 @@ class DeviceAdmin(admin.ModelAdmin):
             )
 
         try:
-            TurnDeviceOnUseCase(
-                command_repository=DjangoCommandRepository(),
-                edge_client=EdgeControllerClient(),
+            device_service = DeviceService()
+            device = device_service.get_by_id(device_id=str(device_id))
+            if device.status == DeviceStatus.DISABLED:
+                raise InvalidTargetError(
+                    "Device is disabled and cannot be turned on."
+                )
+
+            edge_node_id = (device.metadata or {}).get("edge_node_id") or (
+                device.metadata or {}
+            ).get("edge_id")
+            capability_repository = DjangoCapabilityRepository()
+            edge_client = EdgeControllerClient()
+            dispatcher = CommandDispatcher(
+                edge_executor=EdgeCommandExecutor(edge_client=edge_client),
+                device_executor=DeviceCommandExecutor(edge_client=edge_client),
+                capability_repository=capability_repository,
+            )
+            SendCommandUseCase(
+                repository=DjangoCommandRepository(),
+                dispatcher=dispatcher,
+                capability_repository=capability_repository,
             ).execute(
-                TurnDeviceOnInputDTO(device_id=str(device_id)),
+                SendCommandInputDTO(
+                    command_name=CommandType.ON_OFF.value,
+                    command_type=CommandType.ON_OFF.value,
+                    target_kind="device",
+                    target_id=device.serial,
+                    edge_node_id=edge_node_id,
+                    payload={"device_id": device.serial, "action": "ON"},
+                ),
                 created_by=request.user.get_username() or str(request.user),
             )
             messages.success(request, "Power on command sent.")
-        except CommandValidationError as exc:
+        except InvalidTargetError as exc:
             messages.error(request, str(exc))
 
         return redirect(
@@ -99,15 +131,40 @@ class DeviceAdmin(admin.ModelAdmin):
             )
 
         try:
-            TurnDeviceOffUseCase(
-                command_repository=DjangoCommandRepository(),
-                edge_client=EdgeControllerClient(),
+            device_service = DeviceService()
+            device = device_service.get_by_id(device_id=str(device_id))
+            if device.status == DeviceStatus.DISABLED:
+                raise InvalidTargetError(
+                    "Device is disabled and cannot be turned off."
+                )
+
+            edge_node_id = (device.metadata or {}).get("edge_node_id") or (
+                device.metadata or {}
+            ).get("edge_id")
+            capability_repository = DjangoCapabilityRepository()
+            edge_client = EdgeControllerClient()
+            dispatcher = CommandDispatcher(
+                edge_executor=EdgeCommandExecutor(edge_client=edge_client),
+                device_executor=DeviceCommandExecutor(edge_client=edge_client),
+                capability_repository=capability_repository,
+            )
+            SendCommandUseCase(
+                repository=DjangoCommandRepository(),
+                dispatcher=dispatcher,
+                capability_repository=capability_repository,
             ).execute(
-                TurnDeviceOffInputDTO(device_id=str(device_id)),
+                SendCommandInputDTO(
+                    command_name=CommandType.ON_OFF.value,
+                    command_type=CommandType.ON_OFF.value,
+                    target_kind="device",
+                    target_id=device.serial,
+                    edge_node_id=edge_node_id,
+                    payload={"device_id": device.serial, "action": "OFF"},
+                ),
                 created_by=request.user.get_username() or str(request.user),
             )
             messages.success(request, "Power off command sent.")
-        except CommandValidationError as exc:
+        except InvalidTargetError as exc:
             messages.error(request, str(exc))
 
         return redirect(

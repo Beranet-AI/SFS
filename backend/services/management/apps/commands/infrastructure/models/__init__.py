@@ -1,18 +1,18 @@
-from .command_attempt_model import CommandAttemptModel
-from .command_model import CommandModel, CommandStatusChoices, CommandTargetKindChoices
-from .devices import DiscoveredDeviceModel, DiscoveredDeviceStatusChoices
-from .discovery_session_model import (
+from .command_execution_model import CommandAttemptModel, CommandExecutionModel
+from .command_model import CommandModel
+from .command_result_model import CommandResultModel
+from .network_scan_result_model import (
     DiscoverySessionModel,
-    DiscoverySessionStatusChoices,
+    DiscoveredDeviceModel,
+    NetworkScanResultModel,
 )
 
 __all__ = [
-    "CommandModel",
     "CommandAttemptModel",
-    "CommandStatusChoices",
-    "CommandTargetKindChoices",
+    "CommandExecutionModel",
+    "CommandModel",
+    "CommandResultModel",
     "DiscoverySessionModel",
-    "DiscoverySessionStatusChoices",
     "DiscoveredDeviceModel",
-    "DiscoveredDeviceStatusChoices",
+    "NetworkScanResultModel",
 ]

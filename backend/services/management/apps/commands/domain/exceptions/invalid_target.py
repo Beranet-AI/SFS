@@ -1,0 +1,2 @@
+class InvalidTargetError(ValueError):
+    pass

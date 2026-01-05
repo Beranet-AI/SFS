@@ -1,11 +1,4 @@
-from .command_attempt_repository import DjangoCommandAttemptRepository
-from .command_repo_impl import DjangoCommandRepository
-from .discovered_device_repository import DjangoDiscoveredDeviceRepository
-from .discovery_session_repository import DjangoDiscoverySessionRepository
+from .django_capability_repository import DjangoCapabilityRepository
+from .django_command_repository import DjangoCommandRepository
 
-__all__ = [
-    "DjangoCommandRepository",
-    "DjangoCommandAttemptRepository",
-    "DjangoDiscoverySessionRepository",
-    "DjangoDiscoveredDeviceRepository",
-]
+__all__ = ["DjangoCapabilityRepository", "DjangoCommandRepository"]

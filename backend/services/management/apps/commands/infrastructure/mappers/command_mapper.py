@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from apps.commands.domain.entities.command import Command
 from apps.commands.domain.enums.command_status import CommandStatus
-from apps.commands.domain.enums.command_target_kind import CommandTargetKind
-from apps.commands.infrastructure.models.command_model import CommandModel
+
+if TYPE_CHECKING:
+    from apps.commands.infrastructure.models.command_model import CommandModel
 
 
 class CommandMapper:
@@ -10,12 +15,12 @@ class CommandMapper:
         return Command(
             id=str(model.id),
             command_name=model.command_name,
-            target_kind=CommandTargetKind.from_value(model.target_kind),
+            target_kind=model.target_kind,
             target_id=model.target_id,
             edge_node_id=model.edge_node_id,
-            payload=model.payload,
+            payload=model.payload or {},
             idempotency_key=model.idempotency_key,
-            status=CommandStatus.from_value(model.status),
+            status=CommandStatus(model.status),
             source=model.source,
             created_by=model.created_by,
             created_at=model.created_at,

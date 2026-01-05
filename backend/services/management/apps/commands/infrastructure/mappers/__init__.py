@@ -1,11 +1,4 @@
-from .command_attempt_mapper import CommandAttemptMapper
 from .command_mapper import CommandMapper
-from .discovered_device_mapper import DiscoveredDeviceMapper
-from .discovery_session_mapper import DiscoverySessionMapper
+from .scan_result_mapper import ScanResultMapper
 
-__all__ = [
-    "CommandMapper",
-    "CommandAttemptMapper",
-    "DiscoverySessionMapper",
-    "DiscoveredDeviceMapper",
-]
+__all__ = ["CommandMapper", "ScanResultMapper"]
