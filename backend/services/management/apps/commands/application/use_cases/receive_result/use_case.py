@@ -1,6 +1,4 @@
-from apps.commands.application.services.command_lifecycle_service import (
-    CommandLifecycleService,
-)
+from apps.commands.application.services.commands_service import CommandsService
 from apps.commands.application.services.discovery_result_service import (
     DiscoveryResultService,
 )
@@ -21,7 +19,7 @@ class ReceiveResultUseCase:
         attempt_repository: CommandAttemptRepository,
         discovery_result_service: DiscoveryResultService | None = None,
     ) -> None:
-        self._service = CommandLifecycleService(
+        self._service = CommandsService(
             command_repository=command_repository,
             attempt_repository=attempt_repository,
         )

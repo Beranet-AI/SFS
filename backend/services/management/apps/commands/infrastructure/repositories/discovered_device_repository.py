@@ -5,7 +5,7 @@ from apps.commands.domain.repositories.discovered_device_repository import (
 from apps.commands.infrastructure.mappers.discovered_device_mapper import (
     DiscoveredDeviceMapper,
 )
-from apps.commands.infrastructure.models.discovered_device_model import (
+from apps.commands.infrastructure.models.devices import (
     DiscoveredDeviceModel,
     DiscoveredDeviceStatusChoices,
 )
