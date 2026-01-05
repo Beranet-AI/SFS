@@ -43,9 +43,14 @@ class CommandAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         return [
             path(
-                "send/",
+                "send-command/",
                 self.admin_site.admin_view(send_command_view),
                 name="commands_commandmodel_send",
+            ),
+            path(
+                "send/",
+                self.admin_site.admin_view(send_command_view),
+                name="commands_commandmodel_send_legacy",
             ),
             path(
                 "receive-result/",
