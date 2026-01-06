@@ -2,12 +2,8 @@ from django.contrib import admin, messages
 from django.template.response import TemplateResponse
 
 from apps.commands.api.forms.send_command_form import SendCommandForm
-from apps.commands.application.services.command_dispatcher import CommandDispatcher
 from apps.commands.application.use_cases.send_command.input_dto import (
     SendCommandInputDTO,
-)
-from apps.commands.application.use_cases.send_command.use_case import (
-    SendCommandUseCase,
 )
 from apps.commands.domain.exceptions.command_execution_error import (
     CommandExecutionError,
@@ -16,20 +12,8 @@ from apps.commands.domain.exceptions.invalid_target import InvalidTargetError
 from apps.commands.domain.exceptions.unsupported_command import (
     UnsupportedCommandError,
 )
-from apps.commands.infrastructure.clients.edge_controller_client import (
-    EdgeControllerClient,
-)
-from apps.commands.infrastructure.executors.device_command_executor import (
-    DeviceCommandExecutor,
-)
-from apps.commands.infrastructure.executors.edge_command_executor import (
-    EdgeCommandExecutor,
-)
-from apps.commands.infrastructure.repositories.django_capability_repository import (
-    DjangoCapabilityRepository,
-)
-from apps.commands.infrastructure.repositories.django_command_repository import (
-    DjangoCommandRepository,
+from apps.commands.api.admin_views.dependencies import (
+    build_send_command_use_case,
 )
 
 
@@ -57,18 +41,7 @@ def send_command_view(request):
                 max_attempts=form.cleaned_data.get("max_attempts"),
                 backoff_sec=form.cleaned_data.get("backoff_sec"),
             )
-            capability_repository = DjangoCapabilityRepository()
-            edge_client = EdgeControllerClient()
-            dispatcher = CommandDispatcher(
-                edge_executor=EdgeCommandExecutor(edge_client=edge_client),
-                device_executor=DeviceCommandExecutor(edge_client=edge_client),
-                capability_repository=capability_repository,
-            )
-            use_case = SendCommandUseCase(
-                repository=DjangoCommandRepository(),
-                dispatcher=dispatcher,
-                capability_repository=capability_repository,
-            )
+            use_case = build_send_command_use_case()
             try:
                 command = use_case.execute(
                     dto,
@@ -76,7 +49,11 @@ def send_command_view(request):
                 )
                 messages.success(request, "Command dispatched successfully.")
                 form = SendCommandForm()
-            except (CommandExecutionError, InvalidTargetError, UnsupportedCommandError) as exc:
+            except (
+                CommandExecutionError,
+                InvalidTargetError,
+                UnsupportedCommandError,
+            ) as exc:
                 form.add_error(None, str(exc))
     else:
         form = SendCommandForm()

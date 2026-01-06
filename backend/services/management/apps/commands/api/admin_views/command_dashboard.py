@@ -1,9 +1,12 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.template.response import TemplateResponse
 
-from apps.commands.infrastructure.repositories.django_command_repository import (
-    DjangoCommandRepository,
+from apps.commands.api.admin_views.dependencies import (
+    build_get_command_use_case,
+)
+from apps.commands.application.use_cases.get_command.input_dto import (
+    GetCommandInputDTO,
 )
 
 
@@ -22,9 +25,16 @@ def command_dashboard_view(request):
     if request.method == "POST":
         form = GetCommandForm(request.POST)
         if form.is_valid():
-            command = DjangoCommandRepository().get(
-                command_id=str(form.cleaned_data["command_id"])
-            )
+            use_case = build_get_command_use_case()
+            try:
+                output = use_case.execute(
+                    GetCommandInputDTO(
+                        command_id=str(form.cleaned_data["command_id"])
+                    )
+                )
+                command = output.command
+            except Exception as exc:
+                messages.error(request, f"Failed to load command: {exc}")
     else:
         form = GetCommandForm()
 
