@@ -42,6 +42,8 @@ class NetworkScanResultModel(models.Model):
         app_label = "commands"
         db_table = "commands_network_scan_result"
         ordering = ["-discovered_at", "-created_at"]
+        verbose_name = "Discover"
+        verbose_name_plural = "Discover"
         constraints = [
             models.UniqueConstraint(
                 fields=("scan_id", "device_uid"),

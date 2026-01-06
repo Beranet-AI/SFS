@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.urls import path
 
 from apps.commands.api.admin_views.command_dashboard import (
@@ -17,6 +19,9 @@ from apps.commands.infrastructure.models.command_execution_model import (
     CommandAttemptModel,
 )
 from apps.commands.infrastructure.models.command_model import CommandModel
+from apps.commands.infrastructure.models.network_scan_result_model import (
+    NetworkScanResultModel,
+)
 
 
 @admin.register(CommandModel)
@@ -88,3 +93,17 @@ class CommandExecutionAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     search_fields = ("id", "command__id", "executor_receipt")
     readonly_fields = ("id", "created_at")
+
+
+@admin.register(NetworkScanResultModel)
+class DiscoverAdmin(admin.ModelAdmin):
+    list_display = ("scan_id", "device_uid", "device_type", "scan_status", "is_registered")
+    list_filter = ("scan_status", "is_registered", "device_type", "device_category")
+    search_fields = ("scan_id", "device_uid", "device_name")
+    readonly_fields = ("scan_id",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        return redirect(reverse("admin:commands_discover"))
