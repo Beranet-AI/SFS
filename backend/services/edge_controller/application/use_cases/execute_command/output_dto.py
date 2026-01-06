@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any, Dict, List
-
 
 from shared.schemas.edge_controller.execute_command.execute_command_output import (
     DiscoverCommandOutput,
@@ -10,12 +8,13 @@ from shared.schemas.edge_controller.execute_command.execute_command_output impor
     RebootCommandOutput,
 )
 
+
 @dataclass
 class BaseCommandResultDTO(ExecuteCommandOutput):
     command_id: str
     command_type: str
     status: str
-    executed_at: datetime
+    executed_at: str
 
 
 @dataclass

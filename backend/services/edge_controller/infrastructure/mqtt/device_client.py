@@ -2,7 +2,7 @@
 from typing import Literal
 from datetime import datetime, timezone
 
-from ...core.logging import get_logger
+from ...logging import get_logger
 
 logger = get_logger(__name__)
 
