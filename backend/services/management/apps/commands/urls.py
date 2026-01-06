@@ -3,6 +3,9 @@ from django.urls import path
 from apps.commands.api.admin_views.command_dashboard import (
     command_dashboard_view,
 )
+from apps.commands.api.admin_views.discover_view import (
+    discover_view,
+)
 from apps.commands.api.admin_views.scan_result_view import (
     scan_result_view,
 )
@@ -21,5 +24,10 @@ urlpatterns = [
         "admin/commands/dashboard/",
         command_dashboard_view,
         name="commands_dashboard",
+    ),
+    path(
+        "admin/commands/discover/",
+        discover_view,
+        name="commands_discover",
     ),
 ]

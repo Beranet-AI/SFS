@@ -4,6 +4,9 @@ from django.urls import path
 from apps.commands.api.admin_views.command_dashboard import (
     command_dashboard_view,
 )
+from apps.commands.api.admin_views.discover_view import (
+    discover_view,
+)
 from apps.commands.api.admin_views.scan_result_view import (
     scan_result_view,
 )
@@ -61,6 +64,11 @@ class CommandAdmin(admin.ModelAdmin):
                 "dashboard/",
                 self.admin_site.admin_view(command_dashboard_view),
                 name="commands_commandmodel_dashboard",
+            ),
+            path(
+                "discover/",
+                self.admin_site.admin_view(discover_view),
+                name="commands_discover",
             ),
         ] + urls
 
