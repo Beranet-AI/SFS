@@ -5,7 +5,18 @@ volumes:
   postgres_data:
 
 services:
-
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: sfs-mosquitto
+    networks:
+    - sfs_net
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
   # -----------------------
   # Base image (Shared Kernel)
   # -----------------------
