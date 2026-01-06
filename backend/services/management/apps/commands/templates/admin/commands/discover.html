@@ -1,0 +1,97 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>{% trans "Discover" %}</h1>
+
+  <ul class="object-tools">
+    <li><a href="{% url 'admin:commands_commandmodel_dashboard' %}">{% trans "Command Dashboard" %}</a></li>
+  </ul>
+
+  <h2>{% trans "Start Network Scan" %}</h2>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <button type="submit" name="action" value="discover" class="button">{% trans "Discover" %}</button>
+  </form>
+
+  <h2>{% trans "Scan Results" %}</h2>
+  {% if scan_id %}
+    <p><strong>{% trans "Scan ID" %}:</strong> {{ scan_id }}</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="register">
+    {% if scan_id %}
+      <input type="hidden" name="scan_id" value="{{ scan_id }}">
+    {% endif %}
+    <table class="listing">
+      <thead>
+        <tr>
+          <th></th>
+          <th>{% trans "Scan ID" %}</th>
+          <th>{% trans "Device UID" %}</th>
+          <th>{% trans "Device Name" %}</th>
+          <th>{% trans "Device Category" %}</th>
+          <th>{% trans "Device Type" %}</th>
+          <th>{% trans "Protocol" %}</th>
+          <th>{% trans "Adapter Type" %}</th>
+          <th>{% trans "Direction" %}</th>
+          <th>{% trans "Supports Commands" %}</th>
+          <th>{% trans "Supported Command Categories" %}</th>
+          <th>{% trans "IP Address" %}</th>
+          <th>{% trans "Port" %}</th>
+          <th>{% trans "Network Address" %}</th>
+          <th>{% trans "Signal Strength" %}</th>
+          <th>{% trans "Firmware Version" %}</th>
+          <th>{% trans "Vendor" %}</th>
+          <th>{% trans "Model" %}</th>
+          <th>{% trans "Battery Level" %}</th>
+          <th>{% trans "Last Seen At" %}</th>
+          <th>{% trans "Discovered At" %}</th>
+          <th>{% trans "Scan Status" %}</th>
+          <th>{% trans "Raw Capabilities" %}</th>
+          <th>{% trans "Registered" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for device in results %}
+          <tr>
+            <td>
+              <input type="checkbox" name="selected_devices" value="{{ device.id }}" {% if device.is_registered %}disabled{% endif %}>
+            </td>
+            <td>{{ device.scan_id }}</td>
+            <td>{{ device.device_uid }}</td>
+            <td>{{ device.device_name|default_if_none:"" }}</td>
+            <td>{{ device.device_category }}</td>
+            <td>{{ device.device_type }}</td>
+            <td>{{ device.protocol }}</td>
+            <td>{{ device.adapter_type }}</td>
+            <td>{{ device.direction }}</td>
+            <td>{{ device.supports_commands|yesno:"Yes,No" }}</td>
+            <td>{{ device.supported_command_categories }}</td>
+            <td>{{ device.ip_address|default_if_none:"" }}</td>
+            <td>{{ device.port|default_if_none:"" }}</td>
+            <td>{{ device.network_address|default_if_none:"" }}</td>
+            <td>{{ device.signal_strength|default_if_none:"" }}</td>
+            <td>{{ device.firmware_version|default_if_none:"" }}</td>
+            <td>{{ device.vendor|default_if_none:"" }}</td>
+            <td>{{ device.model|default_if_none:"" }}</td>
+            <td>{{ device.battery_level|default_if_none:"" }}</td>
+            <td>{{ device.last_seen_at|default_if_none:"" }}</td>
+            <td>{{ device.discovered_at|default_if_none:"" }}</td>
+            <td>{{ device.scan_status }}</td>
+            <td>{{ device.raw_capabilities|default_if_none:"" }}</td>
+            <td>{{ device.is_registered|yesno:"Yes,No" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="24">{% trans "No scan results available." %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button type="submit" class="button" {% if not results %}disabled{% endif %}>{% trans "Register Selected" %}</button>
+  </form>
+{% endblock %}

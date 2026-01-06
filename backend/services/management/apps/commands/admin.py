@@ -1,8 +1,13 @@
 from django.contrib import admin
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.urls import path
 
 from apps.commands.api.admin_views.command_dashboard import (
     command_dashboard_view,
+)
+from apps.commands.api.admin_views.discover_view import (
+    discover_view,
 )
 from apps.commands.api.admin_views.scan_result_view import (
     scan_result_view,
@@ -14,6 +19,9 @@ from apps.commands.infrastructure.models.command_execution_model import (
     CommandAttemptModel,
 )
 from apps.commands.infrastructure.models.command_model import CommandModel
+from apps.commands.infrastructure.models.network_scan_result_model import (
+    NetworkScanResultModel,
+)
 
 
 @admin.register(CommandModel)
@@ -62,6 +70,11 @@ class CommandAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(command_dashboard_view),
                 name="commands_commandmodel_dashboard",
             ),
+            path(
+                "discover/",
+                self.admin_site.admin_view(discover_view),
+                name="commands_discover",
+            ),
         ] + urls
 
 
@@ -80,3 +93,17 @@ class CommandExecutionAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     search_fields = ("id", "command__id", "executor_receipt")
     readonly_fields = ("id", "created_at")
+
+
+@admin.register(NetworkScanResultModel)
+class DiscoverAdmin(admin.ModelAdmin):
+    list_display = ("scan_id", "device_uid", "device_type", "scan_status", "is_registered")
+    list_filter = ("scan_status", "is_registered", "device_type", "device_category")
+    search_fields = ("scan_id", "device_uid", "device_name")
+    readonly_fields = ("scan_id",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        return redirect(reverse("admin:commands_discover"))
