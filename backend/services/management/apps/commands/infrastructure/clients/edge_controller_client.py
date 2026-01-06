@@ -1,58 +1,31 @@
-import json
+# apps/commands/infrastructure/clients/edge_controller_client.py
 
-import paho.mqtt.client as mqtt
-
-from apps.commands.application.use_cases.receive_result.input_dto import (
-    ReceiveResultInputDTO,
-)
-from apps.commands.application.use_cases.receive_result.use_case import (
-    ReceiveResultUseCase,
-)
-from apps.commands.infrastructure.repositories.django_command_repository import (
-    DjangoCommandRepository,
-)
-from .topics import command_result_topic, edge_command_topic
+import requests
+from typing import Any
 
 
 class EdgeControllerClient:
     """
-    MQTT client for communicating with edge_controller.
-    Responsibilities:
-    - publish commands
-    - receive command execution results
+    HTTP client for communicating with edge_controller service.
+    Management MUST NOT talk to MQTT directly.
     """
 
-    def __init__(self, broker_host: str = "localhost", broker_port: int = 1883):
-        self.client = mqtt.Client(client_id="management")
+    def __init__(self, base_url: str | None = None):
+        self.base_url = base_url or "http://edge-controller:8003"
 
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-
-        self.client.connect(broker_host, broker_port, 60)
-
-    def on_connect(self, client, userdata, flags, rc):
-        client.subscribe(command_result_topic("+"))
-
-    def on_message(self, client, userdata, msg):
-        payload = json.loads(msg.payload.decode())
-
-        dto = ReceiveResultInputDTO(
-            command_id=str(payload["command_id"]),
-            attempt_no=payload["attempt_no"],
-            status=payload["status"],
-            result=payload.get("result", {}),
-            error_code=payload.get("error_code", ""),
-            error_message=payload.get("error_message", ""),
-            meta=payload.get("meta", {}),
+    def discover_network(self) -> dict[str, Any]:
+        response = requests.post(
+            f"{self.base_url}/commands/discover",
+            timeout=10,
         )
+        response.raise_for_status()
+        return response.json()
 
-        ReceiveResultUseCase(
-            command_repository=DjangoCommandRepository(),
-        ).execute(dto)
-
-    def publish_command(self, *, edge_id: str, command: dict) -> None:
-        topic = edge_command_topic(edge_id)
-        self.client.publish(topic, json.dumps(command))
-
-    def loop_forever(self) -> None:
-        self.client.loop_forever()
+    def send_command(self, payload: dict[str, Any]) -> dict[str, Any]:
+        response = requests.post(
+            f"{self.base_url}/commands/execute",
+            json=payload,
+            timeout=10,
+        )
+        response.raise_for_status()
+        return response.json()
