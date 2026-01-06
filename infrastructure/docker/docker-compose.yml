@@ -106,6 +106,9 @@ services:
       - postgres
     env_file:
       - ../env/edge_controller.env
+    environment:
+      MQTT_BROKER_HOST: mosquitto
+      MQTT_BROKER_PORT: 1883
     ports:
       - "8003:8003"
     networks:
