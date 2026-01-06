@@ -1,6 +1,8 @@
-EDGE_ID = "edge-001"
+import os
 
-MQTT_BROKER = "mosquitto"
-MQTT_PORT = 1883
+EDGE_ID = os.getenv("EDGE_ID", "edge-001")
+
+MQTT_BROKER = os.getenv("MQTT_BROKER_HOST", "mosquitto")
+MQTT_PORT = int(os.getenv("MQTT_BROKER_PORT", "1883"))
 
 MANAGEMENT_ENDPOINT = "mqtt"  # future: http / grpc
