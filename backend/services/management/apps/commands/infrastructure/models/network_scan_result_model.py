@@ -1,91 +1,57 @@
 import uuid
 
 from django.db import models
-from django.utils import timezone
-
-from apps.devices.models import DeviceModel
-
-from .command_model import CommandModel
 
 
-class DiscoverySessionModel(models.Model):
-    """Retained for backwards compatibility with discovery sessions."""
-
+class NetworkScanResultModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    edge_node_id = models.CharField(max_length=64)
-    status = models.CharField(
+    scan_id = models.UUIDField(db_index=True)
+    device_uid = models.CharField(max_length=128)
+    device_name = models.CharField(max_length=255, null=True, blank=True)
+    device_category = models.CharField(max_length=64)
+    device_type = models.CharField(max_length=64)
+    protocol = models.CharField(max_length=64, blank=True, default="")
+    adapter_type = models.CharField(max_length=64, blank=True, default="")
+    direction = models.CharField(
+        max_length=32,
+        choices=[("uplink_only", "Uplink Only"), ("bidirectional", "Bidirectional")],
+    )
+    supports_commands = models.BooleanField(default=False)
+    supported_command_categories = models.JSONField(blank=True, default=list)
+    ip_address = models.CharField(max_length=64, null=True, blank=True)
+    port = models.IntegerField(null=True, blank=True)
+    network_address = models.CharField(max_length=128, null=True, blank=True)
+    signal_strength = models.FloatField(null=True, blank=True)
+    firmware_version = models.CharField(max_length=128, null=True, blank=True)
+    vendor = models.CharField(max_length=128, null=True, blank=True)
+    model = models.CharField(max_length=128, null=True, blank=True)
+    battery_level = models.FloatField(null=True, blank=True)
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    discovered_at = models.DateTimeField(null=True, blank=True)
+    scan_status = models.CharField(
         max_length=16,
-        choices=[
-            ("pending", "Pending"),
-            ("running", "Running"),
-            ("completed", "Completed"),
-            ("failed", "Failed"),
-        ],
-        default="pending",
-        db_index=True,
-    )
-    started_by = models.CharField(max_length=64, blank=True, default="")
-    started_at = models.DateTimeField(default=timezone.now)
-    finished_at = models.DateTimeField(null=True, blank=True)
-    device_count = models.IntegerField(default=0)
-    error_message = models.TextField(blank=True, default="")
-    command = models.ForeignKey(
-        CommandModel,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="discovery_sessions",
-    )
-
-    class Meta:
-        app_label = "commands"
-        db_table = "commands_discovery_session"
-        ordering = ["-started_at"]
-        verbose_name = "Discover Devices"
-        verbose_name_plural = "Discover Devices"
-
-
-class DiscoveredDeviceModel(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    session = models.ForeignKey(
-        DiscoverySessionModel,
-        on_delete=models.CASCADE,
-        related_name="devices",
-    )
-    device_id = models.CharField(max_length=128)
-    device_type = models.CharField(max_length=128, blank=True, default="")
-    ip_address = models.CharField(max_length=64, blank=True, default="")
-    capabilities = models.JSONField(blank=True, default=dict)
-    raw_payload = models.JSONField(blank=True, default=dict)
-    status = models.CharField(
-        max_length=16,
-        choices=[("new", "New"), ("registered", "Registered")],
+        choices=[("new", "New"), ("known", "Known"), ("changed", "Changed")],
         default="new",
     )
+    raw_capabilities = models.JSONField(null=True, blank=True)
+    is_registered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    registered_device = models.ForeignKey(
-        DeviceModel,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="discovery_records",
-    )
 
     class Meta:
         app_label = "commands"
-        db_table = "commands_discovered_device"
-        ordering = ["-created_at"]
+        db_table = "commands_network_scan_result"
+        ordering = ["-discovered_at", "-created_at"]
+        verbose_name = "Discover"
+        verbose_name_plural = "Discover"
         constraints = [
             models.UniqueConstraint(
-                fields=("session", "device_id"),
-                name="uniq_discovery_session_device",
+                fields=("scan_id", "device_uid"),
+                name="uniq_network_scan_device",
             )
         ]
         indexes = [
-            models.Index(fields=["session", "device_id"]),
-            models.Index(fields=["status"]),
+            models.Index(fields=["scan_id", "device_uid"]),
+            models.Index(fields=["scan_status"]),
+            models.Index(fields=["is_registered"]),
         ]
-
-
-NetworkScanResultModel = DiscoveredDeviceModel

@@ -14,7 +14,6 @@ from apps.commands.infrastructure.models.command_model import (
     CommandStatusChoices,
 )
 from apps.commands.infrastructure.models.network_scan_result_model import (
-    DiscoverySessionModel,
     NetworkScanResultModel,
 )
 
@@ -149,27 +148,62 @@ class DjangoCommandRepository(CommandRepository):
         )
 
     def record_scan_result(self, *, scan_id: str, device_uid: str, payload: dict) -> None:
-        session, _ = DiscoverySessionModel.objects.get_or_create(
-            id=scan_id,
-            defaults={
-                "edge_node_id": payload.get("edge_node_id")
-                or payload.get("edge_id")
-                or "",
-                "status": "running",
-                "started_by": "system",
-                "started_at": timezone.now(),
-            },
-        )
         mapped = ScanResultMapper.to_model_data(payload)
-        if not mapped.get("device_id"):
-            mapped["device_id"] = device_uid
+        if not mapped.get("device_uid"):
+            mapped["device_uid"] = device_uid
+        mapped["scan_id"] = scan_id
 
         device, created = NetworkScanResultModel.objects.get_or_create(
-            session=session,
-            device_id=mapped["device_id"],
+            scan_id=scan_id,
+            device_uid=mapped["device_uid"],
             defaults=mapped,
         )
         if not created:
-            for field in ["device_type", "ip_address", "capabilities", "raw_payload", "status"]:
+            for field in [
+                "device_name",
+                "device_category",
+                "device_type",
+                "protocol",
+                "adapter_type",
+                "direction",
+                "supports_commands",
+                "supported_command_categories",
+                "ip_address",
+                "port",
+                "network_address",
+                "signal_strength",
+                "firmware_version",
+                "vendor",
+                "model",
+                "battery_level",
+                "last_seen_at",
+                "discovered_at",
+                "scan_status",
+                "raw_capabilities",
+            ]:
                 setattr(device, field, mapped[field])
-            device.save(update_fields=["device_type", "ip_address", "capabilities", "raw_payload", "status"])
+            device.save(
+                update_fields=[
+                    "device_name",
+                    "device_category",
+                    "device_type",
+                    "protocol",
+                    "adapter_type",
+                    "direction",
+                    "supports_commands",
+                    "supported_command_categories",
+                    "ip_address",
+                    "port",
+                    "network_address",
+                    "signal_strength",
+                    "firmware_version",
+                    "vendor",
+                    "model",
+                    "battery_level",
+                    "last_seen_at",
+                    "discovered_at",
+                    "scan_status",
+                    "raw_capabilities",
+                    "updated_at",
+                ]
+            )
