@@ -11,7 +11,6 @@
   <h2>{% trans "Start Network Scan" %}</h2>
   <form method="post" novalidate>
     {% csrf_token %}
-    {{ discover_form.as_p }}
     <button type="submit" name="action" value="discover" class="button">{% trans "Discover" %}</button>
   </form>
 

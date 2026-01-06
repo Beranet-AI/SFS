@@ -1,4 +1,4 @@
-from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.db import transaction
 from django.shortcuts import redirect
@@ -47,8 +47,7 @@ from apps.telemetry.application.use_cases.register_schema.use_case import (
 )
 
 
-class DiscoverForm(forms.Form):
-    edge_node_id = forms.CharField(label="Edge Node ID", max_length=64)
+EDGE_NODE_ID = getattr(settings, "DEFAULT_EDGE_NODE_ID", "edge-main")
 
 
 def _register_device(*, result: NetworkScanResultModel, created_by: str) -> None:
@@ -124,36 +123,31 @@ def discover_view(request):
                 "device_uid"
             )
 
-    discover_form = DiscoverForm()
-
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "discover":
-            discover_form = DiscoverForm(request.POST)
-            if discover_form.is_valid():
-                edge_node_id = discover_form.cleaned_data["edge_node_id"]
-                capability_repository = DjangoCapabilityRepository()
-                edge_client = EdgeControllerClient()
-                dispatcher = CommandDispatcher(
-                    edge_executor=EdgeCommandExecutor(edge_client=edge_client),
-                    device_executor=DeviceCommandExecutor(edge_client=edge_client),
+            capability_repository = DjangoCapabilityRepository()
+            edge_client = EdgeControllerClient()
+            dispatcher = CommandDispatcher(
+                edge_executor=EdgeCommandExecutor(edge_client=edge_client),
+                device_executor=DeviceCommandExecutor(edge_client=edge_client),
+                capability_repository=capability_repository,
+            )
+            use_case = StartNetworkScanUseCase(
+                send_command_use_case=SendCommandUseCase(
+                    repository=DjangoCommandRepository(),
+                    dispatcher=dispatcher,
                     capability_repository=capability_repository,
                 )
-                use_case = StartNetworkScanUseCase(
-                    send_command_use_case=SendCommandUseCase(
-                        repository=DjangoCommandRepository(),
-                        dispatcher=dispatcher,
-                        capability_repository=capability_repository,
-                    )
-                )
-                output = use_case.execute(
-                    StartNetworkScanInputDTO(edge_node_id=edge_node_id),
-                    created_by=request.user.get_username() or str(request.user),
-                )
-                messages.success(request, "Network scan started.")
-                return redirect(
-                    f"{reverse('admin:commands_discover')}?scan_id={output.scan_id}"
-                )
+            )
+            output = use_case.execute(
+                StartNetworkScanInputDTO(edge_node_id=EDGE_NODE_ID),
+                created_by=request.user.get_username() or str(request.user),
+            )
+            messages.success(request, "Network scan started.")
+            return redirect(
+                f"{reverse('admin:commands_discover')}?scan_id={output.scan_id}"
+            )
         elif action == "register":
             selected_ids = request.POST.getlist("selected_devices")
             if not selected_ids:
@@ -174,7 +168,6 @@ def discover_view(request):
                     )
                 return redirect(reverse("admin:commands_discover"))
 
-    context["discover_form"] = discover_form
     context["scan_id"] = scan_id
     context["results"] = results
     return TemplateResponse(
