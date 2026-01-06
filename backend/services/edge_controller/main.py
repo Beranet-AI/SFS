@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 
-from .core.lifespan import lifespan
-
-# routers
-from .api.routes.base import router as base_router
+from .lifespan import lifespan
+from .presentation.api.routers.execute_command_router import (
+    router as execute_command_router,
+)
+from .presentation.api.routers.receive_telemetry_router import (
+    router as receive_telemetry_router,
+)
 
 app = FastAPI(
     title="SFS Edge Controller",
@@ -14,4 +17,5 @@ app = FastAPI(
 # -------------------------
 # Core API (command, telemetry, ...)
 # -------------------------
-app.include_router(base_router)
+app.include_router(execute_command_router)
+app.include_router(receive_telemetry_router)
