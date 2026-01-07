@@ -8,5 +8,5 @@ MQTT_PORT = int(os.getenv("MQTT_BROKER_PORT", "1883"))
 MANAGEMENT_ENDPOINT = os.getenv("MANAGEMENT_ENDPOINT", "http")
 MANAGEMENT_COMMANDS_BASE_URL = os.getenv(
     "MANAGEMENT_COMMANDS_BASE_URL",
-    "http://management:8000/commands",
+    "http://management:8000/api/commands",
 )
