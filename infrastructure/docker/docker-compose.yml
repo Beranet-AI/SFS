@@ -77,8 +77,8 @@ services:
 
     command:
       - python
-      - -m
-      - apps.commands.application.workers.run_commands_worker
+      - manage.py
+      - run_commands_worker
       - --interval
       - "2"
       - --batch-size
@@ -92,7 +92,7 @@ services:
       PYTHONPATH: /app/backend/services/management
 
       # Django
-      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DJANGO_SETTINGS_MODULE: config.settings.worker
       DATABASE_URL: postgres://sfs:sfs@postgres:5432/sfs
 
       # Edge
