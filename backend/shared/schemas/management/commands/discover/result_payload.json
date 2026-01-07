@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sfs.local/schemas/management/commands/discover/result_payload.json",
+  "title": "DiscoverResultPayload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scan_id", "devices"],
+  "properties": {
+    "scan_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "message": {
+      "type": "string"
+    }
+  }
+}

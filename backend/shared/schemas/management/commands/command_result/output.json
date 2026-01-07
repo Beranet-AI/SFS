@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sfs.local/schemas/management/commands/command_result/output.json",
+  "title": "CommandResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["command_id", "attempt_no", "status", "result"],
+  "properties": {
+    "command_id": {
+      "type": "string"
+    },
+    "attempt_no": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "succeeded",
+        "failed",
+        "running",
+        "acked",
+        "dispatched",
+        "timed_out",
+        "cancelled",
+        "dead_lettered"
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "error_code": {
+      "type": "string"
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
