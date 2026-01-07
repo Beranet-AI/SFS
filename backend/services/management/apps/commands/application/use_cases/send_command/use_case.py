@@ -1,6 +1,7 @@
 from apps.commands.application.services.command_dispatcher import CommandDispatcher
 from apps.commands.domain.domain_services.command_policy import CommandPolicy
 from apps.commands.domain.enums.command_status import CommandStatus
+from apps.commands.domain.enums.command_type import CommandType
 from apps.commands.domain.exceptions.command_execution_error import (
     CommandExecutionError,
 )
@@ -49,6 +50,11 @@ class SendCommandUseCase:
             raise CommandExecutionError("max_attempts must be positive")
 
         command_type = dto.command_type or command_name
+        if (
+            command_name == CommandType.GET_CONNECTED_DEVICES.value
+            and command_type == command_name
+        ):
+            command_type = CommandType.DISCOVER.value
         if dto.device_category and dto.device_type:
             self._is_command_allowed.validate(
                 command_type=command_type,
