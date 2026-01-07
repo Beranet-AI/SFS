@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from .lifespan import lifespan
 from .presentation.api.routers.execute_command_router import (
+    legacy_router as legacy_execute_command_router,
     router as execute_command_router,
 )
 from .presentation.api.routers.receive_telemetry_router import (
@@ -18,4 +19,5 @@ app = FastAPI(
 # Core API (command, telemetry, ...)
 # -------------------------
 app.include_router(execute_command_router)
+app.include_router(legacy_execute_command_router)
 app.include_router(receive_telemetry_router)

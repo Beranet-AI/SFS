@@ -13,6 +13,11 @@ from ..schemas.execute_command_request import ExecuteCommandRequest
 from ..schemas.execute_command_response import ExecuteCommandResponse
 
 router = APIRouter(prefix="/api/commands", tags=["command"])
+legacy_router = APIRouter(
+    prefix="/commands",
+    tags=["command"],
+    include_in_schema=False,
+)
 
 
 @router.post(
@@ -59,3 +64,16 @@ def execute_command(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Edge execution failed: {exc}",
         ) from exc
+
+
+@legacy_router.post(
+    "/execute",
+    summary="Execute command on edge (legacy)",
+    description="Backward-compatible endpoint for legacy callers",
+    response_model=ExecuteCommandResponse,
+)
+def execute_command_legacy(
+    payload: ExecuteCommandRequest,
+    use_case: ExecuteCommandUseCase = Depends(get_execute_command_use_case),
+) -> ExecuteCommandResponse:
+    return execute_command(payload, use_case)
