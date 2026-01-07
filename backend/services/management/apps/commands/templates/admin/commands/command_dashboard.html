@@ -5,9 +5,9 @@
   <h1>{% trans "Command Dashboard" %}</h1>
 
   <ul class="object-tools">
-    <li><a href="{% url 'admin:commands_commandmodel_send' %}" class="addlink">{% trans "Send Command" %}</a></li>
+    <li><a href="{% url 'admin:commands_send' %}" class="addlink">{% trans "Send Command" %}</a></li>
     <li><a href="{% url 'admin:commands_discover' %}">{% trans "Discover" %}</a></li>
-    <li><a href="{% url 'admin:commands_commandmodel_receive_result' %}">{% trans "Receive Result" %}</a></li>
+    <li><a href="{% url 'admin:commands_receive_result' %}">{% trans "Receive Result" %}</a></li>
     <li><a href="{% url 'admin:commands_commandmodel_changelist' %}">{% trans "View Command History" %}</a></li>
   </ul>
 

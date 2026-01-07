@@ -3,17 +3,17 @@
 
 {% block object-tools-items %}
   <li>
-    <a href="{% url 'admin:commands_commandmodel_send' %}" class="addlink">
+    <a href="{% url 'admin:commands_send' %}" class="addlink">
       {% trans "Send Command" %}
     </a>
   </li>
   <li>
-    <a href="{% url 'admin:commands_commandmodel_receive_result' %}">
+    <a href="{% url 'admin:commands_receive_result' %}">
       {% trans "Receive Result" %}
     </a>
   </li>
   <li>
-    <a href="{% url 'admin:commands_commandmodel_dashboard' %}">
+    <a href="{% url 'admin:commands_dashboard' %}">
       {% trans "Command Dashboard" %}
     </a>
   </li>

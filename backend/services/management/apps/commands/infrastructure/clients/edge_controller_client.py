@@ -16,7 +16,7 @@ class EdgeControllerClient:
     """
 
     def __init__(self, base_url: str | None = None):
-        self.base_url = base_url or "http://edge-controller:8003"
+        self.base_url = base_url or "http://edge_controller:8003"
 
     def discover_network(self) -> dict[str, Any]:
         response = requests.post(

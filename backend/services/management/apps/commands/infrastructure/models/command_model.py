@@ -43,9 +43,6 @@ class CommandModel(models.Model):
     )
     target_id = models.CharField(max_length=64, db_index=True)
 
-    # execution routing
-    edge_node_id = models.CharField(max_length=64, blank=True, default="")
-
     # execution payload
     payload = models.JSONField(default=dict, blank=True)
 
@@ -87,7 +84,6 @@ class CommandModel(models.Model):
         indexes = [
             models.Index(fields=["status", "created_at"]),
             models.Index(fields=["target_kind", "target_id"]),
-            models.Index(fields=["edge_node_id"]),
             models.Index(fields=["idempotency_key"]),
         ]
 

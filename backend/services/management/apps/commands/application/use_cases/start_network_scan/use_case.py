@@ -41,7 +41,7 @@ class StartNetworkScanUseCase:
         send_command_output = self._send_command_use_case.execute(
             SendCommandInputDTO(
                 command_name=CommandType.GET_CONNECTED_DEVICES.value,
-                command_type=CommandType.GET_CONNECTED_DEVICES.value,
+                command_type=CommandType.DISCOVER.value,
                 command_category=CommandCategory.QUERY.value,
                 target_kind="edge_node",
                 target_id=dto.edge_node_id,
