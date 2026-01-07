@@ -1,63 +1,61 @@
+import logging
 import os
 import time
-import django
-import traceback
 
-os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE",
-    "config.settings.dev",
-)
+from django.db import close_old_connections
 
-django.setup()
-
-from apps.commands.infrastructure.models import CommandModel
 from apps.commands.application.services.command_dispatcher import CommandDispatcher
+from apps.commands.infrastructure.models import CommandModel
+
+logger = logging.getLogger(__name__)
 
 
-def main(interval: int = 5, batch_size: int = 5):
-    print("🟢 Commands Worker started")
-    print("🔗 EDGE_CONTROLLER_BASE_URL=", os.getenv("EDGE_CONTROLLER_BASE_URL"))
+def run_worker(*, interval: int = 5, batch_size: int = 5) -> None:
+    logger.info("Commands worker started")
+    logger.info(
+        "EDGE_CONTROLLER_BASE_URL=%s",
+        os.getenv("EDGE_CONTROLLER_BASE_URL"),
+    )
 
     dispatcher = CommandDispatcher()
 
     while True:
-        pending = (
+        close_old_connections()
+
+        pending = list(
             CommandModel.objects
             .filter(status="pending")
             .order_by("created_at")[:batch_size]
         )
 
-        print(f"🔎 Pending commands: {pending.count()}")
+        logger.info("Pending commands: %s", len(pending))
 
         for command in pending:
             try:
-                print(f"➡️ Dispatching command {command.id}")
-
-                dispatcher.dispatch_to_edge(
-                    command_id=str(command.id),
-                    command_name=command.command_name,
-                    edge_id=command.target_id,
-                    payload=command.payload,
+                logger.info("Dispatching command %s", command.id)
+                dispatcher.dispatch(command_id=str(command.id))
+            except Exception as exc:
+                logger.exception("WORKER ERROR")
+                command.last_error_message = str(exc)
+                command.last_result = {"error": str(exc)}
+                command.status = "failed"
+                command.save(
+                    update_fields=[
+                        "last_error_message",
+                        "last_result",
+                        "status",
+                    ]
                 )
 
-                command.status = "dispatched"
-                command.save(update_fields=["status"])
-
-            except Exception as exc:
-                tb = traceback.format_exc()
-                print("❌ WORKER ERROR")
-                print(tb)
-
-                command.last_error_message = str(exc)
-                command.last_result = {"traceback": tb}
-                command.status = "failed"
-                command.save(update_fields=[
-                    "last_error_message",
-                    "last_result",
-                    "status",
-                ])
-
         time.sleep(interval)
+
+
+def main(interval: int = 5, batch_size: int = 5) -> None:
+    import django
+
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.worker")
+    django.setup()
+    run_worker(interval=interval, batch_size=batch_size)
 
 
 if __name__ == "__main__":
