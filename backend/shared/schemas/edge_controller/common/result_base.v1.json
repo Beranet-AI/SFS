@@ -4,16 +4,14 @@
   "type": "object",
   "required": [
     "command_id",
-    "edge_id",
     "command_type",
     "status",
-    "executed_at"
+    "executed_at",
+    "payload",
+    "meta"
   ],
   "properties": {
     "command_id": {
-      "type": "string"
-    },
-    "edge_id": {
       "type": "string"
     },
     "command_type": {
@@ -21,21 +19,17 @@
     },
     "status": {
       "type": "string",
-      "enum": [
-        "pending",
-        "dispatched",
-        "acked",
-        "running",
-        "succeeded",
-        "failed",
-        "timed_out",
-        "cancelled",
-        "dead_lettered"
-      ]
+      "enum": ["SUCCEEDED", "FAILED"]
     },
     "executed_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "meta": {
+      "type": "object"
     }
   },
   "additionalProperties": false

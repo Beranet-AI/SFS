@@ -9,3 +9,4 @@ class SendResultInput:
     status: str
     executed_at: str
     payload: Dict[str, Any]
+    meta: Dict[str, Any]

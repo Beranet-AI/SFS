@@ -14,7 +14,7 @@ class ReceiveResultForm(forms.Form):
     command_id = forms.UUIDField()
     attempt_no = forms.IntegerField(min_value=1)
     status = forms.CharField(max_length=32)
-    result = forms.JSONField(required=False)
+    payload = forms.JSONField(required=False)
     error_code = forms.CharField(required=False)
     error_message = forms.CharField(required=False, widget=forms.Textarea)
     meta = forms.JSONField(required=False)
@@ -35,7 +35,7 @@ def scan_result_view(request):
                 command_id=str(form.cleaned_data["command_id"]),
                 attempt_no=form.cleaned_data["attempt_no"],
                 status=form.cleaned_data["status"],
-                result=form.cleaned_data.get("result") or {},
+                payload=form.cleaned_data.get("payload") or {},
                 error_code=form.cleaned_data.get("error_code") or "",
                 error_message=form.cleaned_data.get("error_message") or "",
                 meta=form.cleaned_data.get("meta") or {},

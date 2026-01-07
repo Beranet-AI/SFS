@@ -110,7 +110,7 @@ def test_receive_result_records_scan_results():
         command_id="cmd-1",
         attempt_no=1,
         status="succeeded",
-        result={
+        payload={
             "scan_id": "scan-1",
             "devices": [
                 {"device_uid": "dev-1", "device_type": "sensor"},

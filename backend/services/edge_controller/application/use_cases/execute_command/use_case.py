@@ -56,14 +56,20 @@ class ExecuteCommandUseCase:
     def _execute_discover(
         self, dto: ExecuteCommandInputDTO, executed_at: str
     ) -> DiscoverCommandResultDTO:
+        scan_id = dto.payload.get("scan_id")
+        if not scan_id:
+            raise DomainValidationError("Invalid DISCOVER payload: scan_id required")
         devices = self._network_scanner()
+        message = "No devices found" if not devices else ""
 
         return DiscoverCommandResultDTO(
             command_id=dto.command_id,
             command_type=CommandType.DISCOVER.value,
-            status=CommandStatus.COMPLETED.value,
+            status=CommandStatus.SUCCEEDED.value,
             executed_at=executed_at,
+            scan_id=str(scan_id),
             devices=devices,
+            message=message,
         )
 
     def _execute_on_off(
@@ -82,7 +88,7 @@ class ExecuteCommandUseCase:
         )
 
         status = (
-            CommandStatus.COMPLETED.value
+            CommandStatus.SUCCEEDED.value
             if success
             else CommandStatus.FAILED.value
         )
@@ -107,7 +113,7 @@ class ExecuteCommandUseCase:
         success = self._device_client.send_reboot(device_id)
 
         status = (
-            CommandStatus.COMPLETED.value
+            CommandStatus.SUCCEEDED.value
             if success
             else CommandStatus.FAILED.value
         )
@@ -131,7 +137,11 @@ class ExecuteCommandUseCase:
         }
 
         if isinstance(result, DiscoverCommandResultDTO):
-            result_payload = {"devices": result.devices}
+            payload["payload"] = {
+                "scan_id": result.scan_id,
+                "devices": result.devices,
+                "message": result.message,
+            }
         elif isinstance(result, OnOffCommandResultDTO):
             result_payload = {
                 "device_id": result.device_id,
@@ -147,18 +157,8 @@ class ExecuteCommandUseCase:
                 f"Unsupported result type: {type(result).__name__}"
             )
 
-        return {
-            "command_id": result.command_id,
-            "attempt_no": 1,
-            "status": status,
-            "result": result_payload,
-            "error_code": "",
-            "error_message": "",
-            "meta": {
-                "command_type": result.command_type,
-                "executed_at": result.executed_at,
-            },
-        }
+        payload["meta"] = {}
+        return payload
 
     @staticmethod
     def _now_iso() -> str:
