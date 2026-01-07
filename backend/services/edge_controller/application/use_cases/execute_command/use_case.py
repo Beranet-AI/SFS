@@ -123,11 +123,12 @@ class ExecuteCommandUseCase:
 
     @staticmethod
     def _build_result_payload(result: BaseCommandResultDTO) -> dict:
-        status = (
-            "succeeded"
-            if result.status == CommandStatus.COMPLETED.value
-            else "failed"
-        )
+        payload = {
+            "command_id": result.command_id,
+            "command_type": result.command_type,
+            "status": CommandStatus.to_management_value(result.status),
+            "executed_at": result.executed_at,
+        }
 
         if isinstance(result, DiscoverCommandResultDTO):
             result_payload = {"devices": result.devices}

@@ -21,7 +21,17 @@
     },
     "status": {
       "type": "string",
-      "enum": ["COMPLETED", "FAILED"]
+      "enum": [
+        "pending",
+        "dispatched",
+        "acked",
+        "running",
+        "succeeded",
+        "failed",
+        "timed_out",
+        "cancelled",
+        "dead_lettered"
+      ]
     },
     "executed_at": {
       "type": "string",
