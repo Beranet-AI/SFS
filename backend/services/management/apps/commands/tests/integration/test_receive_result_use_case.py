@@ -18,7 +18,7 @@ class FakeCommandRepository(CommandRepository):
     def __init__(self):
         self.command = Command(
             id="cmd-1",
-            command_name=CommandType.GET_CONNECTED_DEVICES.value,
+            command_name=CommandType.DISCOVER.value,
             target_kind="location",
             target_id="edge-1",
             edge_node_id="edge-1",
