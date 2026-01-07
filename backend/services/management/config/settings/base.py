@@ -79,6 +79,15 @@ DATABASES = {
     }
 }
 
+MIGRATION_MODULES = {
+    "commands": "apps.commands.infrastructure.migrations",
+    "farms": "apps.farms.infrastructure.migrations",
+    "incidents": "apps.incidents.infrastructure.migrations",
+    "livestocks": "apps.livestocks.infrastructure.migrations",
+    "rules": "apps.rules.infrastructure.migrations",
+    "users": "apps.users.infrastructure.migrations",
+}
+
 # ======================
 # Templates
 # ======================

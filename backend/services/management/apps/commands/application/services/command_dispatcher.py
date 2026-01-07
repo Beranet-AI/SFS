@@ -1,43 +1,84 @@
-from typing import Protocol
+import os
+from typing import Any
 
-from apps.commands.domain.repositories.capability_repository import CapabilityRepository
-from apps.commands.domain.specifications.is_edge_command import IsEdgeCommand
+import requests
+from django.utils import timezone
 
-
-class CommandExecutor(Protocol):
-    def execute(self, *, edge_id: str, command: dict) -> None:
-        ...
+from apps.commands.infrastructure.models import CommandModel, CommandAttemptModel
 
 
 class CommandDispatcher:
+    """
+    مسئول ارسال Command به edge_controller
+    """
+
     def __init__(
         self,
         *,
-        edge_executor: CommandExecutor,
-        device_executor: CommandExecutor,
-        capability_repository: CapabilityRepository,
+        edge_base_url: str | None = None,
+        edge_execute_path: str | None = None,
+        timeout_sec: int | None = None,
     ) -> None:
-        self._edge_executor = edge_executor
-        self._device_executor = device_executor
-        self._is_edge_command = IsEdgeCommand(
-            capability_repository=capability_repository
+        self._edge_base_url = (
+            edge_base_url
+            or os.getenv("EDGE_CONTROLLER_BASE_URL", "http://edge_controller:8003")
+        ).rstrip("/")
+
+        self._edge_execute_path = (
+            edge_execute_path
+            or os.getenv("EDGE_EXECUTE_PATH", "/api/commands")
         )
 
-    def dispatch(
-        self,
-        *,
-        command: dict,
-        edge_id: str,
-        device_category: str | None,
-        device_type: str | None,
-        command_type: str,
-    ) -> None:
-        if self._is_edge_command(
-            device_category=device_category,
-            device_type=device_type,
-            command_type=command_type,
-        ):
-            self._edge_executor.execute(edge_id=edge_id, command=command)
-            return
+        self._timeout_sec = timeout_sec or int(
+            os.getenv("EDGE_HTTP_TIMEOUT_SEC", "10")
+        )
 
-        self._device_executor.execute(edge_id=edge_id, command=command)
+    def _map_command_type(self, command_name: str) -> str:
+        return {
+            "get_connected_devices": "DISCOVER",
+        }.get(command_name, "DISCOVER")
+
+    def dispatch(self, command_id: str) -> None:
+        command = CommandModel.objects.get(id=command_id)
+
+        attempt_no = (
+            CommandAttemptModel.objects
+            .filter(command=command)
+            .count() + 1
+        )
+
+        attempt = CommandAttemptModel.objects.create(
+            command=command,
+            attempt_no=attempt_no,
+            status="created",
+        )
+
+        url = f"{self._edge_base_url}{self._edge_execute_path}"
+
+        payload = {
+            "command_id": str(command.id),
+            "command_type": self._map_command_type(command.command_name),
+            "edge_id": command.target_id,
+            "issued_at": timezone.now().isoformat(),
+            "payload": command.payload or {},
+        }
+
+        try:
+            resp = requests.post(url, json=payload, timeout=self._timeout_sec)
+            resp.raise_for_status()
+
+            attempt.status = "dispatched"
+            attempt.dispatched_at = timezone.now()
+            attempt.executor_receipt = resp.text
+
+            command.status = "dispatched"
+
+        except Exception as exc:
+            attempt.status = "worker_failed"
+            attempt.debug = {"error": str(exc)}
+
+            command.status = "failed"
+            command.last_error_message = str(exc)
+
+        attempt.save()
+        command.save()

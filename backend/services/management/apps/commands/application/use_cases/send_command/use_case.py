@@ -1,105 +1,61 @@
+from __future__ import annotations
+
 from apps.commands.application.services.command_dispatcher import CommandDispatcher
-from apps.commands.domain.domain_services.command_policy import CommandPolicy
-from apps.commands.domain.enums.command_status import CommandStatus
-from apps.commands.domain.enums.command_type import CommandType
-from apps.commands.domain.exceptions.command_execution_error import (
-    CommandExecutionError,
-)
-from apps.commands.domain.exceptions.invalid_target import InvalidTargetError
-from apps.commands.domain.exceptions.unsupported_command import (
-    UnsupportedCommandError,
-)
-from apps.commands.domain.repositories.capability_repository import (
-    CapabilityRepository,
-)
-from apps.commands.domain.repositories.command_repository import CommandRepository
-from apps.commands.domain.specifications.is_command_allowed import IsCommandAllowed
-from .input_dto import SendCommandInputDTO
-from .output_dto import SendCommandOutputDTO
+from apps.commands.application.services.command_tracker import CommandTracker
+from apps.commands.application.use_cases.send_command.input_dto import SendCommandInputDTO
+from apps.commands.application.use_cases.send_command.output_dto import SendCommandOutputDTO
 
 
 class SendCommandUseCase:
     def __init__(
         self,
         *,
-        repository: CommandRepository,
         dispatcher: CommandDispatcher,
-        capability_repository: CapabilityRepository,
+        tracker: CommandTracker,
     ) -> None:
-        self._repository = repository
         self._dispatcher = dispatcher
-        self._policy = CommandPolicy(capability_repository=capability_repository)
-        self._is_command_allowed = IsCommandAllowed(
-            capability_repository=capability_repository
+        self._tracker = tracker
+
+    def execute(self, *, input_dto: SendCommandInputDTO) -> SendCommandOutputDTO:
+        from apps.commands.infrastructure.models import CommandModel
+
+        cmd = CommandModel.objects.create(
+            command_name=input_dto.command_name,
+            target_kind=input_dto.target_kind,
+            target_id=input_dto.target_id,
+            payload=input_dto.payload or {},
+            idempotency_key=input_dto.idempotency_key,
+            source=input_dto.source,
+            created_by=input_dto.created_by,
+            ack_deadline_sec=input_dto.ack_deadline_sec,
+            result_deadline_sec=input_dto.result_deadline_sec,
+            max_attempts=input_dto.max_attempts,
         )
 
-    def execute(self, dto: SendCommandInputDTO, *, created_by: str) -> SendCommandOutputDTO:
-        command_name = dto.command_name.strip()
-        if not command_name:
-            raise UnsupportedCommandError("command_name is required")
-        if not dto.target_kind.strip():
-            raise InvalidTargetError("target_kind is required")
-        if not dto.target_id.strip():
-            raise InvalidTargetError("target_id is required")
+        # create attempt
+        attempt_no = 1
+        attempt = self._tracker.create_attempt(command=cmd, attempt_no=attempt_no)
+        self._tracker.mark_dispatched(command=cmd, attempt=attempt)
 
-        if dto.ack_deadline_sec is not None and dto.ack_deadline_sec <= 0:
-            raise CommandExecutionError("ack_deadline_sec must be positive")
-        if dto.result_deadline_sec is not None and dto.result_deadline_sec <= 0:
-            raise CommandExecutionError("result_deadline_sec must be positive")
-        if dto.max_attempts is not None and dto.max_attempts <= 0:
-            raise CommandExecutionError("max_attempts must be positive")
+        # dispatch
+        edge_json = self._dispatcher.dispatch_to_edge(
+            command_id=str(cmd.id),
+            command_name=cmd.command_name,
+            edge_id=str(cmd.target_id),
+            payload=cmd.payload,
+        )
 
-        command_type = dto.command_type or command_name
-        if (
-            command_name == CommandType.GET_CONNECTED_DEVICES.value
-            and command_type == command_name
-        ):
-            command_type = CommandType.DISCOVER.value
-        if dto.device_category and dto.device_type:
-            self._is_command_allowed.validate(
-                command_type=command_type,
-                device_category=dto.device_category,
-                device_type=dto.device_type,
+        edge_status = str(edge_json.get("status", "")).upper()
+        if edge_status == "COMPLETED":
+            self._tracker.mark_succeeded(command=cmd, attempt=attempt, result=edge_json)
+        else:
+            self._tracker.mark_failed(
+                command=cmd,
+                attempt=attempt,
+                error_code=str(edge_json.get("error_code") or "EDGE_FAILED"),
+                error_message=str(edge_json.get("error_message") or edge_json),
+                result=edge_json,
             )
 
-        data = self._policy.apply(
-            command_name=command_name,
-            target_kind=dto.target_kind,
-            target_id=dto.target_id,
-            edge_node_id=dto.edge_node_id,
-            payload=dto.payload,
-            idempotency_key=dto.idempotency_key,
-            ack_deadline_sec=dto.ack_deadline_sec,
-            result_deadline_sec=dto.result_deadline_sec,
-            max_attempts=dto.max_attempts,
-            command_type=command_type,
-            device_category=dto.device_category,
-            device_type=dto.device_type,
-        )
-        command = self._repository.create(data=data, created_by=created_by)
-
-        edge_id = command.edge_node_id or command.target_id
-        outgoing_payload = {
-            "command_id": str(command.id),
-            "command_type": command_type,
-            "edge_id": edge_id,
-            "issued_at": command.created_at.isoformat(),
-            "payload": command.payload,
-        }
-        self._dispatcher.dispatch(
-            command=outgoing_payload,
-            edge_id=edge_id,
-            device_category=dto.device_category,
-            device_type=dto.device_type,
-            command_type=command_type,
-        )
-        self._repository.mark_dispatched(command_id=command.id)
-
-        return SendCommandOutputDTO(
-            command_id=str(command.id),
-            status=CommandStatus.DISPATCHED,
-            command_name=command.command_name,
-            target_kind=command.target_kind,
-            target_id=command.target_id,
-            edge_node_id=edge_id,
-        )
+        cmd.refresh_from_db()
+        return SendCommandOutputDTO(command_id=str(cmd.id), status=str(cmd.status), last_result=cmd.last_result)

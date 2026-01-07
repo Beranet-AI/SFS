@@ -23,6 +23,9 @@ from apps.commands.infrastructure.models.network_scan_result_model import (
     NetworkScanResultModel,
 )
 
+
+
+
 # =========================================================
 # Command Admin (Commands lifecycle & actions)
 # =========================================================
@@ -139,3 +142,42 @@ class NetworkScanResultAdmin(admin.ModelAdmin):
         Redirect to Discover panel instead.
         """
         return redirect(reverse("admin:commands_discover"))
+
+
+
+from apps.commands.infrastructure.models import (
+    CommandModel,
+    CommandAttemptModel,
+    NetworkScanResultModel,
+    CommandAliasModel,
+)
+
+
+@admin.register(CommandAliasModel)
+class CommandAliasAdmin(admin.ModelAdmin):
+    list_display = (
+        "device_category",
+        "device_type",
+        "command_category",
+        "command_type",
+        "resolved_command_name",
+        "is_active",
+        "created_at",
+    )
+
+    list_filter = (
+        "device_category",
+        "device_type",
+        "command_category",
+        "is_active",
+    )
+
+    search_fields = (
+        "device_category",
+        "device_type",
+        "command_category",
+        "command_type",
+        "resolved_command_name",
+    )
+
+    ordering = ("device_category", "device_type", "command_category")

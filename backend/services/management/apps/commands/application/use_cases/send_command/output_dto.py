@@ -1,13 +1,11 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Any
 
-from apps.commands.domain.enums.command_status import CommandStatus
 
-
-@dataclass
+@dataclass(frozen=True)
 class SendCommandOutputDTO:
     command_id: str
-    status: CommandStatus
-    command_name: str
-    target_kind: str
-    target_id: str
-    edge_node_id: str
+    status: str
+    last_result: dict[str, Any] | None = None

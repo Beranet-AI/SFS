@@ -1,53 +1,58 @@
-from apps.commands.domain.enums.command_status import CommandStatus
-from apps.commands.domain.repositories.command_repository import CommandRepository
+from __future__ import annotations
+
+from typing import Any
+from django.utils import timezone
 
 
 class CommandTracker:
-    """Track command execution lifecycle."""
+    """
+    ثبت تغییر وضعیت Command/Attempt.
+    این نسخه مستقیم با ORM کار می‌کند تا وابستگی به repo interface نداشته باشی.
+    """
 
-    def __init__(self, *, command_repository: CommandRepository) -> None:
-        self._command_repository = command_repository
+    def create_attempt(self, *, command, attempt_no: int):
+        from apps.commands.infrastructure.models import CommandAttemptModel
 
-    def acknowledge(
-        self,
-        *,
-        command_id: str,
-        attempt_no: int,
-        executor_receipt: str | None,
-        meta: dict | None,
-    ) -> None:
-        self._command_repository.record_execution_ack(
-            command_id=command_id,
+        now = timezone.now()
+        return CommandAttemptModel.objects.create(
+            command=command,
             attempt_no=attempt_no,
-            executor_receipt=executor_receipt,
-            meta=meta,
+            created_at=now,
+            status="created",
+            debug={},
         )
-        self._command_repository.mark_acked(command_id=command_id, meta=meta)
 
-    def record_result(
-        self,
-        *,
-        command_id: str,
-        attempt_no: int,
-        status: CommandStatus,
-        result: dict | None,
-        error_code: str,
-        error_message: str,
-        meta: dict | None,
-    ) -> None:
-        self._command_repository.record_execution_result(
-            command_id=command_id,
-            attempt_no=attempt_no,
-            status=status.value,
-            result=result,
-            error_code=error_code,
-            error_message=error_message,
-            meta=meta,
-        )
-        self._command_repository.mark_result(
-            command_id=command_id,
-            status=status,
-            result=result,
-            error_code=error_code,
-            error_message=error_message,
-        )
+    def mark_dispatched(self, *, command, attempt) -> None:
+        now = timezone.now()
+        command.status = "dispatched"
+        command.started_at = command.started_at or now
+        command.save(update_fields=["status", "started_at"])
+
+        attempt.status = "sent"
+        attempt.dispatched_at = now
+        attempt.save(update_fields=["status", "dispatched_at"])
+
+    def mark_succeeded(self, *, command, attempt, result: dict[str, Any]) -> None:
+        now = timezone.now()
+        command.status = "succeeded"
+        command.finished_at = now
+        command.last_result = result
+        command.save(update_fields=["status", "finished_at", "last_result"])
+
+        attempt.status = "result_ok"
+        attempt.result_at = now
+        attempt.save(update_fields=["status", "result_at"])
+
+    def mark_failed(self, *, command, attempt, error_code: str, error_message: str, result: dict[str, Any] | None = None) -> None:
+        now = timezone.now()
+        command.status = "failed"
+        command.finished_at = now
+        command.last_error_code = error_code
+        command.last_error_message = error_message
+        if result is not None:
+            command.last_result = result
+        command.save(update_fields=["status", "finished_at", "last_error_code", "last_error_message", "last_result"])
+
+        attempt.status = "result_failed"
+        attempt.result_at = now
+        attempt.save(update_fields=["status", "result_at"])
