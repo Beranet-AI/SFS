@@ -2,5 +2,5 @@ from enum import Enum
 
 
 class CommandStatus(str, Enum):
-    COMPLETED = "COMPLETED"
+    SUCCEEDED = "SUCCEEDED"
     FAILED = "FAILED"

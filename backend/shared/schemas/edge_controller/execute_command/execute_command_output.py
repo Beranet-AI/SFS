@@ -12,7 +12,9 @@ class ExecuteCommandOutput:
 
 @dataclass
 class DiscoverCommandOutput(ExecuteCommandOutput):
+    scan_id: str
     devices: List[Dict[str, Any]]
+    message: str
 
 
 @dataclass

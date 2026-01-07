@@ -12,12 +12,13 @@ class ReceiveResultUseCase:
         self._tracker = CommandTracker(command_repository=command_repository)
 
     def execute(self, dto: ReceiveResultInputDTO) -> ReceiveResultOutputDTO:
-        status = CommandStatus.from_value(dto.status)
+        normalized_status = dto.status.lower()
+        status = CommandStatus.from_value(normalized_status)
         self._tracker.record_result(
             command_id=dto.command_id,
             attempt_no=dto.attempt_no,
             status=status,
-            result=dto.result,
+            result=dto.payload,
             error_code=dto.error_code,
             error_message=dto.error_message,
             meta=dto.meta,
@@ -25,7 +26,7 @@ class ReceiveResultUseCase:
 
         command = self._command_repository.get(command_id=dto.command_id)
         if command.command_name == CommandType.GET_CONNECTED_DEVICES.value:
-            result_payload = dict(dto.result or {})
+            result_payload = dict(dto.payload or {})
             if "devices" not in result_payload and dto.meta:
                 if isinstance(dto.meta.get("devices"), list):
                     result_payload["devices"] = dto.meta["devices"]

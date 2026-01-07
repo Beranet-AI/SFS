@@ -19,7 +19,9 @@ class BaseCommandResultDTO(ExecuteCommandOutput):
 
 @dataclass
 class DiscoverCommandResultDTO(DiscoverCommandOutput, BaseCommandResultDTO):
+    scan_id: str
     devices: List[Dict[str, Any]]
+    message: str
 
 
 @dataclass
