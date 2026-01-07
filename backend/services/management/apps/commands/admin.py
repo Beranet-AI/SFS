@@ -34,13 +34,12 @@ class CommandAdmin(admin.ModelAdmin):
         "command_name",
         "target_kind",
         "target_id",
-        "edge_node_id",
         "status",
         "created_at",
     )
 
     list_filter = ("status", "target_kind", "command_name")
-    search_fields = ("id", "target_id", "edge_node_id", "idempotency_key")
+    search_fields = ("id", "target_id", "idempotency_key")
 
     readonly_fields = (
         "id",
