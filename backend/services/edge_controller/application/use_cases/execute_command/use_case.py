@@ -126,7 +126,7 @@ class ExecuteCommandUseCase:
         payload = {
             "command_id": result.command_id,
             "command_type": result.command_type,
-            "status": result.status,
+            "status": CommandStatus.to_management_value(result.status),
             "executed_at": result.executed_at,
         }
 
