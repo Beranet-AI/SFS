@@ -25,12 +25,11 @@ class ReceiveResultUseCase:
         )
 
         command = self._command_repository.get(command_id=dto.command_id)
-        if command.command_name == CommandType.GET_CONNECTED_DEVICES.value:
-            result_payload = dict(dto.payload or {})
-            if "devices" not in result_payload and dto.meta:
-                if isinstance(dto.meta.get("devices"), list):
-                    result_payload["devices"] = dto.meta["devices"]
-            self._record_scan_results(result_payload)
+        if command.command_name in {
+            CommandType.GET_CONNECTED_DEVICES.value,
+            CommandType.DISCOVER.value,
+        }:
+            self._record_scan_results(dict(dto.payload or {}))
 
         return ReceiveResultOutputDTO(command_id=dto.command_id, status=status.value)
 
