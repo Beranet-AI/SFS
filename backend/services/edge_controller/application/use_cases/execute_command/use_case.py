@@ -123,22 +123,21 @@ class ExecuteCommandUseCase:
 
     @staticmethod
     def _build_result_payload(result: BaseCommandResultDTO) -> dict:
-        payload = {
-            "command_id": result.command_id,
-            "command_type": result.command_type,
-            "status": result.status,
-            "executed_at": result.executed_at,
-        }
+        status = (
+            "succeeded"
+            if result.status == CommandStatus.COMPLETED.value
+            else "failed"
+        )
 
         if isinstance(result, DiscoverCommandResultDTO):
-            payload["payload"] = {"devices": result.devices}
+            result_payload = {"devices": result.devices}
         elif isinstance(result, OnOffCommandResultDTO):
-            payload["payload"] = {
+            result_payload = {
                 "device_id": result.device_id,
                 "execution_state": result.execution_state,
             }
         elif isinstance(result, RebootCommandResultDTO):
-            payload["payload"] = {
+            result_payload = {
                 "device_id": result.device_id,
                 "reboot_state": result.reboot_state,
             }
@@ -147,7 +146,18 @@ class ExecuteCommandUseCase:
                 f"Unsupported result type: {type(result).__name__}"
             )
 
-        return payload
+        return {
+            "command_id": result.command_id,
+            "attempt_no": 1,
+            "status": status,
+            "result": result_payload,
+            "error_code": "",
+            "error_message": "",
+            "meta": {
+                "command_type": result.command_type,
+                "executed_at": result.executed_at,
+            },
+        }
 
     @staticmethod
     def _now_iso() -> str:
