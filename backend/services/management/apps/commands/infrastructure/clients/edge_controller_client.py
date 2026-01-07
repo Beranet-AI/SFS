@@ -28,7 +28,7 @@ class EdgeControllerClient:
 
     def send_command(self, payload: dict[str, Any]) -> dict[str, Any]:
         response = requests.post(
-            f"{self.base_url}/commands/execute",
+            f"{self.base_url}/api/commands",
             json=payload,
             timeout=10,
         )
