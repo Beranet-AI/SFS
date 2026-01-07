@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sfs.local/schemas/management/commands/execute_command/output.json",
+  "title": "ExecuteCommandResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["command_id", "command_type", "status", "executed_at"],
+  "properties": {
+    "command_id": {
+      "type": "string"
+    },
+    "command_type": {
+      "type": "string",
+      "enum": ["DISCOVER", "ON_OFF", "REBOOT"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["COMPLETED", "FAILED"]
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "devices": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "device_id": {
+      "type": ["string", "null"]
+    },
+    "execution_state": {
+      "type": ["string", "null"]
+    },
+    "reboot_state": {
+      "type": ["string", "null"]
+    }
+  }
+}

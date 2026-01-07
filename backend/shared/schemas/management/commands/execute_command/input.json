@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sfs.local/schemas/management/commands/execute_command/input.json",
+  "title": "ExecuteCommandRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["command_id", "command_type", "issued_at", "payload"],
+  "properties": {
+    "command_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "command_type": {
+      "type": "string",
+      "enum": ["DISCOVER", "ON_OFF", "REBOOT"]
+    },
+    "edge_id": {
+      "type": ["string", "null"]
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
