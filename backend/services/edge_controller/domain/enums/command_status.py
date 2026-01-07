@@ -8,7 +8,8 @@ class CommandStatus(str, Enum):
     @classmethod
     def to_management_value(cls, value: str) -> str:
         mapping = {
-            cls.COMPLETED.value: "succeeded",
+            cls.SUCCEEDED.value: "succeeded",
             cls.FAILED.value: "failed",
+            "COMPLETED": "succeeded",
         }
         return mapping.get(value, value)
