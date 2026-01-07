@@ -10,6 +10,8 @@ class CommandType(str, Enum):
 
     @classmethod
     def from_raw(cls, value: str) -> "CommandType":
+        if value in {"get_connected_devices", "GET_CONNECTED_DEVICES"}:
+            return cls.DISCOVER
         try:
             return cls(value)
         except ValueError as exc:

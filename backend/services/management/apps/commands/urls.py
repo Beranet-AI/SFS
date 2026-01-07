@@ -12,8 +12,10 @@ from apps.commands.api.admin_views.scan_result_view import (
 from apps.commands.api.admin_views.send_command_view import (
     send_command_view,
 )
+from apps.commands.api.views import receive_command_result_view
 
 urlpatterns = [
+    path("results/", receive_command_result_view, name="commands_receive_result_api"),
     path("admin/commands/send/", send_command_view, name="commands_send"),
     path(
         "admin/commands/receive-result/",

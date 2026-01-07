@@ -132,7 +132,7 @@ class ExecuteCommandUseCase:
         payload = {
             "command_id": result.command_id,
             "command_type": result.command_type,
-            "status": result.status,
+            "status": CommandStatus.to_management_value(result.status),
             "executed_at": result.executed_at,
         }
 
@@ -143,12 +143,12 @@ class ExecuteCommandUseCase:
                 "message": result.message,
             }
         elif isinstance(result, OnOffCommandResultDTO):
-            payload["payload"] = {
+            result_payload = {
                 "device_id": result.device_id,
                 "execution_state": result.execution_state,
             }
         elif isinstance(result, RebootCommandResultDTO):
-            payload["payload"] = {
+            result_payload = {
                 "device_id": result.device_id,
                 "reboot_state": result.reboot_state,
             }
