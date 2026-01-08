@@ -64,48 +64,22 @@ services:
           path: ../../backend/shared
   
 
-
-
   commands_worker:
     build:
       context: ../../
-      dockerfile: infrastructure/docker/management/Dockerfile
+      dockerfile: infrastructure/docker/commands_worker/Dockerfile
 
     container_name: sfs-commands-worker
 
     working_dir: /app/backend/services/management
 
-    command:
-      - python
-      - manage.py
-      - run_commands_worker
-      - --interval
-      - "2"
-      - --batch-size
-      - "5"
-
     environment:
-      # ⛔ خیلی مهم: جلوگیری از OOM
-      DEBUG: "false"
-
-      # مسیر درست import
       PYTHONPATH: /app/backend/services/management
-
-      # Django
-      DJANGO_SETTINGS_MODULE: config.settings.worker
+      DJANGO_SETTINGS_MODULE: config.settings.dev
       DATABASE_URL: postgres://sfs:sfs@postgres:5432/sfs
-
-      # Edge
       EDGE_CONTROLLER_BASE_URL: http://edge_controller:8003
-      EDGE_EXECUTE_PATH: /api/commands   # ⬅️ اصلاح کلیدی (قبلاً execute بود)
-
       LOG_LEVEL: info
       TIME_ZONE: Asia/Tehran
-
-    # ⛔ جلوگیری از kill شدن با code 137
-    mem_limit: 512m
-
-    restart: unless-stopped
 
     depends_on:
       postgres:
@@ -115,8 +89,6 @@ services:
 
     networks:
       sfs_net:
-
-
 
 
 

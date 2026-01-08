@@ -1,61 +1,50 @@
-import logging
 import os
 import time
+import traceback
+import django
 
-from django.db import close_old_connections
+# -------------------------------------------------
+# 1️⃣ تنظیم محیط Django (باید اول باشد)
+# -------------------------------------------------
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
+django.setup()
 
-from apps.commands.application.services.command_dispatcher import CommandDispatcher
+# -------------------------------------------------
+# 2️⃣ importها بعد از django.setup
+# -------------------------------------------------
 from apps.commands.infrastructure.models import CommandModel
+from apps.commands.application.services.command_dispatcher import CommandDispatcher
 
-logger = logging.getLogger(__name__)
 
-
-def run_worker(*, interval: int = 5, batch_size: int = 5) -> None:
-    logger.info("Commands worker started")
-    logger.info(
-        "EDGE_CONTROLLER_BASE_URL=%s",
-        os.getenv("EDGE_CONTROLLER_BASE_URL"),
-    )
+def main(interval: int = 5, batch_size: int = 5):
+    print("🟢 Commands Worker started")
+    print("🔗 EDGE_CONTROLLER_BASE_URL =", os.getenv("EDGE_CONTROLLER_BASE_URL"))
 
     dispatcher = CommandDispatcher()
 
     while True:
-        close_old_connections()
-
-        pending = list(
+        pending = (
             CommandModel.objects
             .filter(status="pending")
             .order_by("created_at")[:batch_size]
         )
 
-        logger.info("Pending commands: %s", len(pending))
+        print(f"🔎 Pending commands: {pending.count()}")
 
         for command in pending:
             try:
-                logger.info("Dispatching command %s", command.id)
-                dispatcher.dispatch(command_id=str(command.id))
-            except Exception as exc:
-                logger.exception("WORKER ERROR")
-                command.last_error_message = str(exc)
-                command.last_result = {"error": str(exc)}
-                command.status = "failed"
-                command.save(
-                    update_fields=[
-                        "last_error_message",
-                        "last_result",
-                        "status",
-                    ]
-                )
+                print(f"➡️ Dispatching command {command.id}")
+
+                # ✅ فقط این
+                dispatcher.dispatch(command.id)
+
+            except Exception:
+                # ❗ اینجا فقط log می‌کنیم
+                # status و attempt داخل dispatcher مدیریت می‌شود
+                print("❌ WORKER ERROR")
+                print(traceback.format_exc())
 
         time.sleep(interval)
-
-
-def main(interval: int = 5, batch_size: int = 5) -> None:
-    import django
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.worker")
-    django.setup()
-    run_worker(interval=interval, batch_size=batch_size)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ DEBUG = False
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.auth",
+    "apps.users",
     "apps.commands",
 ]
 
